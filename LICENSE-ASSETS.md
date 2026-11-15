@@ -1,0 +1,60 @@
+# Kegare Assets License
+
+Copyright (c) 2026 CNethuka. All Rights Reserved.
+
+## Scope
+
+This license applies to the following files in this repository and in any
+distributed builds of Kegare ("the Assets"):
+
+- Everything under `art/`
+- The following folders under `src/main/resources/assets/kegare/`:
+  - `models/`
+  - `textures/`
+  - `sounds/`
+  - `player_animations/`
+  - `fx/`
+
+The following are **not** Assets. They are licensed under the MIT License
+(see `LICENSE.md`): the Java source code, the build files, `tools/`, the
+shaders in `src/main/resources/assets/kegare/shaders/`, the data files
+under `src/main/resources/data/`, and the documentation.
+
+## Terms
+
+You may NOT, without prior written permission from the copyright holder:
+
+- Copy, modify, adapt or create derivative works from the Assets
+- Redistribute the Assets, in whole or in part, outside of Kegare itself
+- Use the Assets in any other mod, resource pack, game, or project
+- Use the Assets for commercial purposes
+
+Forks and derivative works of Kegare's code are allowed under the MIT
+License, but any **released** fork or derivative must remove and replace
+all Assets with its own.
+
+## What you CAN do
+
+- Download and play with Kegare, including the Assets, as distributed
+  through official channels
+- Include the unmodified, official Kegare release in modpacks
+- Take screenshots and record videos featuring the Assets, including
+  monetized content
+- Clone or fork the repository for personal use, development, or to
+  submit contributions back to Kegare
+
+## Third-party content
+
+This license covers only Kegare's original work and grants no rights to
+any third-party intellectual property. See the README for attribution.
+
+## Permissions
+
+To request permission to use the Assets, contact CNethuka via
+[GitHub](https://github.com/cnethuka).
+
+## Disclaimer
+
+THE ASSETS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY ARISING FROM THE USE OF THE ASSETS.
