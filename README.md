@@ -210,7 +210,7 @@ Please report vulnerabilities privately: see [SECURITY.md](SECURITY.md).
 
 - **Code: MIT License** (see [LICENSE](LICENSE)). This covers the Java source, the build files, `tools/`, the shaders
   (`assets/kegare/shaders/`), the data files under `src/main/resources/data/` and the documentation.
-- **Assets: All Rights Reserved.** Copyright (c) 2026 CNethuka. This covers everything under `art/`, and the `models`,
+- **Assets: All Rights Reserved.** (see [LICENSE-ASSETS](LICENSE-ASSETS)). Copyright (c) 2026 CNethuka. This covers everything under `art/`, and the `models`,
   `textures`, `sounds`, `player_animations` and `fx` folders under `src/main/resources/assets/kegare/`. You may not copy,
   modify or redistribute them outside Kegare itself without permission: a released fork or derivative has to replace them.
 
