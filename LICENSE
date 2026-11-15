@@ -20,5 +20,5 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-This license applies to the source code only.
-Assets are All Rights Reserved. See LICENSE-ASSETS.md.
+This MIT License applies to all files in this repository except the
+assets listed in LICENSE-ASSETS.md, which are All Rights Reserved.
