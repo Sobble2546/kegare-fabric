@@ -7,8 +7,8 @@ import static com.cnethuka.kegare.command.CommandArgs.name;
 import static com.cnethuka.kegare.command.CommandArgs.player;
 import static com.cnethuka.kegare.command.CommandArgs.rated;
 import static com.cnethuka.kegare.command.CommandArgs.say;
-import static com.cnethuka.kegare.command.CommandArgs.senderOr;
 import static com.cnethuka.kegare.command.CommandArgs.shortName;
+import static com.cnethuka.kegare.command.CommandArgs.senderOr;
 import static com.cnethuka.kegare.command.CommandArgs.system;
 import static com.cnethuka.kegare.command.CommandArgs.trait;
 import static com.cnethuka.kegare.command.CommandArgs.traits;
@@ -66,7 +66,7 @@ final class TraitCommands {
     private static int list(CommandSourceStack source) {
         List<Trait> all = traits();
         say(source, "commands.kegare.trait.list");
-        for (Trait trait : all) say(source, listEntry(rated(trait), shortName(trait.id())));
+        for (Trait trait : all) say(source, listEntry(rated(trait), CommandArgs.commandName(trait, all, Trait::id)));
         return all.size();
     }
 

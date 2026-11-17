@@ -317,7 +317,10 @@ final class DebugCommands {
         return Commands.literal(action)
                 .then(player()
                         .then(name("ability")
-                                .suggests((c, b) -> suggest(b, unlockable(), a -> shortName(a.id()), Ability::displayName))
+                                .suggests((c, b) -> {
+                                    java.util.List<Ability> all = unlockable();
+                                    return suggest(b, all, a -> CommandArgs.commandName(a, all, Ability::id), Ability::displayName);
+                                })
                                 .executes(c -> {
                                     Ability ability = sharedAbility(c);
                                     return forEachPlayer(c, (source, player) -> shared(source, player, ability, unlock));
@@ -359,9 +362,9 @@ final class DebugCommands {
 
     private static Ability sharedAbility(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
         String typed = typedName(c, "ability");
-        String wanted = typed.toLowerCase(Locale.ROOT);
-        return unlockable().stream().filter(a -> shortName(a.id()).equals(wanted)).findFirst()
-                .orElseThrow(() -> UNKNOWN_SHARED.create(typed, unlockable().stream().map(a -> shortName(a.id())).collect(Collectors.joining(", "))));
+        java.util.List<Ability> all = unlockable();
+        return CommandArgs.byName(all, Ability::id, typed).orElseThrow(() -> UNKNOWN_SHARED.create(typed,
+                all.stream().map(a -> CommandArgs.commandName(a, all, Ability::id)).collect(Collectors.joining(", "))));
     }
 
     private static int stun(CommandSourceStack source, ServerPlayer player, double seconds) {

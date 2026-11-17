@@ -242,6 +242,12 @@ publishing {
     }
 }
 
+// The licenses travel inside the jar, at its root: LICENSE (MIT) covers the code, LICENSE-ASSETS (All Rights Reserved) the assets.
+tasks.named('jar', Jar).configure {
+    from('LICENSE')
+    from('LICENSE-ASSETS')
+}
+
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
     options.compilerArgs << '-Xlint:deprecation'

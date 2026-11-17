@@ -10,7 +10,6 @@ import static com.cnethuka.kegare.command.CommandArgs.player;
 import static com.cnethuka.kegare.command.CommandArgs.rated;
 import static com.cnethuka.kegare.command.CommandArgs.say;
 import static com.cnethuka.kegare.command.CommandArgs.senderOr;
-import static com.cnethuka.kegare.command.CommandArgs.shortName;
 import static com.cnethuka.kegare.command.CommandArgs.system;
 
 import com.cnethuka.kegare.api.technique.InnateTechnique;
@@ -48,7 +47,7 @@ final class InnateCommands {
     private static int list(CommandSourceStack source) {
         List<InnateTechnique> all = innates();
         say(source, "commands.kegare.innate.list");
-        for (InnateTechnique technique : all) say(source, listEntry(rated(technique), shortName(technique.id())));
+        for (InnateTechnique technique : all) say(source, listEntry(rated(technique), CommandArgs.commandName(technique, all, InnateTechnique::id)));
         return all.size();
     }
 

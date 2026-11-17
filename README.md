@@ -220,6 +220,7 @@ Please report vulnerabilities privately: see [SECURITY.md](SECURITY.md).
 - **Assets: All Rights Reserved.** (see [LICENSE-ASSETS](LICENSE-ASSETS)). Copyright (c) 2026 CNethuka. This covers everything under `art/`, and the `models`,
   `textures`, `sounds`, `player_animations` and `fx` folders under `src/main/resources/assets/kegare/`. You may not copy,
   modify or redistribute them outside Kegare itself without permission: a released fork or derivative has to replace them.
+- Both license files are also inside the jar, at its root.
 
 Kegare is an unofficial fan work. *Jujutsu Kaisen* and its characters belong to Gege Akutami and Shueisha. Minecraft is a
 trademark of Mojang and Microsoft. Kegare is not affiliated with or endorsed by any of them, or by the makers of Jujutsu

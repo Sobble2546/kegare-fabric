@@ -228,9 +228,9 @@ abilities are emptied, and its traits are dropped.
 
 ## Commands
 
-`/kegare innate set`, `/kegare trait give` and the other commands name your technique, trait or shared ability by its short name (the
-path of its ID, `spark`), with suggestions and hover text like Kegare's own. If your short name is also one of Kegare's, Kegare's wins and
-yours can't be named by a command, so pick names Kegare doesn't use.
+`/kegare innate set`, `/kegare trait give` and the other commands name your technique, trait or ability by its short name (the path of
+its ID, `spark`) or its full ID (`myaddon:spark`), with suggestions and hover text like Kegare's own. If your short name is also one of
+Kegare's, Kegare's keeps it and yours goes by its full ID in suggestions and lists. Picking names Kegare doesn't use keeps them short.
 
 ## Not in the API yet
 

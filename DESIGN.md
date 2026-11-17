@@ -407,7 +407,7 @@ Every command reads `/kegare <system> <action> [player] [value]`.
 
 - **Permission:** level 2 for everything but `/kegare help`, which anyone can use and which lists only what the sender may run. The root stays open for that one command, so each system asks for the level itself. A non-op who types another command gets vanilla's "Incorrect argument for command".
 - **Players:** every player argument takes a name or a selector such as `@a`, and a command given several players runs for each, with a line for each. Where the player is the last argument it's usually optional and defaults to the sender. The console has to name one. The whole-wipe commands (`rebirth`, `progression reset`) always need a name.
-- **Short names:** innate techniques, traits and shared abilities go by the path of their ID (`rime`, not `kegare:rime`, which is refused as unknown), an addon's too (§3.34). Should two mods ever use one short name, Kegare's wins, and the other can't be named by a command. Suggestions show short names only. Hovering one shows what it is, like "Rime (Rare)" or "Six Eyes (Unique)"; traits have no rarity, so a unique one says so and any other shows only its name.
+- **Short names:** innate techniques, traits and abilities go by the path of their ID (`rime`), an addon's too (§3.34). The full ID (`kegare:rime`, `some_addon:rime`) always works as well. Should two mods use one short name, Kegare's keeps it (between two addons, the first full ID alphabetically), and the other goes by its full ID in suggestions and lists (`CommandArgs.commandName`, `byName`). Suggestions show those names. Hovering one shows what it is, like "Rime (Rare)" or "Six Eyes (Unique)"; traits have no rarity, so a unique one says so and any other shows only its name.
 - **Errors:** an unknown innate technique, trait or Grade points at its list command, and a bad player at `/list`.
 - **Feedback:** to the sender only (`sendSuccess(..., false)`), in sentences, with display names and no raw IDs. Everything goes through `CommandArgs.say`. A holder the server has no name for reads "a player this server has no name for", not a UUID. Rarity names take the rarity's color (`InnateTechniqueRarity.color()`, as on the emblem rim). Tier names take `GuiDraw.MALICE` as on the Sorcerer screen, `GuiDraw.GOLD` for Vast as in the reveal, and `GuiDraw.RED` for Zero. GuiDraw's colors are compile-time constants, so a dedicated server never loads that client class. With the vanilla gamerule `sendCommandFeedback` off, players see only errors, as with vanilla commands; the console sees everything.
 - **Help:** `HelpCommand.ENTRIES` is written by hand, and `KegareCommandTest.helpMatchesTheCommandTree` holds it to the real tree both ways. Clicking a line in `/kegare help` opens that system, and clicking a command in a system's list types it into the chat box.
@@ -3344,15 +3344,15 @@ Kegare's own techniques, abilities and traits are built on these same types; not
   data. An addon never changes Kegare's network version (§3.5).
 - **Uninstalled:** a player who held its technique gets the free REPLACEMENT reroll on login (§3.4), the loadout's login repair empties
   any slot holding one of its abilities (§3.16), and its traits' IDs are dropped on login like any unknown trait (§3.2).
-- **Commands** name its technique, trait or shared ability by short name like Kegare's; if it shares one with Kegare's, Kegare's wins and
-  the addon's can't be named by a command (§3.8).
+- **Commands** name its technique, trait or ability by short name like Kegare's, or by full ID; if it shares a short name with Kegare's,
+  Kegare's keeps it and the addon's goes by its full ID (§3.8).
 
 **Tests:** `ExampleAddonTest` with `ExampleAddon`, an addon in the test sources only (namespace `kegare_example`, never in the jar), written
 against `api` alone with its own lang file: its technique, trait and shared ability registered; its unlock levels on the default table;
 its instant ability, toggle and special cast through the real pipeline (cost, cooldown, the special's requirement) and its hit counted for
 Refinement; its shared ability unlocked; who is in the roll pool, and real rolls landing on it by default and never with
 `roll.addonTechniques` off. Kegare's own tests run with it loaded: `RealPoolRollTest` rolls Kegare's pool alone (addons off),
-`KegareCommandTest` sees its technique, trait and shared ability by short name, `TechniqueUnlocksTest` refuses a definition without unlock
+`KegareCommandTest` sees its technique, trait and shared ability by short name and by full ID, and checks who keeps a shared short name, `TechniqueUnlocksTest` refuses a definition without unlock
 levels or with a negative one.
 
 ---

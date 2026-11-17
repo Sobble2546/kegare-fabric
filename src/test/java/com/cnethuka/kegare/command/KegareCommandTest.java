@@ -295,15 +295,42 @@ class KegareCommandTest {
     }
 
     @Test
-    void fullIdsAreRefusedAsUnknown(MinecraftServer server) throws Exception {
+    void fullIdsWorkToo(MinecraftServer server) throws Exception {
         inGame(server, () -> {
             ServerPlayer p = online(server, "full_id");
             InnateTechniqueService.setInnateTechnique(p, Swap.SWAP.get());
-            assertEquals("Unknown Innate Technique: kegare:rime. Use /kegare innate list to see them all.", op(server, "kegare innate set full_id kegare:rime").error());
-            assertEquals(Swap.SWAP.get(), InnateTechniqueService.current(p).orElseThrow());
-            assertEquals("Unknown trait: kegare:six_eyes. Use /kegare trait list to see them all.", op(server, "kegare trait give full_id kegare:six_eyes").error());
-            assertFalse(TraitService.has(p, KegareTraits.SIX_EYES.get()));
+            op(server, "kegare innate set full_id kegare:rime").ok();
+            assertEquals(Rime.RIME.get(), InnateTechniqueService.current(p).orElseThrow());
+            op(server, "kegare innate set full_id kegare_example:example").ok();
+            assertEquals(com.cnethuka.kegare.api.example.ExampleAddon.TECHNIQUE.get(), InnateTechniqueService.current(p).orElseThrow(), "an addon's");
+            assertEquals("Unknown Innate Technique: kegare_example:rime. Use /kegare innate list to see them all.",
+                    op(server, "kegare innate set full_id kegare_example:rime").error(), "the full ID has to be a real one");
+            op(server, "kegare trait give full_id kegare_example:keen").ok();
+            assertTrue(TraitService.has(p, com.cnethuka.kegare.api.example.ExampleAddon.KEEN.get()));
+            op(server, "kegare cooldown reset full_id kegare:dash").ok();
         });
+    }
+
+    @Test
+    void aShortNameTwoEntriesShareStaysKegaresAndTheOtherGoesByItsFullId() {
+        net.minecraft.resources.ResourceLocation kegares = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("kegare", "rime");
+        net.minecraft.resources.ResourceLocation addons = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("some_addon", "rime");
+        net.minecraft.resources.ResourceLocation another = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("an_addon", "rime");
+        net.minecraft.resources.ResourceLocation own = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("some_addon", "spark");
+        List<net.minecraft.resources.ResourceLocation> all = List.of(addons, kegares, own);
+        assertEquals("rime", CommandArgs.commandName(kegares, all, id -> id), "Kegare's keeps the short name");
+        assertEquals("some_addon:rime", CommandArgs.commandName(addons, all, id -> id), "the other is listed and suggested by its full ID");
+        assertEquals("spark", CommandArgs.commandName(own, all, id -> id), "a short name nobody else has is just that");
+        assertEquals(Optional.of(kegares), CommandArgs.byName(all, id -> id, "Rime"));
+        assertEquals(Optional.of(kegares), CommandArgs.byName(all, id -> id, "kegare:rime"));
+        assertEquals(Optional.of(addons), CommandArgs.byName(all, id -> id, "some_addon:rime"));
+        assertEquals(Optional.of(own), CommandArgs.byName(all, id -> id, "spark"));
+        assertEquals(Optional.empty(), CommandArgs.byName(all, id -> id, "kegare:spark"));
+        // Two addons and no Kegare entry: the first full ID alphabetically keeps it.
+        List<net.minecraft.resources.ResourceLocation> addonsOnly = List.of(addons, another);
+        assertEquals("rime", CommandArgs.commandName(another, addonsOnly, id -> id));
+        assertEquals("some_addon:rime", CommandArgs.commandName(addons, addonsOnly, id -> id));
+        assertEquals(Optional.of(another), CommandArgs.byName(addonsOnly, id -> id, "rime"));
     }
 
     @Test

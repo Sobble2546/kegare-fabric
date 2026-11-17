@@ -31,7 +31,6 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.selector.EntitySelector;
-import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -53,10 +52,14 @@ final class CommandArgs {
     private static final DynamicCommandExceptionType UNKNOWN_TRAIT =
             new DynamicCommandExceptionType(typed -> Component.translatable("commands.kegare.trait.unknown", String.valueOf(typed)));
 
-    static final SuggestionProvider<CommandSourceStack> INNATES =
-            (c, builder) -> suggest(builder, innates(), t -> shortName(t.id()), CommandArgs::rated);
-    static final SuggestionProvider<CommandSourceStack> TRAITS =
-            (c, builder) -> suggest(builder, traits(), t -> shortName(t.id()), CommandArgs::rated);
+    static final SuggestionProvider<CommandSourceStack> INNATES = (c, builder) -> {
+        List<InnateTechnique> all = innates();
+        return suggest(builder, all, t -> commandName(t, all, InnateTechnique::id), CommandArgs::rated);
+    };
+    static final SuggestionProvider<CommandSourceStack> TRAITS = (c, builder) -> {
+        List<Trait> all = traits();
+        return suggest(builder, all, t -> commandName(t, all, Trait::id), CommandArgs::rated);
+    };
 
     private CommandArgs() {}
 
@@ -126,14 +129,28 @@ final class CommandArgs {
         return id.getPath();
     }
 
-    /** The entry with this short name. Should two mods use the same one, Kegare's wins. */
-    private static <T> Optional<T> byShortName(Registry<T> registry, String name) {
-        String wanted = name.toLowerCase(Locale.ROOT);
-        return registry.keySet().stream()
-                .filter(id -> id.getPath().equals(wanted))
-                .sorted(Comparator.<ResourceLocation, Boolean>comparing(id -> !id.getNamespace().equals(Kegare.MODID)).thenComparing(ResourceLocation::toString))
-                .findFirst()
-                .map(registry::get);
+    /** Who keeps a short name two entries share: Kegare's, then the first full ID alphabetically. */
+    private static final Comparator<ResourceLocation> KEEPS_THE_SHORT_NAME =
+            Comparator.<ResourceLocation, Boolean>comparing(id -> !id.getNamespace().equals(Kegare.MODID)).thenComparing(ResourceLocation::toString);
+
+    /**
+     * The name a command takes for this entry, and shows for it in suggestions and lists: its short name, or its full ID
+     * ({@code namespace:name}) when another entry of {@code all} has the same short name and keeps it.
+     */
+    static <T> String commandName(T entry, Collection<T> all, Function<T, ResourceLocation> id) {
+        ResourceLocation own = id.apply(entry);
+        for (T other : all) {
+            ResourceLocation theirs = id.apply(other);
+            if (other != entry && theirs.getPath().equals(own.getPath()) && KEEPS_THE_SHORT_NAME.compare(theirs, own) < 0) return own.toString();
+        }
+        return own.getPath();
+    }
+
+    /** The entry a command means: a full ID ({@code namespace:name}) always works; a short name two entries share means Kegare's. */
+    static <T> Optional<T> byName(Collection<T> all, Function<T, ResourceLocation> id, String typed) {
+        String wanted = typed.toLowerCase(Locale.ROOT);
+        if (wanted.indexOf(':') >= 0) return all.stream().filter(t -> id.apply(t).toString().equals(wanted)).findFirst();
+        return all.stream().filter(t -> id.apply(t).getPath().equals(wanted)).min(Comparator.comparing(id, KEEPS_THE_SHORT_NAME));
     }
 
     /** Lowest rarity first. */
@@ -149,15 +166,15 @@ final class CommandArgs {
 
     static InnateTechnique innate(CommandContext<CommandSourceStack> c, String argument) throws CommandSyntaxException {
         String typed = typedName(c, argument);
-        return byShortName(KegareRegistries.INNATE_TECHNIQUE, typed).orElseThrow(() -> UNKNOWN_INNATE.create(typed));
+        return byName(innates(), InnateTechnique::id, typed).orElseThrow(() -> UNKNOWN_INNATE.create(typed));
     }
 
     static Trait trait(CommandContext<CommandSourceStack> c, String argument) throws CommandSyntaxException {
         String typed = typedName(c, argument);
-        return byShortName(KegareRegistries.TRAIT, typed).orElseThrow(() -> UNKNOWN_TRAIT.create(typed));
+        return byName(traits(), Trait::id, typed).orElseThrow(() -> UNKNOWN_TRAIT.create(typed));
     }
 
-    /** Short names only, each with what it is on hover. The client only shows a tooltip the server sent, which this does. */
+    /** Command names ({@link #commandName}), each with what it is on hover. The client only shows a tooltip the server sent, which this does. */
     static <T> CompletableFuture<Suggestions> suggest(SuggestionsBuilder builder, Iterable<T> all, Function<T, String> name, Function<T, Component> hover) {
         String typed = builder.getRemainingLowerCase();
         for (T value : all) {
