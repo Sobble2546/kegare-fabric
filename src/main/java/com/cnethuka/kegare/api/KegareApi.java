@@ -66,6 +66,19 @@ public final class KegareApi {
         return SharedAbilityService.unlock(player, ability);
     }
 
+    /**
+     * The root of a technique's advancement tab ({@code <namespace>:innate_technique/<path>}): parent your own advancements to it to
+     * put them in that tab. Kegare's techniques have one; an addon's has one if the addon ships it.
+     */
+    public static ResourceLocation techniqueTab(ResourceLocation technique) {
+        return com.cnethuka.kegare.advancement.KegareAdvancements.innateTechniqueRoot(technique);
+    }
+
+    /** Awards an advancement (every criterion), if it exists and isn't done yet. Server only. */
+    public static void awardAdvancement(ServerPlayer player, ResourceLocation advancement) {
+        com.cnethuka.kegare.advancement.KegareAdvancements.awardIfPresent(player, advancement);
+    }
+
     /** Whether this player has unlocked this shared ability (or has it as everyone does). */
     public static boolean hasSharedAbility(ServerPlayer player, Ability ability) {
         return SharedAbilityService.isUnlocked(player, ability.id());

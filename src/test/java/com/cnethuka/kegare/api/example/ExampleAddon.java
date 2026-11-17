@@ -8,6 +8,8 @@ import com.cnethuka.kegare.api.ability.BaseAbility;
 import com.cnethuka.kegare.api.ability.CastType;
 import com.cnethuka.kegare.api.ability.Requirement;
 import com.cnethuka.kegare.api.ability.SpecialAbility;
+import com.cnethuka.kegare.api.change.AbilityTweak;
+import com.cnethuka.kegare.api.change.TechniqueChanges;
 import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.api.technique.InnateTechniqueRarity;
 import com.cnethuka.kegare.api.trait.Trait;
@@ -27,7 +29,9 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
  * A small addon, written only against {@code com.cnethuka.kegare.api}, that the tests load beside Kegare: an innate technique with an
- * instant ability, a toggle and its special, a shared ability and a trait. It never ships: it's in the test sources only.
+ * instant ability, a toggle and its special, a shared ability and a trait; and it changes existing techniques: it adds an ability to
+ * its own, replaces its own special, tweaks its own Jolt, and hangs a do-nothing hook on Kegare's Frost Field. It never ships: it's in
+ * the test sources only.
  * <p>
  * A real addon does the same from its own mod constructor, on its own mod bus. Here there's no second mod, so it hooks Kegare's
  * construction instead and registers under its own namespace, as an addon's would be.
@@ -75,6 +79,30 @@ public final class ExampleAddon {
         @Override public void execute(AbilityContext ctx) {}
     };
 
+    // ---- Changes to existing techniques (TechniqueChanges): its own, and one of Kegare's.
+
+    public static final double SPARK_COST = 12;
+    public static final int SPARK_LEVEL = 2;
+    public static final double HUM_BURST_REPLACEMENT_COST = 25;
+    /** Jolt's tweak: twice the cost and the damage, 20 ticks more cooldown, refused while sneaking. */
+    public static final int JOLT_EXTRA_COOLDOWN = 20;
+    /** How many times the tweaks' after-hooks ran: Jolt's, and Kegare's Frost Field's. */
+    public static final java.util.concurrent.atomic.AtomicInteger JOLTS = new java.util.concurrent.atomic.AtomicInteger();
+    public static final java.util.concurrent.atomic.AtomicInteger FROST_FIELDS = new java.util.concurrent.atomic.AtomicInteger();
+
+    /** Added to its own technique, right after Jolt. */
+    public static final Ability SPARK = new BaseAbility(id("spark"), CastType.INSTANT) {
+        @Override public double cost(ServerPlayer player) { return SPARK_COST; }
+        @Override public int cooldownTicks(ServerPlayer player) { return 10; }
+        @Override public void execute(AbilityContext ctx) {}
+    };
+
+    /** Replaces Hum Burst: the same ID and slot, a different cost. */
+    public static final SpecialAbility HUM_BURST_REPLACEMENT = new SpecialAbility(id("hum_burst"), CastType.INSTANT, () -> HUM, Requirement.toggleActive(HUM)) {
+        @Override public double cost(ServerPlayer player) { return HUM_BURST_REPLACEMENT_COST; }
+        @Override public void execute(AbilityContext ctx) {}
+    };
+
     /** A shared ability under the Malice tab: unlocked once, kept through rerolls. */
     public static final Ability STEADY = new BaseAbility(id("steady"), CastType.INSTANT) {
         @Override public double cost(ServerPlayer player) { return 10; }
@@ -109,5 +137,19 @@ public final class ExampleAddon {
         TECHNIQUES.register(modBus);
         TRAITS.register(modBus);
         KegareApi.registerSharedAbility(STEADY);
+
+        TechniqueChanges.addAfter(TECHNIQUE.getId(), JOLT.id(), SPARK, SPARK_LEVEL);
+        TechniqueChanges.replace(HUM_BURST_REPLACEMENT);
+        TechniqueChanges.tweak(JOLT.id(), new AbilityTweak() {
+            @Override public double cost(ServerPlayer player, double cost) { return cost * 2; }
+            @Override public int cooldownTicks(ServerPlayer player, int ticks) { return ticks + JOLT_EXTRA_COOLDOWN; }
+            @Override public float damage(ServerPlayer caster, LivingEntity target, float amount) { return amount * 2; }
+            @Override public boolean canCast(AbilityContext ctx) { return !ctx.player().isShiftKeyDown(); }
+            @Override public void afterExecute(AbilityContext ctx) { JOLTS.incrementAndGet(); }
+        });
+        // One of Kegare's: a hook that changes nothing, so Kegare's own tests run with a changed Frost Field.
+        TechniqueChanges.tweak(ResourceLocation.fromNamespaceAndPath(KegareApi.MOD_ID, "frost_field"), new AbilityTweak() {
+            @Override public void afterExecute(AbilityContext ctx) { FROST_FIELDS.incrementAndGet(); }
+        });
     }
 }

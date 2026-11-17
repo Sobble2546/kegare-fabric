@@ -65,7 +65,7 @@ class ExampleAddonTest {
         assertSame(technique, KegareApi.innateTechniques().get(technique.id()), "in Kegare's registry");
         assertFalse(KegareApi.isKegares(technique), "an addon's");
         assertTrue(KegareApi.isKegares(Swap.SWAP.get()));
-        assertEquals(java.util.List.of(ExampleAddon.JOLT, ExampleAddon.HUM), technique.abilities());
+        assertEquals(java.util.List.of(ExampleAddon.JOLT, ExampleAddon.HUM), technique.definedAbilities(), "as its definition lists them");
         assertTrue(technique.rollable(), "rolled by default");
         assertSame(ExampleAddon.KEEN.get(), KegareApi.traits().get(ExampleAddon.KEEN.getId()));
         assertTrue(AbilityTabs.abilities(AbilityCategory.MALICE, null).contains(ExampleAddon.STEADY), "its shared ability is under the Malice tab");
@@ -96,16 +96,17 @@ class ExampleAddonTest {
                 int refinement = RefinementService.level(p);
 
                 // The instant ability: paid, the cooldown started, the pig hurt, and the hit counted for Refinement with no code of its own.
+                // (Its own tweak doubles its cost and damage and adds to its cooldown: TechniqueChangesTest covers that.)
                 InnateTechniqueService.select(p, 0);
                 double before = malice(p);
                 CastManager.handleIntent(p, CastIntent.CAST_PRESS);
-                assertEquals(before - ExampleAddon.JOLT_COST, malice(p), EPS, "paid");
-                assertEquals(ExampleAddon.JOLT_COOLDOWN, InnateTechniqueService.cooldownRemaining(p, ExampleAddon.JOLT), "on cooldown");
-                assertEquals(health - ExampleAddon.JOLT_DAMAGE, pig.getHealth(), EPS, "hurt");
+                assertEquals(before - ExampleAddon.JOLT_COST * 2, malice(p), EPS, "paid");
+                assertEquals(ExampleAddon.JOLT_COOLDOWN + ExampleAddon.JOLT_EXTRA_COOLDOWN, InnateTechniqueService.cooldownRemaining(p, ExampleAddon.JOLT), "on cooldown");
+                assertEquals(health - ExampleAddon.JOLT_DAMAGE * 2, pig.getHealth(), EPS, "hurt");
                 assertTrue(RefinementService.level(p) > refinement || RefinementService.get(p).xp() > xp, "Refinement counted the landing");
 
-                // The special needs its toggle on: without it, it fizzles for nothing.
-                InnateTechniqueService.select(p, 1);
+                // The special needs its toggle on: without it, it fizzles for nothing. (Slot 2: the added Spark is in slot 1.)
+                InnateTechniqueService.select(p, 2);
                 before = malice(p);
                 CastManager.handleIntent(p, CastIntent.SPECIAL_PRESS);
                 assertEquals(before, malice(p), EPS, "the special's requirement is unmet: nothing paid");
@@ -114,7 +115,7 @@ class ExampleAddonTest {
                 assertEquals(before - ExampleAddon.HUM_COST, malice(p), EPS, "the toggle's cost");
                 before = malice(p);
                 CastManager.handleIntent(p, CastIntent.SPECIAL_PRESS);
-                assertEquals(before - ExampleAddon.HUM_BURST_COST, malice(p), EPS, "now the special goes off");
+                assertEquals(before - ExampleAddon.HUM_BURST_REPLACEMENT_COST, malice(p), EPS, "now the special goes off (its replacement's cost)");
                 assertTrue(InnateTechniqueService.cooldownRemaining(p, ExampleAddon.HUM) > 0, "and starts the cooldown it shares");
             } finally {
                 pig.discard();

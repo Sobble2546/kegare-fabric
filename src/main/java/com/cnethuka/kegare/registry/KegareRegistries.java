@@ -18,7 +18,9 @@ public final class KegareRegistries {
     public static final ResourceKey<Registry<InnateTechnique>> INNATE_TECHNIQUE_KEY = com.cnethuka.kegare.api.KegareApi.INNATE_TECHNIQUES;
     public static final ResourceKey<Registry<Trait>> TRAIT_KEY = com.cnethuka.kegare.api.KegareApi.TRAITS;
 
-    public static final Registry<InnateTechnique> INNATE_TECHNIQUE = new RegistryBuilder<>(INNATE_TECHNIQUE_KEY).sync(true).create();
+    /** Once it's complete, addons' changes are applied to every technique in one place (DESIGN §3.34). */
+    public static final Registry<InnateTechnique> INNATE_TECHNIQUE = new RegistryBuilder<>(INNATE_TECHNIQUE_KEY).sync(true)
+            .onBake(com.cnethuka.kegare.innatetechnique.change.TechniqueViews::bake).create();
     public static final Registry<Trait> TRAIT = new RegistryBuilder<>(TRAIT_KEY).sync(true).create();
 
     private KegareRegistries() {}

@@ -349,7 +349,8 @@ All timestamps use **level game time**. They persist across restarts and are ide
   see behind where it is), and vanilla's own teleport and head packets for the delayed image.
 - **Sub-tick timing** (§3.29): `TimingNet.Stamp` (C→S, an input stamped with the client's clock, sent at the key press), `TimingNet.Ping`
   (S→C) and `TimingNet.Pong` (C→S, the client's clock), all handled on the network thread. Reinforced Fists' look is `FistsPayload` (§3.28).
-- Network version `27` (since a disguise wears the face's eyewear, §3.19 and §3.32: `Disguises.StatePayload` carries it); `26` was Six Eyes'
+- Network version `28` (since the addon API's join check, §3.34: `TechniqueCheck.Ask` and `.Answer` in the configuration phase); `27` was a
+  disguise wearing the face's eyewear, §3.19 and §3.32 (`Disguises.StatePayload` carries it); `26` was Six Eyes'
   Reads reading a body's whole state, §3.32 (`ReadsPayload` gained mob health and the focus's body); `25`
   was Six Eyes, §3.32, and RMT's repair, §3.17: `Repair.Payload`, the brain meter in `ProgressionSnapshot`, and
   Six Eyes' own (`SightPayloads`, `ReadsPayload`, `Strain.Hud`, `Strain.Collapsed`, `Edge.Spark`, `Attunement.PinPayload`); `24` was Reinforcement and Background Tasks, §3.16 and §3.31: `AuraPayload`, `BackgroundSyncPayload`,
@@ -3315,7 +3316,9 @@ numbers exact, a row that won't decode changing nothing, only Kegare's keys out 
 ### 3.34 Addon API (package `api`)
 `com.cnethuka.kegare.api` is what addons use: the only public part of Kegare. Everything else is internal and may change in any
 release. **Experimental until 1.0:** within one minor version (0.2.0, 0.2.1, ...) nothing in it changes in a way that breaks an addon;
-a new minor version (0.3.0) may. An addon declares its Kegare dependency as one minor range (`versionRange = "[0.2,0.3)"`). Every
+a new minor version (0.3.0) may. An addon declares its Kegare dependency as one minor range, counting its pre-releases:
+`versionRange = "[0.2.0-alpha,0.3.0-alpha)"` (NeoForge compares versions like Maven, where `0.2.0-alpha` comes before `0.2`, so
+`"[0.2,0.3)"` would refuse 0.2.0-alpha and let 0.3.0-alpha in). Every
 package in it carries `@ApiStatus.Experimental`. The guide for mod makers is `docs/addon-api.md`.
 
 **What's in it (0.2.0):**
@@ -3329,6 +3332,8 @@ package in it carries `@ApiStatus.Experimental`. The guide for mod makers is `do
 | `api.progression` | `OwnedEntity` |
 | `KegareApi` | the registry keys `INNATE_TECHNIQUES` and `TRAITS`, the registries, `isKegares`, and shared abilities: `registerSharedAbility`, `registerSharedAbilityForEveryone`, `unlockSharedAbility`, `hasSharedAbility` |
 | `KegareProgression` | `landed`, `landedOnItsOwn`, `during`, `addAttributor`: the cases Refinement and Assessment can't see from a hit (§3.21) |
+| `api.change` | `TechniqueChanges` (`add`, `addAfter`, `replace`, `tweak`, `isChanged`, `changedAbilities`) and `AbilityTweak`: changing techniques that already exist (below) |
+| `KegareApi` (advancements) | `techniqueTab` (a technique tab's root, to parent an addon's own advancements to) and `awardAdvancement` |
 
 Kegare's own techniques, abilities and traits are built on these same types; nothing is wrapped.
 
@@ -3347,11 +3352,45 @@ Kegare's own techniques, abilities and traits are built on these same types; not
 - **Commands** name its technique, trait or ability by short name like Kegare's, or by full ID; if it shares a short name with Kegare's,
   Kegare's keeps it and the addon's goes by its full ID (§3.8).
 
-**Tests:** `ExampleAddonTest` with `ExampleAddon`, an addon in the test sources only (namespace `kegare_example`, never in the jar), written
+**Changing techniques that already exist** (`api.change.TechniqueChanges`, Kegare's or another addon's), registered from a mod's
+constructor:
+- **Add** an ordinary ability at the end (`add`) or right after one already there (`addAfter`; several after the same one keep their
+  registration order), with its own unlock level and its special's. Every ability already there keeps its level (they're worked out from
+  the definition's own order), so nothing a player has unlocked moves. It joins the loadout like any newly unlocked ability.
+- **Replace** an ability (ordinary, special or ultimate) with the addon's own of the same ID: same slot, unlock level and cooldown, so
+  loadouts and saved data keep working. A special must be replaced by a special of the same base, anything else by a non-special. Its own
+  `special()` is what players get; a new special ID unlocks where the old special did.
+- **Tweak** an ability (`AbilityTweak`): its cost (also what pressing checks and the screens show), cooldown, upkeep, charge and channel
+  times and damage (any hit traced to it, §3.21's attribution, before defences, `TechniqueViews.onIncomingDamage`), a `canCast` that refuses
+  it before anything is paid, and hooks before and after its effect, on each tick and at its end, all inside its cast (`CastScope`).
+  Several stack in registration order. A tweak applies to the ability it names: a special sharing its base's cooldown keeps its length.
+- **Applied in one place** (`innatetechnique.change`): once the technique registry is complete (its bake callback, `TechniqueViews.bake`,
+  on both sides and again after a client syncs), every technique gets its view: its abilities, ultimate and unlock levels as players get
+  them. `InnateTechnique.abilities()`, `ultimate()`, `everyAbility()` and `unlockLevel()` read it; `definedAbilities()` and
+  `definedUltimate()` are the definition's own. An ability nobody changed is the same object; a tweaked one, or one whose special changed,
+  is a `TweakedAbility` with the same ID, so Kegare compares abilities by ID, never by object. Registering after that throws.
+- **Refused at startup**, naming the mod (the namespace active when it registered): two replacements of one ability, an ID added twice or
+  already in the technique, an addition's anchor, technique or replaced/tweaked ability that doesn't exist (shared abilities can't be
+  changed), a special added on its own or without its level, a negative level, and a replacement that doesn't fit its slot. The log lists
+  every change and who made it.
+- **Advancements:** replacing or tweaking an ability turns off Kegare's advancements that depend on it (`AdvancementAbilities`, checked in
+  `KegareAdvancements.award`): never awarded again, kept by whoever earned them; they're hidden until earned, so to everyone else they
+  simply never appear. Each advancement in a Kegare technique tab lists the abilities it names or needs; one about the technique as a
+  whole (freezing, any swap) lists none and stays on. Adding an ability turns nothing off. The log lists what's turned off.
+- **The join check** (`TechniqueCheck`, a configuration task): the server asks the client to describe every technique (its abilities and
+  specials in order, its ultimate) and every change (who replaced or tweaked what), and turns away a client whose description differs:
+  "Your Kegare addons don't match this server's: they differ on Frost Field. Install the same addons as the server."
+
+**Tests:** `TechniqueChangesTest` (on a change set of its own, so the game's stays as it is: additions in place and every existing level kept,
+a replacement taking its slot and levels and a new special unlocking where the old one did, replacements that don't fit their slot, every
+mistake refused with its mod's name, tweaks stacking in order and running around the ability; then the example addon's real changes through
+the cast pipeline: an added ability, a replaced special, a tweak doubling cost and damage, adding cooldown and refusing while sneaking, and a
+hook on Kegare's own Frost Field; the advancements a change turns off, every advancement in a Kegare technique tab listed with abilities of
+that technique; the join check's description and the message naming what differs). `ExampleAddonTest` with `ExampleAddon`, an addon in the test sources only (namespace `kegare_example`, never in the jar), written
 against `api` alone with its own lang file: its technique, trait and shared ability registered; its unlock levels on the default table;
 its instant ability, toggle and special cast through the real pipeline (cost, cooldown, the special's requirement) and its hit counted for
 Refinement; its shared ability unlocked; who is in the roll pool, and real rolls landing on it by default and never with
-`roll.addonTechniques` off. Kegare's own tests run with it loaded: `RealPoolRollTest` rolls Kegare's pool alone (addons off),
+`roll.addonTechniques` off. Kegare's own tests run with it loaded, Frost Field tweaked included: `RealPoolRollTest` rolls Kegare's pool alone (addons off),
 `KegareCommandTest` sees its technique, trait and shared ability by short name and by full ID, and checks who keeps a shared short name, `TechniqueUnlocksTest` refuses a definition without unlock
 levels or with a negative one.
 
@@ -3392,6 +3431,9 @@ levels or with a negative one.
   with `BaseAbility`, add the lang names and an **epithet** (Kegare's datagen fails without one for its own), set a signature
   animation, **set unlock levels for its abilities, specials and ultimate** (the definition can't be built without them), and
   put the numbers in config. Nothing in the base changes. An addon does exactly the same through the addon API (§3.34).
+- **Changing a technique that already exists** (an addon's, or a later Kegare system's): `TechniqueChanges` adds, replaces or tweaks its
+  abilities, applied in one place once the registry is complete (§3.34). Compare abilities by ID, never by object: a changed one is a
+  wrapper with the same ID. A new advancement in a technique tab lists the abilities it depends on in `AdvancementAbilities`.
 - **Refinement and Assessment:** every technique gets them through the shared path (`CastScope`, `Landings`, §3.21). Add code only where
   an ability lands without hurting (`Landings.land`), hits later (`Landings.during`), attacks through something else
   (`Attribution.addAttributor`) or has no target (`hasNoTarget`). A cost discount must be divided out in `Landings.baseCost`.
@@ -3422,11 +3464,9 @@ levels or with a negative one.
 
 - **Innate techniques:** more real ones, with their abilities, balance and visuals.
 - **Rime's Dominion** (its ultimate; the slot is locked until then).
-- **The addon API, next steps (§3.34):** changing Kegare's own techniques (add, tweak, replace an ability, each registered against that
-  ability; clashes refused at startup; the client's technique lists checked on join; Kegare's advancements tied to a changed ability
-  turned off, never deleted), one shared target event for every technique, the Impact System hook, read-only events (casts, technique
-  changes, unlocks, Refinement and Grade), client hooks (visuals, HUD, the effect setting), and publishing (Modrinth's Maven, a sources
-  jar). No boss API in this update.
+- **The addon API, next steps (§3.34):** one shared target event for every technique, the Impact System hook, read-only events (casts,
+  technique changes, unlocks, Refinement and Grade), client hooks (visuals, HUD, the effect setting), and publishing (Modrinth's Maven, a
+  sources jar). Changing shared abilities. No boss API in this update.
 - **Dominions:** expansion, guaranteed-hit rules, clashes, counters, burnout.
 - **What progression waits for (§3.21):** later unlocks, Dominions among them, register through `Unlocks`, their first-time sources call
   `InsightHooks`, and later systems that need a player's Grade read `Progression.getGrade`.

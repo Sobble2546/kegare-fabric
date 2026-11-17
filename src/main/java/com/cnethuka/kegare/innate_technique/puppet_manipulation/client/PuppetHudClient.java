@@ -98,7 +98,7 @@ final class PuppetHudClient {
 
     /** Strings on the Sorcerer screen: where it stands now, then what each stage costs. */
     private static List<Component> sorcererLines(Ability ability) {
-        if (ability != PuppetManipulation.STRINGS) return List.of();
+        if (!ability.id().equals(PuppetManipulation.STRINGS.id())) return List.of(); // by ID: an addon may have changed it
         PuppetHud.StringsHud s = PossessionClient.hud().strings();
         Component now = switch (s.stage()) {
             case 1 -> Component.translatable("gui.kegare.strings.stage.attached");
@@ -112,7 +112,7 @@ final class PuppetHudClient {
     private static void decorate(GuiGraphics g, Font font, Ability ability, int x, int y, int size) {
         PuppetHud.Payload hud = PossessionClient.hud();
         if (!hud.holds()) return;
-        if (ability == PuppetManipulation.STRINGS && hud.strings().stage() == 1) {
+        if (ability.id().equals(PuppetManipulation.STRINGS.id()) && hud.strings().stage() == 1) {
             // A string out: the slot shows what its number key would do now, with R's variation in the corner.
             RenderSystem.enableBlend();
             g.blit(icon(hud.strings().cast()), x + 2, y + 2, 0f, 0f, 16, 16, 16, 16);
@@ -122,7 +122,7 @@ final class PuppetHudClient {
             g.pose().scale(0.5f, 0.5f, 1f);
             g.blit(icon(hud.strings().special()), 0, 0, 0f, 0f, 16, 16, 16, 16);
             g.pose().popPose();
-        } else if (ability == PuppetManipulation.DIRECTIVE) {
+        } else if (ability.id().equals(PuppetManipulation.DIRECTIVE.id())) {
             RenderSystem.enableBlend();
             ResourceLocation glyph = glyph(PuppetOrder.byId(hud.order()));
             g.setColor(0f, 0f, 0f, 0.85f); // a drop shadow, so it reads over the icon

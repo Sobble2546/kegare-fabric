@@ -1,6 +1,7 @@
 # Kegare addon API
 
-Kegare's addon API lets your mod add **innate techniques**, **shared abilities** and **traits** to Kegare. They're built on the same
+Kegare's addon API lets your mod add **innate techniques**, **shared abilities** and **traits** to Kegare, and **change the techniques
+that already exist** (add, replace or tweak their abilities). They're built on the same
 types as Kegare's own and go through the same systems: the server-side cast pipeline, Malice costs and cooldowns, Refinement unlocks,
 Refinement and Assessment, rolls, the loadout, the HUD and the Sorcerer screen.
 
@@ -20,10 +21,13 @@ Design reference: [DESIGN.md §3.34](../DESIGN.md#334-addon-api-package-api).
 [[dependencies.yourmod]]
     modId = "kegare"
     type = "required"
-    versionRange = "[0.2,0.3)"
+    versionRange = "[0.2.0-alpha,0.3.0-alpha)"
     ordering = "AFTER"
     side = "BOTH"
 ```
+
+Write the range with the pre-release suffix, as above. NeoForge compares versions like Maven, where `0.2.0-alpha` comes *before*
+`0.2`: a range of `[0.2,0.3)` would refuse Kegare 0.2.0-alpha and accept 0.3.0-alpha, the opposite of what you want.
 
 Kegare isn't on a Maven repository yet (that's planned). Until then, build Kegare's jar (see the README) and add it to your project
 as a local dependency. Kegare needs Player Animation Library, Photon, LDLib2 and Curios at runtime, so your dev environment needs
@@ -155,6 +159,64 @@ is a Kegare design rule (DESIGN §3.15) that your specials should follow too.
 `assets/<your namespace>/player_animations/`) and/or a Photon effect ID (in `assets/<your namespace>/fx/`). The server sends them to
 clients; they never affect gameplay.
 
+## Changing techniques that already exist
+
+`TechniqueChanges` changes Kegare's techniques, or another addon's. Register changes from your mod's constructor, like everything else;
+once the technique registry is complete, Kegare applies them in one place, to every technique, and registering more throws.
+
+**Add an ability:**
+
+```java
+ResourceLocation rime = ResourceLocation.fromNamespaceAndPath("kegare", "rime");
+TechniqueChanges.add(rime, MY_ABILITY, 6);                                   // at the end, unlocking at Refinement 6
+TechniqueChanges.addAfter(rime, ResourceLocation.fromNamespaceAndPath("kegare", "glacial_lance"),
+        MY_OTHER_ABILITY, 3, 5);                                             // right after Glacial Lance; its special at 5
+```
+
+Every ability already there keeps its unlock level, so nothing a player has unlocked moves. The new one joins the loadout like any newly
+unlocked ability. Several added after the same ability keep the order you registered them in.
+
+**Replace an ability** with your own of the same ID. It keeps the slot, unlock level and cooldown, so loadouts and saved data keep working:
+
+```java
+TechniqueChanges.replace(new BaseAbility(ResourceLocation.fromNamespaceAndPath("kegare", "frost_field"), CastType.CHANNELED) {
+    // ...
+});
+```
+
+A special must be replaced by a special of the same base; anything else by a non-special. Your replacement's own `special()` is the special
+players get; a new special ID unlocks where the old special did. Only one addon can replace a given ability.
+
+**Tweak an ability** with an `AbilityTweak`: override only what you change. Each method gets what the ability (and any tweak registered
+before yours) decided:
+
+```java
+TechniqueChanges.tweak(ResourceLocation.fromNamespaceAndPath("kegare", "frost_shard"), new AbilityTweak() {
+    @Override public double cost(ServerPlayer player, double cost) { return cost * 0.8; }
+    @Override public int cooldownTicks(ServerPlayer player, int ticks) { return ticks + 10; }
+    @Override public float damage(ServerPlayer caster, LivingEntity target, float amount) { return amount * 1.25f; }
+    @Override public boolean canCast(AbilityContext ctx) { return !ctx.player().isInWater(); }
+    @Override public void afterExecute(AbilityContext ctx) { /* runs inside the cast: what it hits counts for Frost Shard */ }
+});
+```
+
+You can change its cost (also what the screens show), cooldown, upkeep, charge and channel times, the damage it deals (any hit Kegare traces
+back to it, before armour), refuse it before anything is paid (`canCast`), and run code before and after its effect, every tick it runs,
+and when it ends. Tweaks from several addons stack. A tweak applies to the one ability it names: a special sharing its base's cooldown keeps
+its own length, so tweak the special too if you need to.
+
+**What it costs:**
+
+- **Kegare's advancements that depend on an ability you replace or tweak are turned off.** They're never awarded again; anyone who already
+  earned one keeps it. (Adding an ability turns nothing off.) You can ship your own instead, in the same tab: parent them to
+  `KegareApi.techniqueTab(technique)` and award them with `KegareApi.awardAdvancement(player, id)`. The server log lists what's turned off.
+- **Mistakes stop the game at startup,** with a message naming your mod: two addons replacing the same ability, a technique or ability that
+  doesn't exist, a replacement that doesn't fit its slot, an ID that's already taken. Shared abilities can't be changed yet.
+- **Clients must have the same changes as the server.** While a player connects, Kegare compares their techniques and changes with the
+  server's and turns them away if they differ: "Your Kegare addons don't match this server's: they differ on Frost Field."
+- **Compare abilities by ID, never by object.** A changed ability is a wrapper with the same ID, so `ability == SomeAbility.INSTANCE` stops
+  being true; `ability.id().equals(...)` keeps working.
+
 ## Shared abilities
 
 A shared ability isn't tied to a technique: it's under the Malice or Melee tab of the Sorcerer screen (its `category()`), a player
@@ -234,6 +296,6 @@ Kegare's, Kegare's keeps it and yours goes by its full ID in suggestions and lis
 
 ## Not in the API yet
 
-Planned for later updates: changing Kegare's own techniques (adding, tweaking and replacing their abilities), one shared event for making
-your entities immune to swaps and time stops, hooking into the Impact System, read-only events for casts, technique changes and
-progression, client hooks (custom drawing, HUD lines), and a Maven repository. If you need one of these now, open an issue.
+Planned for later updates: one shared event for making your entities immune to swaps and time stops, hooking into the Impact System,
+read-only events for casts, technique changes and progression, client hooks (custom drawing, HUD lines), changing shared abilities, and a
+Maven repository. If you need one of these now, open an issue.

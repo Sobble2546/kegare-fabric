@@ -331,6 +331,7 @@ public final class KegareLanguageProvider extends LanguageProvider {
         add("disconnect.kegare.db.unreachable", "Kegare can't reach its database. Your data is safe; try again shortly.");
         add("disconnect.kegare.db.held", "Your data is still being saved on another server. Try again in a moment.");
         add("disconnect.kegare.db.lease_lost", "Your data has moved to another server.");
+        add("disconnect.kegare.techniques_differ", "Your Kegare addons don't match this server's: they differ on %s. Install the same addons as the server.");
         add("message.kegare.db.down", "Kegare can't reach its database. The game carries on and saves are queued.");
         add("message.kegare.db.up", "Kegare's database is back. Queued saves are going in.");
         add("item.kegare.blindfold", "Blindfold");

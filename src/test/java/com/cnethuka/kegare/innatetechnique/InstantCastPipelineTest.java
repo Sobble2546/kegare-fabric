@@ -94,7 +94,7 @@ class InstantCastPipelineTest {
         TestServer.onServerThread(server, () -> {
             ServerPlayer p = player(server, "ic_channeled");
             number(p, FIELD);
-            assertSame(Rime.FROST_FIELD, CastManager.state(p).casting().ability());
+            assertEquals(Rime.FROST_FIELD.id(), CastManager.state(p).casting().ability().id()); // by ID: the tests' example addon tweaks it
             CastManager.handleIntent(p, CastIntent.CAST_RELEASE);
             assertNull(CastManager.state(p).casting());
         });

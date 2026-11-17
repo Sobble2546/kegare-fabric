@@ -2,6 +2,7 @@ package com.cnethuka.kegare.api.technique;
 
 import com.cnethuka.kegare.progression.UnlockTable;
 import com.cnethuka.kegare.api.KegareApi;
+import com.cnethuka.kegare.innatetechnique.change.TechniqueViews;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -66,17 +67,33 @@ public class InnateTechnique {
         return rarity;
     }
 
+    /**
+     * Its abilities in loadout order, as players get them: with every addon's changes (additions, replacements and tweaks,
+     * {@link com.cnethuka.kegare.api.change.TechniqueChanges}) once the registry is complete.
+     */
     public final List<Ability> abilities() {
-        return abilities;
+        return TechniqueViews.view(this).abilities();
     }
 
     /** Ability in a cycle slot, or null if out of range. */
     @Nullable
     public final Ability ability(int slot) {
-        return slot >= 0 && slot < abilities.size() ? abilities.get(slot) : null;
+        List<Ability> list = abilities();
+        return slot >= 0 && slot < list.size() ? list.get(slot) : null;
     }
 
+    /** Its ultimate, as players get it (with addons' changes). */
     public final Optional<Ability> ultimate() {
+        return Optional.ofNullable(TechniqueViews.view(this).ultimate());
+    }
+
+    /** Its abilities as its own definition lists them, before any addon's changes. */
+    public final List<Ability> definedAbilities() {
+        return abilities;
+    }
+
+    /** Its ultimate as its own definition has it, before any addon's changes. */
+    public final Optional<Ability> definedUltimate() {
         return Optional.ofNullable(ultimate);
     }
 
@@ -120,18 +137,9 @@ public class InnateTechnique {
         return Optional.empty();
     }
 
-    /** Every castable thing: each slot ability then its special, then the ultimate and its special. */
+    /** Every castable thing, as players get it: each slot ability then its special, then the ultimate and its special. */
     public final List<Ability> everyAbility() {
-        List<Ability> out = new ArrayList<>();
-        for (Ability a : abilities) {
-            out.add(a);
-            a.special().ifPresent(out::add);
-        }
-        if (ultimate != null) {
-            out.add(ultimate);
-            ultimate.special().ifPresent(out::add);
-        }
-        return out;
+        return TechniqueViews.view(this).every();
     }
 
     /** Whether this technique says what its abilities unlock at. Always true: a definition that doesn't can't be built. */
@@ -141,9 +149,14 @@ public class InnateTechnique {
 
     /**
      * The Refinement level that unlocks this ability, special or ultimate, as the definition has it (config can override
-     * it).
+     * it). One an addon added unlocks where the addon said; one it replaced keeps the level of the one it replaced.
      */
     public final int unlockLevel(Ability ability) {
+        return TechniqueViews.view(this).unlockLevel(ability.id(), id -> definedLevels().getOrDefault(id, 0));
+    }
+
+    /** The levels its own definition gives, by ID: Kegare's default table by position, then its explicit ones. */
+    private Map<ResourceLocation, Integer> definedLevels() {
         if (unlockLevels == null) {
             Map<ResourceLocation, Integer> levels = new HashMap<>();
             for (int i = 0; i < abilities.size(); i++) {
@@ -158,7 +171,7 @@ public class InnateTechnique {
             levels.putAll(unlockLevelOverrides);
             unlockLevels = levels;
         }
-        return unlockLevels.getOrDefault(ability.id(), 0);
+        return unlockLevels;
     }
 
     /** Icon of this innate technique's own advancement tab. */

@@ -21,7 +21,7 @@ public final class ProgressionToasts {
     }
 
     static void abilityUnlocked(ServerPlayer player, Ability ability) {
-        boolean ultimate = InnateTechniqueService.current(player).flatMap(t -> t.ultimate()).filter(u -> u == ability).isPresent();
+        boolean ultimate = InnateTechniqueService.current(player).flatMap(t -> t.ultimate()).filter(u -> u.id().equals(ability.id())).isPresent();
         ProgressionToastPayload.Kind kind = ultimate ? ProgressionToastPayload.Kind.ULTIMATE
                 : ability.isSpecial() ? ProgressionToastPayload.Kind.SPECIAL : ProgressionToastPayload.Kind.ABILITY;
         send(player, kind, ability.id().toString());
