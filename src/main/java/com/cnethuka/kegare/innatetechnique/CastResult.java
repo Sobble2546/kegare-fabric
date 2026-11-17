@@ -1,5 +1,7 @@
 package com.cnethuka.kegare.innatetechnique;
 
+import com.cnethuka.kegare.api.ability.Requirement;
+
 /** Outcome of the shared cast checks. Non-OK results map to an action-bar message (lang key). */
 public enum CastResult {
     OK(null),

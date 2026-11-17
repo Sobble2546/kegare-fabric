@@ -2,8 +2,8 @@ package com.cnethuka.kegare.innate_technique.puppet_manipulation;
 
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.innatetechnique.CastManager;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
-import com.cnethuka.kegare.innatetechnique.InnateTechniqueRarity;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
+import com.cnethuka.kegare.api.technique.InnateTechniqueRarity;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.registry.KegareRegistries;
 import net.minecraft.server.level.ServerPlayer;

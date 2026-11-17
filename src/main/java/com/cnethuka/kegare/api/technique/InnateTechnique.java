@@ -1,7 +1,7 @@
-package com.cnethuka.kegare.innatetechnique;
+package com.cnethuka.kegare.api.technique;
 
 import com.cnethuka.kegare.progression.UnlockTable;
-import com.cnethuka.kegare.registry.KegareRegistries;
+import com.cnethuka.kegare.api.KegareApi;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,11 +15,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
+import com.cnethuka.kegare.api.ability.Ability;
 
 /**
  * An innate technique (registry {@code kegare:innate_technique}): a rarity, an ordered list of abilities (picked with the number keys
  * or scroll wheel in Technique Mode; each may have a special on R) and an optional ultimate (V; Dominions will plug in here).
- * Register new ones with a {@code DeferredRegister} on {@link KegareRegistries#INNATE_TECHNIQUE_KEY}.
+ * Register new ones with a {@code DeferredRegister} on {@link KegareApi#INNATE_TECHNIQUES}.
  */
 public class InnateTechnique {
     /** Malice purple: the bar color for innate techniques that don't set their own. */
@@ -36,11 +37,15 @@ public class InnateTechnique {
     private final ResourceLocation signatureAnimation;
     private final boolean defaultUnlockLevels;
     private final Map<ResourceLocation, Integer> unlockLevelOverrides;
+    private final boolean rollable;
     @Nullable
     private Map<ResourceLocation, Integer> unlockLevels;
 
     protected InnateTechnique(Builder builder) {
         if (builder.abilities.isEmpty()) throw new IllegalArgumentException("An innate technique needs at least one ability");
+        if (!builder.defaultUnlockLevels && builder.unlockLevelOverrides.isEmpty()) {
+            throw new IllegalStateException("An innate technique must set its Refinement unlock levels: call defaultUnlockLevels() or unlockLevel(...)");
+        }
         this.rarity = builder.rarity;
         this.abilities = List.copyOf(builder.abilities);
         this.ultimate = builder.ultimate;
@@ -50,6 +55,7 @@ public class InnateTechnique {
         this.signatureAnimation = builder.signatureAnimation;
         this.defaultUnlockLevels = builder.defaultUnlockLevels;
         this.unlockLevelOverrides = Map.copyOf(builder.unlockLevelOverrides);
+        this.rollable = builder.rollable;
     }
 
     public static Builder builder(InnateTechniqueRarity rarity) {
@@ -87,6 +93,14 @@ public class InnateTechnique {
         return Optional.ofNullable(signatureAnimation);
     }
 
+    /**
+     * Whether rolls can land on it. True unless the definition said {@link Builder#neverRolled()}. An addon's technique can
+     * still be kept out of rolls by the server ({@code roll.addonTechniques}); an admin can always give one with a command.
+     */
+    public final boolean rollable() {
+        return rollable;
+    }
+
     /** No ultimate yet, but one is planned (its Dominion comes later): the ultimate slot shows as locked. */
     public final boolean ultimateLocked() {
         return ultimateLocked;
@@ -120,14 +134,14 @@ public class InnateTechnique {
         return out;
     }
 
-    /** Whether this technique says what its abilities unlock at. Datagen fails if one doesn't. */
+    /** Whether this technique says what its abilities unlock at. Always true: a definition that doesn't can't be built. */
     public final boolean hasUnlockLevels() {
         return defaultUnlockLevels || !unlockLevelOverrides.isEmpty();
     }
 
     /**
      * The Refinement level that unlocks this ability, special or ultimate, as the definition has it (config can override
-     * it: {@link com.cnethuka.kegare.progression.TechniqueUnlocks#requiredLevel}).
+     * it).
      */
     public final int unlockLevel(Ability ability) {
         if (unlockLevels == null) {
@@ -153,7 +167,7 @@ public class InnateTechnique {
     }
 
     public final ResourceLocation id() {
-        return KegareRegistries.INNATE_TECHNIQUE.getKey(this);
+        return KegareApi.innateTechniques().getKey(this);
     }
 
     public final String descriptionId() {
@@ -192,6 +206,7 @@ public class InnateTechnique {
         private ResourceLocation signatureAnimation;
         private boolean defaultUnlockLevels;
         private final Map<ResourceLocation, Integer> unlockLevelOverrides = new HashMap<>();
+        private boolean rollable = true;
 
         private Builder(InnateTechniqueRarity rarity) {
             this.rarity = rarity;
@@ -231,7 +246,11 @@ public class InnateTechnique {
             return this;
         }
 
-        /** Refinement unlocks follow {@link UnlockTable}, by the order the abilities were added. Every real technique sets this or {@link #unlockLevel}. */
+        /**
+         * Refinement unlocks follow Kegare's default table, by the order the abilities were added: the abilities at levels 0, 0, 2,
+         * 4 and 6, their specials at 1, 3, 5, 7 and 9, the ultimate at 8 (a sixth ability onward waits at 10 until it sets its own).
+         * Every technique sets this or {@link #unlockLevel}.
+         */
         public Builder defaultUnlockLevels() {
             this.defaultUnlockLevels = true;
             return this;
@@ -239,7 +258,14 @@ public class InnateTechnique {
 
         /** One ability, special or ultimate unlocks at this Refinement level instead of where the table puts it. */
         public Builder unlockLevel(Ability ability, int level) {
+            if (level < 0) throw new IllegalArgumentException("Unlock levels can't be negative: " + ability.id() + " at " + level);
             this.unlockLevelOverrides.put(ability.id(), level);
+            return this;
+        }
+
+        /** Rolls never land on it: it's given another way (a quest, an item, an admin command). Default: rollable. */
+        public Builder neverRolled() {
+            this.rollable = false;
             return this;
         }
 

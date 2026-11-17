@@ -16,6 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.common.util.FakePlayer;
+import com.cnethuka.kegare.api.trait.Trait;
 
 /**
  * Losing and passing on unique traits.

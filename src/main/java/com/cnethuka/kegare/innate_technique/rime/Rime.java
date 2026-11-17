@@ -1,9 +1,9 @@
 package com.cnethuka.kegare.innate_technique.rime;
 
 import com.cnethuka.kegare.Kegare;
-import com.cnethuka.kegare.innatetechnique.CostEnvironment;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
-import com.cnethuka.kegare.innatetechnique.InnateTechniqueRarity;
+import com.cnethuka.kegare.api.technique.CostEnvironment;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
+import com.cnethuka.kegare.api.technique.InnateTechniqueRarity;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.innatetechnique.visual.VisualHooks;
 import com.cnethuka.kegare.registry.KegareRegistries;

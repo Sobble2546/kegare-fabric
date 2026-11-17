@@ -2,9 +2,9 @@ package com.cnethuka.kegare.client;
 
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.client.gui.RevealQueue;
-import com.cnethuka.kegare.innatetechnique.Ability;
+import com.cnethuka.kegare.api.ability.Ability;
 import com.cnethuka.kegare.innatetechnique.CastIntent;
-import com.cnethuka.kegare.innatetechnique.CastType;
+import com.cnethuka.kegare.api.ability.CastType;
 import com.cnethuka.kegare.network.IntentPayload;
 import com.cnethuka.kegare.network.SelectAbilityPayload;
 import com.cnethuka.kegare.network.SorcererRequestPayload;

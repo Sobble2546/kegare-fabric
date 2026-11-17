@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.cnethuka.kegare.client.gui.RevealScript.Input;
 import com.cnethuka.kegare.client.gui.RevealScript.Scene;
-import com.cnethuka.kegare.innatetechnique.InnateTechniqueRarity;
+import com.cnethuka.kegare.api.technique.InnateTechniqueRarity;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 

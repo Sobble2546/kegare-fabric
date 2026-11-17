@@ -1,4 +1,4 @@
-package com.cnethuka.kegare.innatetechnique;
+package com.cnethuka.kegare.api.ability;
 
 /** Why a charge, channel or toggle ended. Passed to {@link Ability#onEnd}. */
 public enum EndReason {

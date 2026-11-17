@@ -5,7 +5,7 @@ import com.cnethuka.kegare.client.visual.ClientVisuals;
 import com.cnethuka.kegare.client.visual.PlayerAnimations;
 import com.cnethuka.kegare.innate_technique.rime.RimeConfig;
 import com.cnethuka.kegare.innate_technique.rime.RimeIds;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;

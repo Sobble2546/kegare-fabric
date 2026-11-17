@@ -1,7 +1,7 @@
 package com.cnethuka.kegare.reinforcement;
 
 import com.cnethuka.kegare.combat.CombatHelper;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.melee.MeleeTell;
 import com.cnethuka.kegare.mixin.ChunkMapAccessor;
 import com.cnethuka.kegare.mixin.TrackedEntityAccessor;

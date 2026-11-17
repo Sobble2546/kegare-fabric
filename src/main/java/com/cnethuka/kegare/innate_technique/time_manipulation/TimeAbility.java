@@ -1,10 +1,10 @@
 package com.cnethuka.kegare.innate_technique.time_manipulation;
 
 import com.cnethuka.kegare.Kegare;
-import com.cnethuka.kegare.innatetechnique.Ability;
-import com.cnethuka.kegare.innatetechnique.BaseAbility;
-import com.cnethuka.kegare.innatetechnique.CastType;
-import com.cnethuka.kegare.innatetechnique.SpecialAbility;
+import com.cnethuka.kegare.api.ability.Ability;
+import com.cnethuka.kegare.api.ability.BaseAbility;
+import com.cnethuka.kegare.api.ability.CastType;
+import com.cnethuka.kegare.api.ability.SpecialAbility;
 import java.util.function.Supplier;
 
 /** Shared bits of Time Manipulation's abilities. */

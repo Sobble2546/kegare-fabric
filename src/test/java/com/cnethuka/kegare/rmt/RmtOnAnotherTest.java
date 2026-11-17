@@ -20,7 +20,7 @@ import com.cnethuka.kegare.progression.GradeService;
 import com.cnethuka.kegare.progression.Insight;
 import com.cnethuka.kegare.progression.InsightCategory;
 import com.cnethuka.kegare.progression.Unlocks;
-import com.cnethuka.kegare.trait.Trait;
+import com.cnethuka.kegare.api.trait.Trait;
 import com.cnethuka.kegare.trait.TraitService;
 import java.util.Optional;
 import java.util.OptionalInt;

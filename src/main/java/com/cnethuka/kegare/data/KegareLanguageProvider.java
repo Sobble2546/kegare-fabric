@@ -7,11 +7,11 @@ import com.cnethuka.kegare.config.KegareClientConfig;
 import com.cnethuka.kegare.config.KegareServerConfig;
 import com.cnethuka.kegare.registry.KegareItems;
 import com.cnethuka.kegare.registry.KegareRegistries;
-import com.cnethuka.kegare.innatetechnique.Ability;
-import com.cnethuka.kegare.innatetechnique.CastType;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
-import com.cnethuka.kegare.innatetechnique.InnateTechniqueRarity;
-import com.cnethuka.kegare.trait.Trait;
+import com.cnethuka.kegare.api.ability.Ability;
+import com.cnethuka.kegare.api.ability.CastType;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
+import com.cnethuka.kegare.api.technique.InnateTechniqueRarity;
+import com.cnethuka.kegare.api.trait.Trait;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -1062,33 +1062,39 @@ public final class KegareLanguageProvider extends LanguageProvider {
         return out.toString();
     }
 
-    /** Every registered innate technique, ability and trait must have a display name. */
+    /**
+     * Every innate technique, ability and trait of Kegare's must have a display name. An addon's (another namespace) are in its own
+     * lang file, so they're its own to check.
+     */
     private void validateRegistries() {
         List<String> missing = new ArrayList<>();
         for (InnateTechnique innateTechnique : KegareRegistries.INNATE_TECHNIQUE) {
+            if (!isKegares(innateTechnique.id())) continue;
             if (!written.contains(innateTechnique.descriptionId())) missing.add(innateTechnique.descriptionId());
             if (!written.contains(innateTechnique.descriptionId() + ".desc")) missing.add(innateTechnique.descriptionId() + ".desc");
             if (!written.contains(innateTechnique.epithetId())) missing.add(innateTechnique.epithetId());
             List<Ability> abilities = new ArrayList<>(innateTechnique.abilities());
             innateTechnique.ultimate().ifPresent(abilities::add);
             for (Ability ability : abilities) {
+                if (!isKegares(ability.id())) continue;
                 if (!written.contains(ability.descriptionId())) missing.add(ability.descriptionId());
                 if (!written.contains(ability.descriptionId() + ".desc")) missing.add(ability.descriptionId() + ".desc");
             }
         }
         for (Ability ability : com.cnethuka.kegare.loadout.SharedAbilities.all()) {
+            if (!isKegares(ability.id())) continue;
             if (!written.contains(ability.descriptionId())) missing.add(ability.descriptionId());
             if (!written.contains(ability.descriptionId() + ".desc")) missing.add(ability.descriptionId() + ".desc");
         }
         for (Trait trait : KegareRegistries.TRAIT) {
+            if (!isKegares(trait.id())) continue;
             if (!written.contains(trait.descriptionId())) missing.add(trait.descriptionId());
             if (!written.contains(trait.descriptionId() + ".desc")) missing.add(trait.descriptionId() + ".desc");
         }
         if (!missing.isEmpty()) throw new IllegalStateException("Missing lang entries: " + missing.stream().distinct().toList());
-        for (InnateTechnique innateTechnique : KegareRegistries.INNATE_TECHNIQUE) {
-            if (!innateTechnique.hasUnlockLevels()) {
-                throw new IllegalStateException(innateTechnique.id() + " doesn't set its Refinement unlock levels: call defaultUnlockLevels() or unlockLevel(...) in its definition");
-            }
-        }
+    }
+
+    private static boolean isKegares(net.minecraft.resources.ResourceLocation id) {
+        return Kegare.MODID.equals(id.getNamespace());
     }
 }

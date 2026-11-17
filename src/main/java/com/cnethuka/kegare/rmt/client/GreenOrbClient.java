@@ -1,7 +1,7 @@
 package com.cnethuka.kegare.rmt.client;
 
 import com.cnethuka.kegare.client.visual.ClientVisuals;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.cnethuka.kegare.rmt.OrbPath;
 import com.cnethuka.kegare.rmt.OrbPayload;
 import com.cnethuka.kegare.rmt.RmtIds;

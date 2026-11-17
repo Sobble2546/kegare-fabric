@@ -1,12 +1,12 @@
 package com.cnethuka.kegare.reinforcement;
 
 import com.cnethuka.kegare.config.ConfigText;
-import com.cnethuka.kegare.innatetechnique.AbilityContext;
-import com.cnethuka.kegare.innatetechnique.BaseAbility;
+import com.cnethuka.kegare.api.ability.AbilityContext;
+import com.cnethuka.kegare.api.ability.BaseAbility;
 import com.cnethuka.kegare.innatetechnique.CastManager;
-import com.cnethuka.kegare.innatetechnique.CastType;
-import com.cnethuka.kegare.innatetechnique.EndReason;
-import com.cnethuka.kegare.loadout.AbilityCategory;
+import com.cnethuka.kegare.api.ability.CastType;
+import com.cnethuka.kegare.api.ability.EndReason;
+import com.cnethuka.kegare.api.ability.AbilityCategory;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;

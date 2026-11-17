@@ -1,4 +1,4 @@
-package com.cnethuka.kegare.innatetechnique;
+package com.cnethuka.kegare.api.technique;
 
 /** Innate technique rarity. Plain Java (no Minecraft types) so the pity math is unit-testable. */
 public enum InnateTechniqueRarity {

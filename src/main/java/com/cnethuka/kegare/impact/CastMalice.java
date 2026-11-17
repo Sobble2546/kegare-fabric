@@ -1,6 +1,6 @@
 package com.cnethuka.kegare.impact;
 
-import com.cnethuka.kegare.innatetechnique.Ability;
+import com.cnethuka.kegare.api.ability.Ability;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.progression.Landings;
 import java.util.HashMap;

@@ -9,7 +9,7 @@ import com.cnethuka.kegare.progression.FightTracker;
 import com.cnethuka.kegare.progression.Grade;
 import com.cnethuka.kegare.progression.GradeService;
 import com.cnethuka.kegare.progression.ProgressionConfig;
-import com.cnethuka.kegare.trait.Trait;
+import com.cnethuka.kegare.api.trait.Trait;
 import com.cnethuka.kegare.trait.TraitService;
 import java.util.OptionalInt;
 import net.minecraft.server.MinecraftServer;

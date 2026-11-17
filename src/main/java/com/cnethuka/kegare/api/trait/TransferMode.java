@@ -1,4 +1,4 @@
-package com.cnethuka.kegare.trait;
+package com.cnethuka.kegare.api.trait;
 
 /** Who inherits an inheritable unique trait when its bearer loses it. */
 public enum TransferMode {

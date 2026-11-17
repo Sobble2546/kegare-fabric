@@ -1,4 +1,4 @@
-package com.cnethuka.kegare.innatetechnique;
+package com.cnethuka.kegare.api.ability;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,7 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 /**
  * One castable ability. All methods run on the logical server; the client only sends intents.
  * <p>
- * Lifecycle per {@link CastType} (enforced by {@link CastManager}):
+ * Lifecycle per {@link CastType} (enforced by Kegare's cast pipeline):
  * <ul>
  *   <li>INSTANT: press, then validate, pay {@link #cost}, {@link #execute}, cooldown.</li>
  *   <li>CHARGED: press, then validate and start charging ({@link #tick} each tick). On release, if charged for at
@@ -147,7 +147,7 @@ public interface Ability {
     /**
      * True for an ability with nothing to land on (it moves or orders your own things). It then counts for Refinement
      * and Assessment when used in a real fight, instead of when it hits. Anything that can hit leaves this false: its
-     * landings are found on their own (see {@link com.cnethuka.kegare.progression.Landings}).
+     * landings are found on their own (see {@link com.cnethuka.kegare.api.KegareProgression}).
      */
     default boolean hasNoTarget() {
         return false;
@@ -155,19 +155,19 @@ public interface Ability {
 
     /**
      * Cosmetics per phase (player animations and VFX). Sent to clients when the server acts; never waited on.
-     * See {@link com.cnethuka.kegare.innatetechnique.visual.VisualPhase} for when each phase plays.
+     * See {@link com.cnethuka.kegare.api.visual.VisualPhase} for when each phase plays.
      */
-    default com.cnethuka.kegare.innatetechnique.visual.AbilityVisuals visuals() {
-        return com.cnethuka.kegare.innatetechnique.visual.AbilityVisuals.NONE;
+    default com.cnethuka.kegare.api.visual.AbilityVisuals visuals() {
+        return com.cnethuka.kegare.api.visual.AbilityVisuals.NONE;
     }
 
     default String descriptionId() {
         return Util.makeDescriptionId("ability", id());
     }
 
-    /** Which tab it's under (DESIGN §3.16): an innate technique's own are {@link com.cnethuka.kegare.loadout.AbilityCategory#INNATE}. */
-    default com.cnethuka.kegare.loadout.AbilityCategory category() {
-        return com.cnethuka.kegare.loadout.AbilityCategory.INNATE;
+    /** Which tab it's under (DESIGN §3.16): an innate technique's own are {@link com.cnethuka.kegare.api.ability.AbilityCategory#INNATE}. */
+    default com.cnethuka.kegare.api.ability.AbilityCategory category() {
+        return com.cnethuka.kegare.api.ability.AbilityCategory.INNATE;
     }
 
     /** What unlocks it, for its tile while it's locked (a shared ability's; the technique's own show the Refinement level instead). */
@@ -179,7 +179,7 @@ public interface Ability {
         return Component.translatable(descriptionId());
     }
 
-    /** What its description's placeholders read: the configured numbers it states ({@code config/ConfigText}), in order. */
+    /** What its description's placeholders read: the configured numbers it states, in order. */
     default Object[] descriptionArgs() {
         return new Object[0];
     }

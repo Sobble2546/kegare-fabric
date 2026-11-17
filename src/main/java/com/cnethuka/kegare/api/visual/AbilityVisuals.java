@@ -1,4 +1,4 @@
-package com.cnethuka.kegare.innatetechnique.visual;
+package com.cnethuka.kegare.api.visual;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 
 /**
  * What an ability looks like, per {@link VisualPhase}. Purely cosmetic: the server sends these to clients and never
- * waits on them. Declared by {@link com.cnethuka.kegare.innatetechnique.Ability#visuals()}.
+ * waits on them. Declared by {@link com.cnethuka.kegare.api.ability.Ability#visuals()}.
  */
 public final class AbilityVisuals {
     public static final AbilityVisuals NONE = new AbilityVisuals(new EnumMap<>(VisualPhase.class));

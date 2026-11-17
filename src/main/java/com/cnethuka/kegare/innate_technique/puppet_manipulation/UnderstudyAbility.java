@@ -2,11 +2,11 @@ package com.cnethuka.kegare.innate_technique.puppet_manipulation;
 
 import com.cnethuka.kegare.innate_technique.swap.SwapTargetEvent;
 import com.cnethuka.kegare.innate_technique.swap.Swapper;
-import com.cnethuka.kegare.innatetechnique.AbilityContext;
+import com.cnethuka.kegare.api.ability.AbilityContext;
 import com.cnethuka.kegare.innatetechnique.CastManager;
-import com.cnethuka.kegare.innatetechnique.CastType;
-import com.cnethuka.kegare.innatetechnique.visual.AbilityVisuals;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.ability.CastType;
+import com.cnethuka.kegare.api.visual.AbilityVisuals;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -31,7 +31,7 @@ public final class UnderstudyAbility extends PuppetAbility {
     @Override public int cooldownTicks(ServerPlayer p) { return PuppetConfig.ticks(PuppetConfig.UNDERSTUDY_COOLDOWN); }
     @Override public AbilityVisuals visuals() { return VISUALS; }
     @Override public boolean hasNoTarget() { return true; } // swaps you with your own puppet
-    @Override public java.util.Optional<com.cnethuka.kegare.innatetechnique.Ability> special() { return java.util.Optional.of(PuppetManipulation.STAND_IN); }
+    @Override public java.util.Optional<com.cnethuka.kegare.api.ability.Ability> special() { return java.util.Optional.of(PuppetManipulation.STAND_IN); }
 
     @Override
     public boolean canCast(AbilityContext ctx) {

@@ -2,6 +2,7 @@ package com.cnethuka.kegare.innatetechnique.visual;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import com.cnethuka.kegare.api.visual.Visual;
 
 /**
  * Runtime-only (attachment {@code kegare:visual_state}, never saved or copied): the loops currently playing on an

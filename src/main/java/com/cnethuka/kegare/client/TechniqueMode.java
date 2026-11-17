@@ -1,6 +1,6 @@
 package com.cnethuka.kegare.client;
 
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.network.SyncPayload;
 import com.cnethuka.kegare.registry.KegareRegistries;
 import javax.annotation.Nullable;

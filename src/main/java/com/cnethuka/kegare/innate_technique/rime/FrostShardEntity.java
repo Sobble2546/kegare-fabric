@@ -1,6 +1,6 @@
 package com.cnethuka.kegare.innate_technique.rime;
 
-import com.cnethuka.kegare.innatetechnique.Ability;
+import com.cnethuka.kegare.api.ability.Ability;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;

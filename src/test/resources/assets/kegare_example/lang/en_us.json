@@ -1,0 +1,15 @@
+{
+  "innate_technique.kegare_example.example": "Example Technique",
+  "innate_technique.kegare_example.example.desc": "The tests' example addon: a jolt, a hum and a burst.",
+  "innate_technique.kegare_example.example.epithet": "Written Against the API Alone",
+  "ability.kegare_example.jolt": "Jolt",
+  "ability.kegare_example.jolt.desc": "Hurt the nearest living thing within 5 blocks.",
+  "ability.kegare_example.hum": "Hum",
+  "ability.kegare_example.hum.desc": "A toggle that drains Malice while it's on.",
+  "ability.kegare_example.hum_burst": "Hum Burst",
+  "ability.kegare_example.hum_burst.desc": "Needs Hum on.",
+  "ability.kegare_example.steady": "Steady",
+  "ability.kegare_example.steady.desc": "A shared ability under the Malice tab.",
+  "trait.kegare_example.keen": "Keen",
+  "trait.kegare_example.keen.desc": "A trait from the tests' example addon."
+}

@@ -12,7 +12,7 @@ import com.cnethuka.kegare.config.KegareServerConfig;
 import com.cnethuka.kegare.innate_technique.rime.Rime;
 import com.cnethuka.kegare.innatetechnique.CastIntent;
 import com.cnethuka.kegare.innatetechnique.CastManager;
-import com.cnethuka.kegare.innatetechnique.EndReason;
+import com.cnethuka.kegare.api.ability.EndReason;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.innate_technique.swap.Swap;
 import com.cnethuka.kegare.malice.MaliceService;
@@ -132,7 +132,7 @@ class LoadoutTest {
         return LoadoutService.edit(p, action, slot, other, Optional.ofNullable(ability));
     }
 
-    static Optional<ResourceLocation> id(com.cnethuka.kegare.innatetechnique.Ability ability) {
+    static Optional<ResourceLocation> id(com.cnethuka.kegare.api.ability.Ability ability) {
         return Optional.of(ability.id());
     }
 

@@ -14,10 +14,17 @@ import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
-import com.cnethuka.kegare.innatetechnique.visual.VisualPhase;
+import com.cnethuka.kegare.api.visual.VisualPhase;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import com.cnethuka.kegare.api.ability.Ability;
+import com.cnethuka.kegare.api.ability.AbilityContext;
+import com.cnethuka.kegare.api.ability.CastSlot;
+import com.cnethuka.kegare.api.ability.CastType;
+import com.cnethuka.kegare.api.ability.EndReason;
+import com.cnethuka.kegare.api.ability.Requirement;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 
 /**
  * Server-side cast pipeline. Clients send {@link CastIntent}s; everything else is validated here.

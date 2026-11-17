@@ -11,10 +11,10 @@ import com.cnethuka.kegare.fists.FistsIds;
 import com.cnethuka.kegare.innate_technique.rime.Rime;
 import com.cnethuka.kegare.innate_technique.swap.Swap;
 import com.cnethuka.kegare.innate_technique.time_manipulation.TimeManipulation;
-import com.cnethuka.kegare.innatetechnique.Ability;
+import com.cnethuka.kegare.api.ability.Ability;
 import com.cnethuka.kegare.innatetechnique.CastIntent;
 import com.cnethuka.kegare.innatetechnique.CastManager;
-import com.cnethuka.kegare.innatetechnique.CastType;
+import com.cnethuka.kegare.api.ability.CastType;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.loadout.LoadoutResult;
 import com.cnethuka.kegare.loadout.LoadoutService;
@@ -42,7 +42,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 class SustainedFlowTest {
     private static final double EPS = 1.0e-3;
 
-    static ServerPlayer player(MinecraftServer server, String name, net.minecraft.core.Holder<com.cnethuka.kegare.innatetechnique.InnateTechnique> technique) {
+    static ServerPlayer player(MinecraftServer server, String name, net.minecraft.core.Holder<com.cnethuka.kegare.api.technique.InnateTechnique> technique) {
         TestServer.ensureOverworld(server);
         ServerPlayer p = TestServer.damageable(server, name);
         BirthService.rebirth(p, OptionalInt.of(3000));

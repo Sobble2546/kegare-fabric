@@ -2,7 +2,7 @@ package com.cnethuka.kegare.database;
 
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.registry.KegareRegistries;
-import com.cnethuka.kegare.trait.Trait;
+import com.cnethuka.kegare.api.trait.Trait;
 import com.cnethuka.kegare.trait.TransferRules;
 import com.cnethuka.kegare.trait.UniqueTraitSavedData;
 import com.google.gson.JsonObject;

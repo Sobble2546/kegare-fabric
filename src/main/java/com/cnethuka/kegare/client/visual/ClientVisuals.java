@@ -2,7 +2,7 @@ package com.cnethuka.kegare.client.visual;
 
 import com.cnethuka.kegare.config.KegareClientConfig;
 import com.cnethuka.kegare.config.KegareClientConfig.VfxQuality;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.cnethuka.kegare.network.VisualPayload;
 import com.lowdragmc.photon.client.fx.FXEffectExecutor;
 import java.util.HashMap;

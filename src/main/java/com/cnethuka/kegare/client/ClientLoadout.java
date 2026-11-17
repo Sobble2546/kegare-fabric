@@ -1,7 +1,7 @@
 package com.cnethuka.kegare.client;
 
-import com.cnethuka.kegare.innatetechnique.Ability;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.ability.Ability;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.loadout.AbilityLookup;
 import com.cnethuka.kegare.network.SyncPayload;
 import java.util.ArrayList;

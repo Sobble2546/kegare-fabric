@@ -15,7 +15,7 @@ import com.cnethuka.kegare.player.BirthService;
 import com.cnethuka.kegare.progression.UnlockRequirements;
 import com.cnethuka.kegare.progression.Unlocks;
 import com.cnethuka.kegare.trait.KegareTraits;
-import com.cnethuka.kegare.trait.Trait;
+import com.cnethuka.kegare.api.trait.Trait;
 import com.cnethuka.kegare.trait.TraitService;
 import com.cnethuka.kegare.trait.TraitSuccession;
 import com.mojang.serialization.JsonOps;

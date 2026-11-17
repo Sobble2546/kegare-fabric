@@ -4,7 +4,7 @@ import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.combat.CombatHelper;
 import com.cnethuka.kegare.innate_technique.swap.Swapper;
 import com.cnethuka.kegare.innatetechnique.CastIntent;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import com.cnethuka.kegare.malice.MaliceService;
 import com.cnethuka.kegare.network.PlayerSync;

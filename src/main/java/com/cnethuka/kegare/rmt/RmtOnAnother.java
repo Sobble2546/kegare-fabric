@@ -1,10 +1,10 @@
 package com.cnethuka.kegare.rmt;
 
-import com.cnethuka.kegare.innatetechnique.AbilityContext;
+import com.cnethuka.kegare.api.ability.AbilityContext;
 import com.cnethuka.kegare.innatetechnique.CastManager;
-import com.cnethuka.kegare.innatetechnique.CastType;
-import com.cnethuka.kegare.innatetechnique.EndReason;
-import com.cnethuka.kegare.innatetechnique.SpecialAbility;
+import com.cnethuka.kegare.api.ability.CastType;
+import com.cnethuka.kegare.api.ability.EndReason;
+import com.cnethuka.kegare.api.ability.SpecialAbility;
 import com.cnethuka.kegare.loadout.SharedAbilityService;
 import com.cnethuka.kegare.progression.Insight;
 import com.cnethuka.kegare.progression.InsightCategory;
@@ -53,8 +53,8 @@ public final class RmtOnAnother extends SpecialAbility {
     }
 
     @Override
-    public com.cnethuka.kegare.loadout.AbilityCategory category() {
-        return com.cnethuka.kegare.loadout.AbilityCategory.MALICE;
+    public com.cnethuka.kegare.api.ability.AbilityCategory category() {
+        return com.cnethuka.kegare.api.ability.AbilityCategory.MALICE;
     }
 
     @Override public double cost(ServerPlayer p) { return RmtConfig.COST.get() * RmtConfig.OTHERS_COST.get(); }

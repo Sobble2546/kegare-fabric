@@ -1,7 +1,7 @@
 package com.cnethuka.kegare.progression;
 
-import com.cnethuka.kegare.innatetechnique.Ability;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.ability.Ability;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.loadout.SharedAbilities;
 import com.cnethuka.kegare.registry.KegareAttachments;
@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
+import com.cnethuka.kegare.api.progression.OwnedEntity;
 
 /**
  * The shared hit path: "this ability landed on a real target". Every technique reaches it without Refinement or

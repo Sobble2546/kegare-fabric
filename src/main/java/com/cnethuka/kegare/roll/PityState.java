@@ -1,6 +1,6 @@
 package com.cnethuka.kegare.roll;
 
-import com.cnethuka.kegare.innatetechnique.InnateTechniqueRarity;
+import com.cnethuka.kegare.api.technique.InnateTechniqueRarity;
 
 /** Immutable pity snapshot and its transition rules. Pure Java (unit-tested). */
 public record PityState(int rollsSinceLegendary, int totalRolls) {

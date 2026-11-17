@@ -1,6 +1,6 @@
 package com.cnethuka.kegare.network;
 
-import com.cnethuka.kegare.innatetechnique.Ability;
+import com.cnethuka.kegare.api.ability.Ability;
 import com.cnethuka.kegare.progression.AssessmentRules;
 import com.cnethuka.kegare.progression.AssessmentService;
 import com.cnethuka.kegare.progression.Grade;

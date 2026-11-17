@@ -5,7 +5,7 @@ import com.cnethuka.kegare.client.gui.ClientGuiHooks;
 import com.cnethuka.kegare.malice.MaliceRoller;
 import com.cnethuka.kegare.roll.RollReason;
 import com.cnethuka.kegare.roll.RollService;
-import com.cnethuka.kegare.trait.Trait;
+import com.cnethuka.kegare.api.trait.Trait;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.network.FriendlyByteBuf;

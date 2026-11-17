@@ -4,7 +4,7 @@ import com.cnethuka.kegare.client.ClientLoadout;
 import com.cnethuka.kegare.client.KegareKeys;
 import com.cnethuka.kegare.client.TechniqueMode;
 import com.cnethuka.kegare.fists.FistsIds;
-import com.cnethuka.kegare.innatetechnique.Ability;
+import com.cnethuka.kegare.api.ability.Ability;
 import com.cnethuka.kegare.timing.TimedInput;
 import com.cnethuka.kegare.timing.TimingNet;
 import com.mojang.blaze3d.platform.InputConstants;

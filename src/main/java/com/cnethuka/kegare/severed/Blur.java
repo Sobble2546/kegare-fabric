@@ -3,7 +3,7 @@ package com.cnethuka.kegare.severed;
 import com.cnethuka.kegare.combat.CombatHelper;
 import com.cnethuka.kegare.innate_technique.rime.FreezeService;
 import com.cnethuka.kegare.innate_technique.time_manipulation.TimeStops;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;

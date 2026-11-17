@@ -13,7 +13,7 @@ import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetHud;
 import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetManipulation;
 import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetOrder;
 import com.cnethuka.kegare.innate_technique.puppet_manipulation.StringsVariation;
-import com.cnethuka.kegare.innatetechnique.Ability;
+import com.cnethuka.kegare.api.ability.Ability;
 import com.cnethuka.kegare.network.SyncPayload;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.List;

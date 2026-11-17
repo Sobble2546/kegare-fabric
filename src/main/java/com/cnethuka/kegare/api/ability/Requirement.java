@@ -1,11 +1,12 @@
-package com.cnethuka.kegare.innatetechnique;
+package com.cnethuka.kegare.api.ability;
 
-import com.cnethuka.kegare.trait.Trait;
+import com.cnethuka.kegare.api.trait.Trait;
 import com.cnethuka.kegare.trait.TraitService;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import com.cnethuka.kegare.innatetechnique.CastManager;
 
 /**
  * A condition an ability (usually a special) needs before it can be cast. Checked server-side with the shared cast

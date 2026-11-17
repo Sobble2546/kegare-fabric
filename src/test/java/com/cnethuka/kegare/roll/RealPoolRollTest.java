@@ -11,8 +11,8 @@ import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetManipulati
 import com.cnethuka.kegare.innate_technique.rime.Rime;
 import com.cnethuka.kegare.innate_technique.swap.Swap;
 import com.cnethuka.kegare.innate_technique.time_manipulation.TimeManipulation;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
-import com.cnethuka.kegare.innatetechnique.InnateTechniqueRarity;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
+import com.cnethuka.kegare.api.technique.InnateTechniqueRarity;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.network.RevealPayload;
 import com.cnethuka.kegare.player.BirthService;
@@ -38,8 +38,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
- * Rolling with the real pool alone (DESIGN §3.3, §3.4): one technique per rarity, so holding one leaves its rarity with nothing
- * to roll.
+ * Rolling with Kegare's real pool alone (DESIGN §3.3, §3.4): one technique per rarity, so holding one leaves its rarity with nothing
+ * to roll. The tests' example addon (§3.34) is turned off for it with {@code roll.addonTechniques}.
  */
 @ExtendWith(EphemeralTestServerProvider.class)
 class RealPoolRollTest {
@@ -78,13 +78,14 @@ class RealPoolRollTest {
     @Test
     void thePoolIsTheRealTechniquesOnePerRarity(MinecraftServer server) {
         Map<InnateTechniqueRarity, InnateTechnique> real = real();
-        assertEquals(Set.copyOf(real.values()), KegareRegistries.INNATE_TECHNIQUE.stream().collect(Collectors.toSet()), "nothing else registered");
+        assertEquals(Set.copyOf(real.values()), KegareRegistries.INNATE_TECHNIQUE.stream()
+                .filter(com.cnethuka.kegare.api.KegareApi::isKegares).collect(Collectors.toSet()), "nothing else of Kegare's registered");
         real.forEach((rarity, technique) -> assertEquals(rarity, technique.rarity(), technique.id().toString()));
     }
 
     @Test
     void aRollNeverLandsOnWhatTheyHoldEvenWhenTheirRarityHasNothingElse(MinecraftServer server) throws Exception {
-        TestServer.onServerThread(server, () -> {
+        TestServer.onServerThread(server, () -> withoutAddons(() -> {
             ServerPlayer p = player(server, "real_pool");
             for (InnateTechnique held : real().values()) {
                 Set<InnateTechniqueRarity> seen = EnumSet.noneOf(InnateTechniqueRarity.class);
@@ -99,7 +100,18 @@ class RealPoolRollTest {
                 assertFalse(seen.isEmpty(), "rolled");
             }
             TestServer.removePlayers(server);
-        });
+        }));
+    }
+
+    /** Runs with rolls landing on Kegare's own techniques only (the tests' example addon's left out), then puts the setting back. */
+    private static void withoutAddons(Runnable body) {
+        boolean addons = com.cnethuka.kegare.config.KegareServerConfig.ROLL_ADDON_TECHNIQUES.get();
+        com.cnethuka.kegare.config.KegareServerConfig.ROLL_ADDON_TECHNIQUES.set(false);
+        try {
+            body.run();
+        } finally {
+            com.cnethuka.kegare.config.KegareServerConfig.ROLL_ADDON_TECHNIQUES.set(addons);
+        }
     }
 
     @Test

@@ -4,6 +4,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
+import com.cnethuka.kegare.api.ability.Ability;
+import com.cnethuka.kegare.api.ability.CastSlot;
 
 /**
  * Runtime-only cast state (attachment {@code kegare:cast_state}, never saved, never copied).

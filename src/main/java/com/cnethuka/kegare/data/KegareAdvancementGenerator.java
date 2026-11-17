@@ -6,7 +6,7 @@ import com.cnethuka.kegare.innate_technique.rime.RimeAdvancements;
 import com.cnethuka.kegare.innate_technique.swap.SwapAdvancements;
 import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetAdvancements;
 import com.cnethuka.kegare.innate_technique.time_manipulation.TimeAdvancements;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.registry.KegareItems;
 import com.cnethuka.kegare.registry.KegareRegistries;
 import java.util.function.Consumer;

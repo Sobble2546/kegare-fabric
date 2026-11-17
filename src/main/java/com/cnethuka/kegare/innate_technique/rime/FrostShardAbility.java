@@ -1,9 +1,9 @@
 package com.cnethuka.kegare.innate_technique.rime;
 
-import com.cnethuka.kegare.innatetechnique.Ability;
-import com.cnethuka.kegare.innatetechnique.AbilityContext;
-import com.cnethuka.kegare.innatetechnique.CastType;
-import com.cnethuka.kegare.innatetechnique.visual.AbilityVisuals;
+import com.cnethuka.kegare.api.ability.Ability;
+import com.cnethuka.kegare.api.ability.AbilityContext;
+import com.cnethuka.kegare.api.ability.CastType;
+import com.cnethuka.kegare.api.visual.AbilityVisuals;
 import java.util.Optional;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;

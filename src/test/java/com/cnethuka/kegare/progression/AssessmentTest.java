@@ -6,13 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.cnethuka.kegare.TestServer;
 import com.cnethuka.kegare.innate_technique.rime.Rime;
-import com.cnethuka.kegare.innatetechnique.Ability;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.ability.Ability;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.malice.MaliceService;
 import com.cnethuka.kegare.player.BirthService;
 import com.cnethuka.kegare.trait.KegareTraits;
-import com.cnethuka.kegare.trait.Trait;
+import com.cnethuka.kegare.api.trait.Trait;
 import com.cnethuka.kegare.trait.TraitService;
 import java.util.List;
 import java.util.OptionalInt;

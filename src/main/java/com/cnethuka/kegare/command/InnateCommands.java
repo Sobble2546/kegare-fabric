@@ -13,7 +13,7 @@ import static com.cnethuka.kegare.command.CommandArgs.senderOr;
 import static com.cnethuka.kegare.command.CommandArgs.shortName;
 import static com.cnethuka.kegare.command.CommandArgs.system;
 
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.malice.MaliceService;
 import com.cnethuka.kegare.roll.RollReason;

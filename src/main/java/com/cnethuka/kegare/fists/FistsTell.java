@@ -56,7 +56,7 @@ public final class FistsTell {
     }
 
     private static int color(MeleeTell.Look look) {
-        return look.kind() == MeleeTell.Kind.GLOW ? look.color() : com.cnethuka.kegare.innatetechnique.InnateTechnique.DEFAULT_MALICE_COLOR;
+        return look.kind() == MeleeTell.Kind.GLOW ? look.color() : com.cnethuka.kegare.api.technique.InnateTechnique.DEFAULT_MALICE_COLOR;
     }
 
     static void onStartTracking(ServerPlayer tracker, Entity target) {

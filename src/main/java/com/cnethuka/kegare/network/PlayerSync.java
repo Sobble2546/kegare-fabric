@@ -21,7 +21,7 @@ public final class PlayerSync {
         if (player.tickCount % 10 != 0) return;
         var environment = com.cnethuka.kegare.innatetechnique.InnateTechniqueService.current(player)
                 .map(t -> t.environment(player))
-                .orElse(com.cnethuka.kegare.innatetechnique.CostEnvironment.NEUTRAL);
+                .orElse(com.cnethuka.kegare.api.technique.CostEnvironment.NEUTRAL);
         SyncState state = player.getData(KegareAttachments.SYNC_STATE);
         if (!environment.equals(state.lastEnvironment)) {
             state.lastEnvironment = environment;

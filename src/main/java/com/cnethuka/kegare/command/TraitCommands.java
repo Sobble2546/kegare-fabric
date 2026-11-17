@@ -15,7 +15,7 @@ import static com.cnethuka.kegare.command.CommandArgs.traits;
 
 import com.cnethuka.kegare.innatetechnique.CastManager;
 import com.cnethuka.kegare.registry.KegareRegistries;
-import com.cnethuka.kegare.trait.Trait;
+import com.cnethuka.kegare.api.trait.Trait;
 import com.cnethuka.kegare.trait.TraitService;
 import com.cnethuka.kegare.trait.TraitSuccession;
 import com.cnethuka.kegare.trait.UniqueTraitSavedData;

@@ -1,7 +1,7 @@
 package com.cnethuka.kegare.innate_technique.swap;
 
 import com.cnethuka.kegare.Kegare;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import net.minecraft.resources.ResourceLocation;
 
 /** Swap's IDs: player animations (assets/kegare/player_animations/swap.json) and Photon effects (assets/kegare/fx/swap/). */

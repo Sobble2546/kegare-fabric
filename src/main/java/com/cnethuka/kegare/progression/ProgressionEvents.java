@@ -18,6 +18,7 @@ import net.neoforged.neoforge.event.entity.player.CriticalHitEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import com.cnethuka.kegare.api.progression.OwnedEntity;
 
 /** Where the game feeds progression. Fake players count, so the tests run the real path. */
 @EventBusSubscriber(modid = Kegare.MODID)

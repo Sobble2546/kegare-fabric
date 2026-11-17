@@ -1,4 +1,4 @@
-package com.cnethuka.kegare.innatetechnique;
+package com.cnethuka.kegare.api.technique;
 
 import java.util.List;
 

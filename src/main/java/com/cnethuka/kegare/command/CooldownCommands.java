@@ -9,9 +9,9 @@ import static com.cnethuka.kegare.command.CommandArgs.suggest;
 import static com.cnethuka.kegare.command.CommandArgs.system;
 import static com.cnethuka.kegare.command.CommandArgs.typedName;
 
-import com.cnethuka.kegare.innatetechnique.Ability;
+import com.cnethuka.kegare.api.ability.Ability;
 import com.cnethuka.kegare.innatetechnique.Burnout;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.loadout.SharedAbilities;
 import com.cnethuka.kegare.melee.MeleeLayer;

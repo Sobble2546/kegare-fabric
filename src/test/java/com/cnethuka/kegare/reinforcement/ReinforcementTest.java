@@ -17,7 +17,7 @@ import com.cnethuka.kegare.innatetechnique.Burnout;
 import com.cnethuka.kegare.innatetechnique.CastIntent;
 import com.cnethuka.kegare.innatetechnique.CastManager;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
-import com.cnethuka.kegare.loadout.AbilityCategory;
+import com.cnethuka.kegare.api.ability.AbilityCategory;
 import com.cnethuka.kegare.loadout.LoadoutResult;
 import com.cnethuka.kegare.loadout.LoadoutService;
 import com.cnethuka.kegare.loadout.SharedAbilityService;
@@ -35,6 +35,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.testframework.junit.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import com.cnethuka.kegare.loadout.AbilityTabs;
 
 /** Reinforcement (DESIGN §3.16): everyone's, Malice category, the toggle and its costs, both reductions, knockback, with Fists. */
 @ExtendWith(EphemeralTestServerProvider.class)
@@ -83,7 +84,7 @@ class ReinforcementTest {
             try {
                 ServerPlayer p = player(server, "reinf_everyone");
                 assertSame(AbilityCategory.MALICE, Reinforcement.REINFORCEMENT.category(), "a Malice ability");
-                assertTrue(AbilityCategory.MALICE.abilities(null).contains(Reinforcement.REINFORCEMENT), "under the Malice tab");
+                assertTrue(AbilityTabs.abilities(AbilityCategory.MALICE, null).contains(Reinforcement.REINFORCEMENT), "under the Malice tab");
                 assertTrue(SharedAbilityService.isUnlocked(p, ReinforcementIds.ABILITY), "nothing to unlock");
                 assertTrue(SharedAbilityService.unlockedIds(p).contains(ReinforcementIds.ABILITY), "and it's in what they're sent");
                 slot(p, 1);

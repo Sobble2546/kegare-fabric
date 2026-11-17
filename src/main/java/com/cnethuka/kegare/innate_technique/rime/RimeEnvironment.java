@@ -1,6 +1,6 @@
 package com.cnethuka.kegare.innate_technique.rime;
 
-import com.cnethuka.kegare.innatetechnique.CostEnvironment;
+import com.cnethuka.kegare.api.technique.CostEnvironment;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;

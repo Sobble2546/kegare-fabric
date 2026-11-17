@@ -6,7 +6,7 @@ import com.cnethuka.kegare.client.visual.VanillaFallback;
 import com.cnethuka.kegare.innate_technique.swap.SwapIds;
 import com.cnethuka.kegare.innate_technique.swap.SwapLink;
 import com.cnethuka.kegare.innate_technique.swap.SwapRegistry;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
 import java.util.Iterator;

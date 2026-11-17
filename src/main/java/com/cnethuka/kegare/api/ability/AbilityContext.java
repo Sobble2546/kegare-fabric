@@ -1,7 +1,8 @@
-package com.cnethuka.kegare.innatetechnique;
+package com.cnethuka.kegare.api.ability;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 
 /**
  * Everything an ability needs when it runs.

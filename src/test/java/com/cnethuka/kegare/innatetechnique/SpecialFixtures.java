@@ -9,6 +9,12 @@ import java.util.Map;
 import java.util.Optional;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import com.cnethuka.kegare.api.ability.Ability;
+import com.cnethuka.kegare.api.ability.AbilityContext;
+import com.cnethuka.kegare.api.ability.BaseAbility;
+import com.cnethuka.kegare.api.ability.CastType;
+import com.cnethuka.kegare.api.ability.Requirement;
+import com.cnethuka.kegare.api.ability.SpecialAbility;
 
 /**
  * Framework features no real ability uses (DESIGN §3.3): a special that needs a toggle on, and a charged special that needs a

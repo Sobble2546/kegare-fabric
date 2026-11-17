@@ -1,10 +1,10 @@
 package com.cnethuka.kegare.innate_technique.puppet_manipulation;
 
-import com.cnethuka.kegare.innatetechnique.AbilityContext;
-import com.cnethuka.kegare.innatetechnique.CastType;
-import com.cnethuka.kegare.innatetechnique.visual.AbilityVisuals;
-import com.cnethuka.kegare.innatetechnique.visual.VisualPhase;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.ability.AbilityContext;
+import com.cnethuka.kegare.api.ability.CastType;
+import com.cnethuka.kegare.api.visual.AbilityVisuals;
+import com.cnethuka.kegare.api.visual.VisualPhase;
+import com.cnethuka.kegare.api.visual.Visual;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -30,7 +30,7 @@ public final class PuppetCreationAbility extends PuppetAbility {
     @Override public int cooldownTicks(ServerPlayer p) { return PuppetConfig.ticks(PuppetConfig.CREATION_COOLDOWN); }
     @Override public int maxChargeTicks(ServerPlayer p) { return Math.max(1, PuppetConfig.ticks(PuppetConfig.CREATION_FULL_CHARGE)); }
     @Override public AbilityVisuals visuals() { return VISUALS; }
-    @Override public java.util.Optional<com.cnethuka.kegare.innatetechnique.Ability> special() { return java.util.Optional.of(PuppetManipulation.POSSESS); }
+    @Override public java.util.Optional<com.cnethuka.kegare.api.ability.Ability> special() { return java.util.Optional.of(PuppetManipulation.POSSESS); }
 
     @Override public boolean canCast(AbilityContext ctx) { return !Puppets.atCap(ctx.player()); }
     @Override public boolean canRelease(AbilityContext ctx) { return !Puppets.atCap(ctx.player()); }

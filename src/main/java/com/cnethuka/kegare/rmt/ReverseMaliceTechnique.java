@@ -1,11 +1,11 @@
 package com.cnethuka.kegare.rmt;
 
-import com.cnethuka.kegare.innatetechnique.AbilityContext;
-import com.cnethuka.kegare.innatetechnique.BaseAbility;
-import com.cnethuka.kegare.innatetechnique.CastType;
-import com.cnethuka.kegare.innatetechnique.visual.AbilityVisuals;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
-import com.cnethuka.kegare.innatetechnique.visual.VisualPhase;
+import com.cnethuka.kegare.api.ability.AbilityContext;
+import com.cnethuka.kegare.api.ability.BaseAbility;
+import com.cnethuka.kegare.api.ability.CastType;
+import com.cnethuka.kegare.api.visual.AbilityVisuals;
+import com.cnethuka.kegare.api.visual.Visual;
+import com.cnethuka.kegare.api.visual.VisualPhase;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -49,10 +49,10 @@ public final class ReverseMaliceTechnique extends BaseAbility {
     @Override public int cooldownTicks(ServerPlayer p) { return RmtConfig.ticks(RmtConfig.COOLDOWN); }
     @Override public int maxChannelTicks(ServerPlayer p) { return RmtConfig.ticks(RmtConfig.MAX_DURATION); }
     @Override public AbilityVisuals visuals() { return VISUALS; }
-    @Override public com.cnethuka.kegare.loadout.AbilityCategory category() { return com.cnethuka.kegare.loadout.AbilityCategory.MALICE; }
+    @Override public com.cnethuka.kegare.api.ability.AbilityCategory category() { return com.cnethuka.kegare.api.ability.AbilityCategory.MALICE; }
     @Override public net.minecraft.network.chat.Component unlockHint() { return net.minecraft.network.chat.Component.translatable("ability.kegare.reverse_malice_technique.unlock"); }
     /** R + its key: healing another player, for those who know how. */
-    @Override public java.util.Optional<com.cnethuka.kegare.innatetechnique.Ability> special() { return java.util.Optional.of(Rmt.ON_ANOTHER); }
+    @Override public java.util.Optional<com.cnethuka.kegare.api.ability.Ability> special() { return java.util.Optional.of(Rmt.ON_ANOTHER); }
 
     @Override
     public void execute(AbilityContext ctx) {
@@ -77,7 +77,7 @@ public final class ReverseMaliceTechnique extends BaseAbility {
     }
 
     @Override
-    public void onEnd(AbilityContext ctx, com.cnethuka.kegare.innatetechnique.EndReason reason) {
+    public void onEnd(AbilityContext ctx, com.cnethuka.kegare.api.ability.EndReason reason) {
         GreenOrbService.state(ctx.player()).lowDuringChannel = false; // still low when it stopped: not healed out of it
         Repair.stop(ctx.player());
     }

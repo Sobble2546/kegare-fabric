@@ -1,4 +1,4 @@
-package com.cnethuka.kegare.innatetechnique.visual;
+package com.cnethuka.kegare.api.visual;
 
 /**
  * When an ability's visuals play. Each phase may name a player animation (Player Animation Library) and/or a VFX

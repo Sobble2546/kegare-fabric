@@ -7,7 +7,7 @@ import com.cnethuka.kegare.innate_technique.rime.GlacialSpireEntity;
 import com.cnethuka.kegare.innate_technique.rime.Rime;
 import com.cnethuka.kegare.innate_technique.rime.RimeConfig;
 import com.cnethuka.kegare.innate_technique.rime.RimeIds;
-import com.cnethuka.kegare.innatetechnique.visual.VisualPhase;
+import com.cnethuka.kegare.api.visual.VisualPhase;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import com.cnethuka.kegare.Kegare;
 import com.mojang.blaze3d.vertex.PoseStack;

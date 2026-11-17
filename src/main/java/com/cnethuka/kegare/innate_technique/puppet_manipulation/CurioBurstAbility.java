@@ -1,9 +1,9 @@
 package com.cnethuka.kegare.innate_technique.puppet_manipulation;
 
-import com.cnethuka.kegare.innatetechnique.AbilityContext;
+import com.cnethuka.kegare.api.ability.AbilityContext;
 import com.cnethuka.kegare.innatetechnique.CastManager;
-import com.cnethuka.kegare.innatetechnique.CastType;
-import com.cnethuka.kegare.innatetechnique.visual.AbilityVisuals;
+import com.cnethuka.kegare.api.ability.CastType;
+import com.cnethuka.kegare.api.visual.AbilityVisuals;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -18,7 +18,7 @@ public final class CurioBurstAbility extends PuppetAbility {
     @Override public double cost(ServerPlayer p) { return PuppetConfig.CURIO_COST.get(); }
     @Override public int cooldownTicks(ServerPlayer p) { return PuppetConfig.ticks(PuppetConfig.CURIO_COOLDOWN); }
     @Override public AbilityVisuals visuals() { return VISUALS; }
-    @Override public java.util.Optional<com.cnethuka.kegare.innatetechnique.Ability> special() { return java.util.Optional.of(PuppetManipulation.CHAIN_BURST); }
+    @Override public java.util.Optional<com.cnethuka.kegare.api.ability.Ability> special() { return java.util.Optional.of(PuppetManipulation.CHAIN_BURST); }
 
     @Override
     public boolean canCast(AbilityContext ctx) {

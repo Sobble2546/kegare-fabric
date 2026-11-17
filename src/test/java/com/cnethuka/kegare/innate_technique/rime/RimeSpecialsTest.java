@@ -170,7 +170,7 @@ class RimeSpecialsTest {
             for (ServerPlayer t : List.of(a, b, c)) level.removePlayerImmediately(t, net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
 
             cow.discard();
-            CastManager.stopAll(p, com.cnethuka.kegare.innatetechnique.EndReason.CANCELLED);
+            CastManager.stopAll(p, com.cnethuka.kegare.api.ability.EndReason.CANCELLED);
         });
     }
 

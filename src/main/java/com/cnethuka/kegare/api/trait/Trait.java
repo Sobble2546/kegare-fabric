@@ -1,6 +1,6 @@
-package com.cnethuka.kegare.trait;
+package com.cnethuka.kegare.api.trait;
 
-import com.cnethuka.kegare.registry.KegareRegistries;
+import com.cnethuka.kegare.api.KegareApi;
 import java.util.function.DoubleSupplier;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -9,7 +9,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
- * A per-player trait (registry {@code kegare:trait}). Traits are rolled at birth, saved, synced and kept on
+ * A per-player trait (registry {@code kegare:trait}, {@link KegareApi#TRAITS}). Register yours with a {@code DeferredRegister}.
+ * Traits are rolled at birth, saved, synced and kept on
  * death (except inheritable traits lost to a player kill). Subclass and override the hooks for real effects.
  */
 public class Trait {
@@ -42,7 +43,7 @@ public class Trait {
         private boolean lostOnPvpDeath;
         private DoubleSupplier birthChance = () -> 0.0;
 
-        /** At most one bearer per world, tracked in {@link UniqueTraitSavedData}. */
+        /** At most one bearer per world (Kegare records who holds it in the world's save). */
         public Properties unique() {
             this.unique = true;
             return this;
@@ -54,7 +55,7 @@ public class Trait {
             return this;
         }
 
-        /** Unique traits only: when the bearer loses it, it passes to an heir ({@link TraitSuccession}). */
+        /** Unique traits only: when the bearer loses it, it passes to an heir (see {@link #successionMode()}). */
         public Properties inheritable() {
             this.inheritable = true;
             return this;
@@ -128,7 +129,7 @@ public class Trait {
     public void onBearerKilledByPlayer(ServerPlayer victim, ServerPlayer killer) {}
 
     public final ResourceLocation id() {
-        return KegareRegistries.TRAIT.getKey(this);
+        return KegareApi.traits().getKey(this);
     }
 
     public final String descriptionId() {

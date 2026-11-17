@@ -4,6 +4,6 @@ package com.cnethuka.kegare.network;
 public final class SyncState {
     boolean dirty = true;
     /** Last cost environment sent; weather or moving can change it without any other event. */
-    com.cnethuka.kegare.innatetechnique.CostEnvironment lastEnvironment;
+    com.cnethuka.kegare.api.technique.CostEnvironment lastEnvironment;
     boolean lastInCombat;
 }

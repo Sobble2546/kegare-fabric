@@ -5,7 +5,7 @@ import com.cnethuka.kegare.client.visual.PlayerAnimations;
 import com.cnethuka.kegare.innate_technique.time_manipulation.TimeIds;
 import com.cnethuka.kegare.innate_technique.time_manipulation.TimeNet;
 import com.cnethuka.kegare.innate_technique.time_manipulation.TimeRegistry;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;

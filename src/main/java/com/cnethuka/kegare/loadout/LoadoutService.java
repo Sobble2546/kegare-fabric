@@ -1,10 +1,10 @@
 package com.cnethuka.kegare.loadout;
 
 import com.cnethuka.kegare.combat.CombatHelper;
-import com.cnethuka.kegare.innatetechnique.Ability;
+import com.cnethuka.kegare.api.ability.Ability;
 import com.cnethuka.kegare.innatetechnique.CastManager;
-import com.cnethuka.kegare.innatetechnique.EndReason;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.ability.EndReason;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.malice.MaliceService;
 import com.cnethuka.kegare.network.PlayerSync;

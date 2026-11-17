@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import com.cnethuka.kegare.api.trait.TransferMode;
 
 /** Who may inherit six_eyes, and the inactivity rule. */
 class TransferRulesTest {

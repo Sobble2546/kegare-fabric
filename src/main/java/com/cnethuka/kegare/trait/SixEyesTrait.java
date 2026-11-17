@@ -3,6 +3,8 @@ package com.cnethuka.kegare.trait;
 import com.cnethuka.kegare.advancement.KegareAdvancements;
 import com.cnethuka.kegare.config.KegareServerConfig;
 import net.minecraft.server.level.ServerPlayer;
+import com.cnethuka.kegare.api.trait.Trait;
+import com.cnethuka.kegare.api.trait.TransferMode;
 
 /**
  * Six Eyes: unique, needs Malice, inheritable, lost when the bearer is killed by another player.

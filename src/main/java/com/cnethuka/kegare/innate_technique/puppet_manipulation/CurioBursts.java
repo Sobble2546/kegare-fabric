@@ -2,7 +2,7 @@ package com.cnethuka.kegare.innate_technique.puppet_manipulation;
 
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.combat.CombatHelper;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import com.cnethuka.kegare.sound.KegareSounds;
 import java.util.ArrayList;

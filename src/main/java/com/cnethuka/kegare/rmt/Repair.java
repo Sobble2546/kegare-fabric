@@ -2,7 +2,7 @@ package com.cnethuka.kegare.rmt;
 
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.innatetechnique.Burnout;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import java.util.HashMap;
 import java.util.HashSet;

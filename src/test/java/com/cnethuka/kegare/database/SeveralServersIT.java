@@ -12,7 +12,7 @@ import com.cnethuka.kegare.malice.MaliceService;
 import com.cnethuka.kegare.player.BirthService;
 import com.cnethuka.kegare.rmt.BrainDamage;
 import com.cnethuka.kegare.trait.KegareTraits;
-import com.cnethuka.kegare.trait.Trait;
+import com.cnethuka.kegare.api.trait.Trait;
 import com.cnethuka.kegare.trait.TraitService;
 import com.cnethuka.kegare.trait.TraitSuccession;
 import com.cnethuka.kegare.trait.UniqueTraitSavedData;

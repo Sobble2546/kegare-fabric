@@ -1,6 +1,6 @@
 package com.cnethuka.kegare.progression;
 
-import com.cnethuka.kegare.innatetechnique.Ability;
+import com.cnethuka.kegare.api.ability.Ability;
 import com.cnethuka.kegare.network.PlayerSync;
 import com.cnethuka.kegare.registry.KegareAttachments;
 import java.util.List;

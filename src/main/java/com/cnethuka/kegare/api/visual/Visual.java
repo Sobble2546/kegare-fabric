@@ -1,4 +1,4 @@
-package com.cnethuka.kegare.innatetechnique.visual;
+package com.cnethuka.kegare.api.visual;
 
 import java.util.Optional;
 import javax.annotation.Nullable;

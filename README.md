@@ -18,7 +18,7 @@ Black Flash).
 > **Made with generative AI.** Kegare's code and assets were made with generative AI, from a human designer's specifications.
 > See [How Kegare was made](#how-kegare-was-made).
 
-**Status:** early development (version 0.1.0-alpha). Expect changes, balance passes and the odd bug. Dominions, and the hostile spirits
+**Status:** early development (version 0.2.0-alpha). Expect changes, balance passes and the odd bug. Dominions, and the hostile spirits
 that will share the mod's name, are still to come.
 
 ## Features
@@ -179,7 +179,7 @@ Requires JDK 21 (e.g. Temurin). Point `JAVA_HOME` at it if it isn't your default
 
 | Command | What it does |
 |---|---|
-| `./gradlew build` | Compile, run unit tests, build `build/libs/kegare-<minecraft version>-<version>.jar` (for example `kegare-1.21.1-0.1.0-alpha.jar`) |
+| `./gradlew build` | Compile, run unit tests, build `build/libs/kegare-<minecraft version>-<version>.jar` (for example `kegare-1.21.1-0.2.0-alpha.jar`) |
 | `./gradlew test` | Unit tests (roll/pity math, trait rules, lang keys) plus in-game tests on a throwaway server (e.g. no reroll path changes Malice capacity) |
 | `./gradlew runData` | Regenerate lang, models, tags, recipes, advancements into `src/generated/resources` |
 | `./gradlew runClient` | Dev client |
@@ -201,6 +201,13 @@ the generated files.
 Assets are edited directly, and each has one source: models in Blockbench (`art/blockbench/*.bbmodel`, exported over the
 shipped OBJ and textures), player animations in Blockbench (`assets/kegare/player_animations/*.json`), textures in an image editor
 and sounds as `.ogg` files. See DESIGN.md §3.10.
+
+## For mod developers
+
+Kegare has an addon API (`com.cnethuka.kegare.api`): add your own innate techniques, shared abilities and traits, built on the same
+types as Kegare's own, with Refinement, rolls and the loadout working for them as they do for Kegare's. Start with the
+[addon guide](docs/addon-api.md). The API is **experimental until 1.0**: nothing in it breaks within a minor version (0.2.x), but a
+new minor version (0.3.0) may change it. Changing Kegare's own techniques from an addon is planned, not in 0.2.0 yet.
 
 ## Security
 

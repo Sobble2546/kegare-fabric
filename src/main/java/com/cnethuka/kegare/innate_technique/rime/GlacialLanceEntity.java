@@ -1,7 +1,7 @@
 package com.cnethuka.kegare.innate_technique.rime;
 
-import com.cnethuka.kegare.innatetechnique.Ability;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.ability.Ability;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;

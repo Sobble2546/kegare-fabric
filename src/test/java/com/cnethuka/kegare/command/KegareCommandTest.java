@@ -14,8 +14,8 @@ import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetManipulati
 import com.cnethuka.kegare.innate_technique.rime.Rime;
 import com.cnethuka.kegare.innate_technique.swap.Swap;
 import com.cnethuka.kegare.innate_technique.swap.SwapDebug;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
-import com.cnethuka.kegare.innatetechnique.InnateTechniqueRarity;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
+import com.cnethuka.kegare.api.technique.InnateTechniqueRarity;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.loadout.SharedAbilityService;
 import com.cnethuka.kegare.malice.MaliceService;
@@ -30,7 +30,7 @@ import com.cnethuka.kegare.rmt.GreenOrbService;
 import com.cnethuka.kegare.rmt.RmtIds;
 import com.cnethuka.kegare.roll.RollService;
 import com.cnethuka.kegare.trait.KegareTraits;
-import com.cnethuka.kegare.trait.Trait;
+import com.cnethuka.kegare.api.trait.Trait;
 import com.cnethuka.kegare.trait.TraitService;
 import com.cnethuka.kegare.trait.TraitSuccession;
 import com.mojang.brigadier.CommandDispatcher;
@@ -230,10 +230,12 @@ class KegareCommandTest {
         inGame(server, () -> {
             online(server, "tester_one");
             List<String> real = com.cnethuka.kegare.registry.KegareRegistries.INNATE_TECHNIQUE.stream().map(t -> t.id().getPath()).sorted().toList();
-            assertEquals(List.of("puppet_manipulation", "rime", "swap", "time_manipulation"), real, "the real pool");
+            // Kegare's four, and the tests' example addon's (an addon's technique is a technique like any other).
+            assertEquals(List.of("example", "puppet_manipulation", "rime", "swap", "time_manipulation"), real, "the real pool");
             assertEquals(real, names(suggestions(server, OP, "kegare innate set tester_one ")).stream().sorted().toList());
             String list = op(server, "kegare innate list").ok().text();
             for (String name : real) assertTrue(list.contains(name), list);
+            op(server, "kegare innate set tester_one example").ok(); // an addon's, by its short name like any other
             // A name outside the pool is unknown.
             assertTrue(op(server, "kegare innate set tester_one test_kinetic").error().startsWith("Unknown Innate Technique: test_kinetic."));
             assertTrue(op(server, "kegare debug reroll tester_one test_apex").error().startsWith("Unknown Innate Technique: test_apex."));
@@ -255,11 +257,11 @@ class KegareCommandTest {
                     "it matches after an underscore too");
 
             List<Suggestion> traits = suggestions(server, OP, "kegare trait give anyone ");
-            assertEquals(List.of("six_eyes"), names(traits));
+            assertEquals(List.of("keen", "six_eyes"), names(traits), "Kegare's and the tests' example addon's");
             assertEquals("Six Eyes (Unique)", ((Component) named(traits, "six_eyes").getTooltip()).getString());
-            assertEquals(List.of("six_eyes"), names(suggestions(server, OP, "kegare trait remove anyone ")));
-            assertEquals(List.of("six_eyes"), names(suggestions(server, OP, "kegare trait release ")));
-            assertEquals(List.of("six_eyes"), names(suggestions(server, OP, "kegare trait status ")));
+            assertEquals(List.of("keen", "six_eyes"), names(suggestions(server, OP, "kegare trait remove anyone ")));
+            assertEquals(List.of("keen", "six_eyes"), names(suggestions(server, OP, "kegare trait release ")));
+            assertEquals(List.of("keen", "six_eyes"), names(suggestions(server, OP, "kegare trait status ")));
 
             assertEquals("Special Grade", ((Component) named(suggestions(server, OP, "kegare grade set anyone "), "special_grade").getTooltip()).getString());
             assertEquals("Ward", ((Component) named(suggestions(server, OP, "kegare insight add anyone "), "ward").getTooltip()).getString());
@@ -283,7 +285,7 @@ class KegareCommandTest {
             assertEquals(trait, op(server, "kegare trait status nope").error());
             assertEquals("Unknown Grade: nope. Use /kegare grade list to see them all.", op(server, "kegare grade set typo nope").error());
             assertEquals("Unknown Insight category: nope. Choose from dominion, ward, output.", op(server, "kegare insight add typo nope 1").error());
-            assertEquals("Unknown shared ability: nope. Choose from reverse_malice_technique.", op(server, "kegare debug shared unlock typo nope").error());
+            assertEquals("Unknown shared ability: nope. Choose from reverse_malice_technique, steady.", op(server, "kegare debug shared unlock typo nope").error());
             assertEquals("Unknown system: nope. Use /kegare help to see them all.", op(server, "kegare help nope").error());
 
             assertTrue(op(server, "kegare innate list").ok().text().contains("rime"), "and the list it points at has what to type");
@@ -456,8 +458,8 @@ class KegareCommandTest {
     void cooldownResetClearsEverythingOrOneAndTakesSelectors(MinecraftServer server) throws Exception {
         inGame(server, () -> {
             ServerPlayer a = online(server, "cd_a"), b = online(server, "cd_b");
-            com.cnethuka.kegare.innatetechnique.Ability rmt = com.cnethuka.kegare.loadout.SharedAbilities.find(com.cnethuka.kegare.rmt.RmtIds.ABILITY).orElseThrow();
-            List<com.cnethuka.kegare.innatetechnique.Ability> abilities = List.of(
+            com.cnethuka.kegare.api.ability.Ability rmt = com.cnethuka.kegare.loadout.SharedAbilities.find(com.cnethuka.kegare.rmt.RmtIds.ABILITY).orElseThrow();
+            List<com.cnethuka.kegare.api.ability.Ability> abilities = List.of(
                     com.cnethuka.kegare.innate_technique.time_manipulation.TimeManipulation.POINT_MAKER,
                     com.cnethuka.kegare.innate_technique.time_manipulation.TimeManipulation.ACCELERATE,
                     com.cnethuka.kegare.innate_technique.time_manipulation.TimeManipulation.STANDSTILL, rmt);

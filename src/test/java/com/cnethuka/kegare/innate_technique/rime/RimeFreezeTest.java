@@ -8,9 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.cnethuka.kegare.combat.CombatHelper;
 import com.cnethuka.kegare.innatetechnique.CastManager;
-import com.cnethuka.kegare.innatetechnique.CastSlot;
+import com.cnethuka.kegare.api.ability.CastSlot;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
-import com.cnethuka.kegare.innatetechnique.visual.VisualPhase;
+import com.cnethuka.kegare.api.visual.VisualPhase;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import com.cnethuka.kegare.malice.MaliceService;
 import com.cnethuka.kegare.player.BirthService;

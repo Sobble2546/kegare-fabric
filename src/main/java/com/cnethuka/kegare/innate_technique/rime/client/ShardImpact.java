@@ -3,7 +3,7 @@ package com.cnethuka.kegare.innate_technique.rime.client;
 import com.cnethuka.kegare.client.visual.ClientVisuals;
 import com.cnethuka.kegare.innate_technique.rime.RimeIds;
 import com.cnethuka.kegare.innate_technique.rime.SplinterShardEntity;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;

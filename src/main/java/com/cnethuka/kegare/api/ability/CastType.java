@@ -1,7 +1,8 @@
-package com.cnethuka.kegare.innatetechnique;
+package com.cnethuka.kegare.api.ability;
+
 
 /**
- * How an ability is cast. See {@link CastManager} for the exact lifecycle.
+ * How an ability is cast. See {@link Ability} for the exact lifecycle.
  * <ul>
  *   <li>INSTANT: fires on key press.</li>
  *   <li>CHARGED: hold to charge, fires on release with a 0..1 charge fraction.</li>

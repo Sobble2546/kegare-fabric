@@ -1,8 +1,8 @@
 package com.cnethuka.kegare.client.gui;
 
 import com.cnethuka.kegare.Kegare;
-import com.cnethuka.kegare.innatetechnique.Ability;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.ability.Ability;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -325,7 +325,7 @@ public final class GuiDraw {
     }
 
     /** An ability's description, with the configured numbers it states filled in. */
-    public static Component description(com.cnethuka.kegare.innatetechnique.Ability ability) {
+    public static Component description(com.cnethuka.kegare.api.ability.Ability ability) {
         return Component.translatable(ability.descriptionId() + ".desc", ability.descriptionArgs());
     }
 

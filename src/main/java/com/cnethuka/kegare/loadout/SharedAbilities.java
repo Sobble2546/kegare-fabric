@@ -1,6 +1,6 @@
 package com.cnethuka.kegare.loadout;
 
-import com.cnethuka.kegare.innatetechnique.Ability;
+import com.cnethuka.kegare.api.ability.Ability;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.resources.ResourceLocation;
+import com.cnethuka.kegare.api.ability.AbilityCategory;
 
 /**
  * Shared abilities (the {@link AbilityCategory#MALICE} and {@link AbilityCategory#MELEE} categories): not tied to any innate technique. A player unlocks them once

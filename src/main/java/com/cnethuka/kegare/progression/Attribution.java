@@ -1,7 +1,7 @@
 package com.cnethuka.kegare.progression;
 
-import com.cnethuka.kegare.innatetechnique.Ability;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.ability.Ability;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.registry.KegareAttachments;
 import java.util.List;
@@ -16,6 +16,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import com.cnethuka.kegare.api.progression.OwnedEntity;
 
 /**
  * Who is really behind a hit, and with which ability. The one place that decides it, so fights, Grade, Refinement and

@@ -1,7 +1,7 @@
 package com.cnethuka.kegare.network;
 
 import com.cnethuka.kegare.Kegare;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.network.FriendlyByteBuf;
