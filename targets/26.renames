@@ -87,3 +87,4 @@ kegare\$knockback\(double strength, double x, double z, CallbackInfo ci\)	kegare
 orElseThrow\(\)\.isHidden\(\)	orElseThrow().hidden()
 \b(display|bush|missing)\.getType\(\)	$1.type()
 \.render\(null, null\)	.extractRenderState(null, null)
+method = "pickBlock"	method = "pickBlockOrEntity"

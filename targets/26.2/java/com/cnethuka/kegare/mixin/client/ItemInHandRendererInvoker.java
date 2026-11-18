@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 /** Lets the guard pose draw vanilla's own hand from inside {@code RenderHandEvent}, with everything that method handles for every item. */
 @Mixin(ItemInHandRenderer.class)
 public interface ItemInHandRendererInvoker {
-    @Invoker("renderArmWithItem")
-    void kegare$renderArmWithItem(AbstractClientPlayer player, float partialTicks, float pitch, InteractionHand hand, float swingProgress,
+    @Invoker("submitArmWithItem")
+    void kegare$submitArmWithItem(AbstractClientPlayer player, float partialTicks, float pitch, InteractionHand hand, float swingProgress,
             ItemStack stack, float equippedProgress, PoseStack poseStack, SubmitNodeCollector buffer, int combinedLight);
 }

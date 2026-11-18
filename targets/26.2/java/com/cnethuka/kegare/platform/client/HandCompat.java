@@ -14,7 +14,7 @@ public final class HandCompat {
 
     public static void renderArm(LocalPlayer who, float partialTick, float pitch, InteractionHand hand, float swing, ItemStack stack, float equip,
                                  PoseStack pose, SubmitNodeCollector collector, int light) {
-        ((ItemInHandRendererInvoker) Minecraft.getInstance().getEntityRenderDispatcher().getItemInHandRenderer()).kegare$renderArmWithItem(who, partialTick,
+        ((ItemInHandRendererInvoker) Minecraft.getInstance().getEntityRenderDispatcher().getItemInHandRenderer()).kegare$submitArmWithItem(who, partialTick,
                 pitch, hand, swing, stack, equip, pose, collector, light);
     }
 }

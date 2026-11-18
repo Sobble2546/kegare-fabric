@@ -85,16 +85,14 @@ dependencies {
     // Player Animation Library (ZigyTheBird): player animations (assets/kegare/player_animations).
     mod "com.zigythebird.playeranim:${tp.getProperty('pal_artifact')}:${tp.getProperty('pal_version')}"
     // Eyewear slot (Six Eyes blindfold): Trinkets replaces Curios, which has no Fabric build.
-    mod "maven.modrinth:trinkets-updated:${tp.getProperty('trinkets_version')}"
+    // 1.21.11 only for now: the 26.x overlays have no eyewear slot (Trinkets 4.x is a different API), so 26.x neither compiles against it nor loads it.
+    if (remap) mod "maven.modrinth:trinkets-updated:${tp.getProperty('trinkets_version')}"
     // Config: Kegare's ModConfigSpec code compiles unchanged against the net.neoforged classes this ships (and NightConfig with it).
     mod "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${tp.getProperty('fcap_version')}"
     // Dev runs, datagen and tests only (not in the jar): Trinkets needs Cardinal Components and Loom skips its nested copies.
     if (remap) {
         modLocalRuntime "org.ladysnake.cardinal-components-api:cardinal-components-base:7.3.0"
         modLocalRuntime "org.ladysnake.cardinal-components-api:cardinal-components-entity:7.3.0"
-    } else {
-        runtimeOnly "org.ladysnake.cardinal-components-api:cardinal-components-base:7.3.0"
-        runtimeOnly "org.ladysnake.cardinal-components-api:cardinal-components-entity:7.3.0"
     }
     // PostgreSQL JDBC (DESIGN 3.33): bundled inside our jar, only ever opened on a dedicated server with storage on.
     implementation('org.postgresql:postgresql:42.7.4') { exclude group: 'org.checkerframework' }
