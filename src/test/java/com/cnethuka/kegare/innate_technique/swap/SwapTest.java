@@ -573,7 +573,7 @@ class SwapTest {
             Vec3 casterAt = caster.position();
             CastManager.handleIntent(caster, CastIntent.SPECIAL_PRESS);
             assertTrue(Switchback.isPending(caster), "switchback on a mob");
-            pig.invulnerableTime = 0;
+            com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(pig, 0);
             assertTrue(pig.hurtServer((net.minecraft.server.level.ServerLevel) pig.level(), caster.damageSources().playerAttack(caster), 1f), "setup: hit the pig");
             assertFalse(TestServer.hasAdvancement(server, caster, SwapAdvancements.ROUND_TRIP), "round trip (mastery): hitting a mob doesn't count");
             TestServer.advanceGameTime(server, SwapConfig.ticks(SwapConfig.SWITCHBACK_DELAY));
@@ -670,7 +670,7 @@ class SwapTest {
     /** A mob hits a test player (spawn protection cleared, like {@link #hit}). */
     static void mobHit(LivingEntity attacker, ServerPlayer victim) {
         clearSpawnProtection(victim);
-        victim.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(victim, 0);
         victim.setHealth(victim.getMaxHealth());
         assertTrue(victim.hurtServer((net.minecraft.server.level.ServerLevel) victim.level(), attacker.damageSources().mobAttack(attacker), 1f), "setup: the mob's hit landed");
     }
@@ -690,7 +690,7 @@ class SwapTest {
 
     static void hit(ServerPlayer attacker, ServerPlayer victim) {
         clearSpawnProtection(victim);
-        victim.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(victim, 0);
         victim.setHealth(victim.getMaxHealth());
         assertTrue(victim.hurtServer((net.minecraft.server.level.ServerLevel) victim.level(), attacker.damageSources().playerAttack(attacker), 1f), "setup: the hit landed");
     }

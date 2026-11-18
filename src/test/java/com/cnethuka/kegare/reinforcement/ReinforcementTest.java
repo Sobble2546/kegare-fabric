@@ -70,7 +70,7 @@ class ReinforcementTest {
 
     /** What a hit of {@code amount} of this kind took off. */
     private static float taken(ServerPlayer p, net.minecraft.world.damagesource.DamageSource source, float amount) {
-        p.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(p, 0);
         p.setHealth(p.getMaxHealth());
         float before = p.getHealth();
         p.hurt(source, amount);
@@ -187,7 +187,7 @@ class ReinforcementTest {
                 assertEquals(LoadoutResult.OK, LoadoutService.edit(p, LoadoutService.Action.SET, 2, 0, Optional.of(FistsIds.ABILITY)));
                 slot(p, 1);
                 turnOn(p);
-                golem.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(golem, 0);
                 float hp = golem.getHealth();
                 golem.hurt(p.damageSources().playerAttack(p), 2f);
                 assertEquals(2f, hp - golem.getHealth(), EPS, "Reinforcement adds no damage");
@@ -196,7 +196,7 @@ class ReinforcementTest {
                 CastManager.handleIntent(p, CastIntent.CAST_PRESS);
                 assertTrue(ReinforcedFists.isOn(p), "Fists on");
                 assertTrue(ReinforcementAbility.isOn(p), "and Reinforcement still on: both run");
-                golem.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(golem, 0);
                 hp = golem.getHealth();
                 golem.hurt(p.damageSources().playerAttack(p), 2f);
                 assertEquals(2f * (1 + FistsConfig.FIST_BONUS.get()), hp - golem.getHealth(), EPS, "Fists' bonus, nothing more");

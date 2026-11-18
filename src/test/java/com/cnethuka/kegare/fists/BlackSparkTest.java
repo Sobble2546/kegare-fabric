@@ -41,7 +41,7 @@ class BlackSparkTest {
     /** A swing at {@code target} and a hit of {@code damage}, the way a real attack goes: the swing first, then the damage. */
     static float swing(ServerPlayer attacker, LivingEntity target, float damage) {
         NeoForge.EVENT_BUS.post(new AttackEntityEvent(attacker, target));
-        target.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(target, 0);
         float before = target.getHealth();
         target.hurt(attacker.damageSources().playerAttack(attacker), damage);
         return before - target.getHealth();

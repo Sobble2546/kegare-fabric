@@ -92,7 +92,7 @@ class RmtOnAnotherTest {
 
                 // The moment rolls only for the eligible, and only when someone near drops to 3 hearts or less.
                 RmtConfig.MOMENT_CHANCE.set(1.0);
-                hurt.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(hurt, 0);
                 hurt.hurt(hurt.damageSources().generic(), 15f); // to 5
                 assertNull(GreenOrbService.state(healer).momentTarget, "not eligible: no moment");
                 Insight.add(healer, InsightCategory.OUTPUT, RmtConfig.OTHERS_INSIGHT.get() - Insight.get(healer, InsightCategory.OUTPUT));
@@ -101,10 +101,10 @@ class RmtOnAnotherTest {
                 CastManager.handleIntent(healer, CastIntent.SPECIAL_PRESS);
                 assertNull(CastManager.state(healer).casting(), "eligible but not taught: still refused");
                 hurt.setHealth(10f);
-                hurt.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(hurt, 0);
                 hurt.hurt(hurt.damageSources().generic(), 1f); // to 9: not low enough
                 assertNull(GreenOrbService.state(healer).momentTarget, "above 3 hearts: no roll");
-                hurt.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(hurt, 0);
                 hurt.hurt(hurt.damageSources().generic(), 4f); // to 5: crossing it
                 assertEquals(hurt.getUUID(), GreenOrbService.state(healer).momentTarget, "the moment: they glow for the healer");
 

@@ -64,11 +64,11 @@ class PuppetAdvancementsTest {
                 PossessionTest.aimAt(owner, first);
                 CastManager.handleIntent(owner, CastIntent.SPECIAL_PRESS);
                 cow.setHealth(1f);
-                cow.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(cow, 0);
                 cow.hurt(level.damageSources().playerAttack(owner), 5f);
                 assertFalse(has(server, owner, PuppetAdvancements.LITTLE_ME), "killing a mob doesn't count");
                 other.setHealth(1f);
-                other.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(other, 0);
                 other.hurt(level.damageSources().playerAttack(owner), 5f);
                 assertTrue(has(server, owner, PuppetAdvancements.LITTLE_ME), "Little Me");
                 Possession.release(owner, Possession.Return.RETURNED);
@@ -82,10 +82,10 @@ class PuppetAdvancementsTest {
                 PossessionTest.aimAt(owner, first);
                 CastManager.handleIntent(owner, CastIntent.SPECIAL_PRESS);
                 assertTrue(first.isStandIn());
-                first.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(first, 0);
                 first.hurt(level.damageSources().mobAttack(cow), 0.5f);
                 assertFalse(has(server, owner, PuppetAdvancements.WHOS_REAL), "a mob's hit doesn't count");
-                first.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(first, 0);
                 first.hurt(level.damageSources().playerAttack(other), 0.5f);
                 assertTrue(has(server, owner, PuppetAdvancements.WHOS_REAL), "Who's Real?");
                 first.endStandIn();
@@ -96,7 +96,7 @@ class PuppetAdvancementsTest {
                 PuppetEntity bomb = PossessionTest.puppetInFront(server, owner, 0);
                 cow.snapTo(bomb.getX() + 0.5, ground, bomb.getZ(), 0f, 0f);
                 cow.setHealth(1f);
-                cow.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(cow, 0);
                 CurioBursts.detonate(bomb, owner);
                 assertFalse(has(server, owner, PuppetAdvancements.CURIOSITY_KILLED), "a mob doesn't count");
                 level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, owner.getBoundingBox().inflate(16))
@@ -105,7 +105,7 @@ class PuppetAdvancementsTest {
                 PuppetEntity bomb2 = PossessionTest.puppetInFront(server, owner, 0);
                 other.snapTo(bomb2.getX() + 0.5, ground, bomb2.getZ(), 0f, 0f);
                 other.setHealth(1f);
-                other.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(other, 0);
                 CurioBursts.detonate(bomb2, owner);
                 assertTrue(has(server, owner, PuppetAdvancements.CURIOSITY_KILLED), "Curiosity Killed");
                 TestServer.revive(other);
@@ -114,13 +114,13 @@ class PuppetAdvancementsTest {
                 // Decoy: a player kills your puppet while you're more than 16 blocks away (not when you're close).
                 InnateTechniqueService.clearCooldowns(owner);
                 PuppetEntity near = PossessionTest.puppetInFront(server, owner, 0);
-                near.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(near, 0);
                 near.hurt(level.damageSources().playerAttack(other), 50f);
                 assertFalse(has(server, owner, PuppetAdvancements.DECOY), "too close to count");
                 InnateTechniqueService.clearCooldowns(owner);
                 PuppetEntity far = PossessionTest.puppetInFront(server, owner, 0);
                 owner.snapTo(owner.getX(), ground, owner.getZ() - PuppetAdvancements.DECOY_DISTANCE - 4, 0f, 0f);
-                far.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(far, 0);
                 far.hurt(level.damageSources().playerAttack(other), 50f);
                 assertTrue(has(server, owner, PuppetAdvancements.DECOY), "Decoy");
                 owner.snapTo(8.5, ground, 8.5, -90f, 0f);

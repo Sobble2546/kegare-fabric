@@ -71,7 +71,7 @@ class RimeBossTest {
                 cow.snapTo(3.8, ground, 0.5, 0f, 0f);
                 wither.setDeltaMovement(Vec3.ZERO);
                 cow.setDeltaMovement(Vec3.ZERO);
-                wither.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(wither, 0);
                 health = wither.getHealth();
                 spire.tickCount = RimeConfig.ticks(RimeConfig.SPIRE_DELAY);
                 spire.tick();

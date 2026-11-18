@@ -41,7 +41,7 @@ class DirectiveTest {
     }
 
     private static void hitBy(ServerPlayer player, net.minecraft.world.entity.LivingEntity target) {
-        target.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(target, 0);
         assertTrue(target.hurtServer((net.minecraft.server.level.ServerLevel) target.level(), player.damageSources().playerAttack(player), 1f), "setup: the hit landed");
     }
 
@@ -84,28 +84,28 @@ class DirectiveTest {
 
                 a.setTarget(null);
                 b.setTarget(null);
-                enemy.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(enemy, 0);
                 assertTrue(enemy.hurtServer((net.minecraft.server.level.ServerLevel) enemy.level(), owner.damageSources().playerAttack(owner), 1f), "setup: the hit landed");
                 assertSame(enemy, a.getTarget(), "a player the owner hit");
 
                 // A technique of the owner's counts, however it was delivered.
                 a.setTarget(null);
                 b.setTarget(null);
-                second.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(second, 0);
                 assertTrue(second.hurtServer((net.minecraft.server.level.ServerLevel) second.level(), CurioBursts.source(level, b, owner), 1f), "setup: the blast landed");
                 assertSame(second, a.getTarget(), "their Curio Burst counts as them");
 
                 // A puppet's own punch doesn't call the others over, and other people's hits are none of their business.
                 a.setTarget(null);
                 b.setTarget(null);
-                first.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(first, 0);
                 assertTrue(first.hurtServer((net.minecraft.server.level.ServerLevel) first.level(), level.damageSources().mobAttack(b), 1f), "setup: the punch landed");
                 assertNull(a.getTarget(), "a puppet's punch isn't the owner's doing");
                 hitBy(enemy, second);
                 assertNull(a.getTarget(), "someone else's hit isn't either");
 
                 // Never their own, or a dummy.
-                b.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(b, 0);
                 b.hurt(owner.damageSources().playerAttack(owner), 1f);
                 assertNull(a.getTarget(), "hitting your own puppet gives the others no ideas");
                 Puppets.ownerDealtDamage(owner, stand);
@@ -119,7 +119,7 @@ class DirectiveTest {
                 wither.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
                 float health = wither.getHealth();
                 a.snapTo(wither.getX() - 1.0, ground, wither.getZ(), -90f, 0f);
-                wither.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(wither, 0);
                 assertTrue(a.doHurtTarget((net.minecraft.server.level.ServerLevel) a.level(), wither), "the punch lands");
                 assertTrue(wither.getHealth() < health, "and hurts it");
                 assertEquals(net.minecraft.world.phys.Vec3.ZERO, wither.getDeltaMovement(), "but never pushes it");
@@ -154,22 +154,22 @@ class DirectiveTest {
                 assertSame(target, guard.getTarget());
 
                 guard.snapTo(target.getX() - 1.0, ground, target.getZ(), -90f, 0f);
-                target.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(target, 0);
                 assertTrue(guard.doHurtTarget((net.minecraft.server.level.ServerLevel) guard.level(), target), "setup: the punch landed");
                 double one = RefinementService.get(owner).xp();
                 assertTrue(one > 0, "the guard's punch earned Refinement");
 
-                target.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(target, 0);
                 assertTrue(guard.doHurtTarget((net.minecraft.server.level.ServerLevel) guard.level(), target), "setup: the second punch landed");
                 assertEquals(one, RefinementService.get(owner).xp(), 1.0e-6, "the repeat limit: no landing twice within a second");
 
                 TestServer.advanceGameTime(server, (int) com.cnethuka.kegare.progression.ProgressionConfig.ticks(com.cnethuka.kegare.progression.ProgressionConfig.LANDING_REPEAT) + 1);
-                target.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(target, 0);
                 assertTrue(guard.doHurtTarget((net.minecraft.server.level.ServerLevel) guard.level(), target), "setup: the third punch landed");
                 double two = RefinementService.get(owner).xp();
                 assertTrue(two > one && two - one < one, "the same target is worth less each time: " + one + " then " + (two - one));
 
-                other.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(other, 0);
                 assertTrue(guard.doHurtTarget((net.minecraft.server.level.ServerLevel) guard.level(), other), "setup: the punch on a fresh target landed");
                 assertEquals(one, RefinementService.get(owner).xp() - two, 1.0e-6, "a new target is worth full value");
             } finally {
@@ -183,7 +183,7 @@ class DirectiveTest {
     /** A punch that lands and hurts, from next to the target, on a target topped up so it lasts. */
     private static void punch(PuppetEntity puppet, net.minecraft.world.entity.LivingEntity target) {
         target.setHealth(target.getMaxHealth());
-        target.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(target, 0);
         puppet.snapTo(target.getX() - 1.0, target.getY(), target.getZ(), -90f, 0f);
         assertTrue(puppet.doHurtTarget((net.minecraft.server.level.ServerLevel) puppet.level(), target), "setup: the punch landed");
         assertTrue(target.getHealth() < target.getMaxHealth(), "setup: and hurt");
@@ -248,16 +248,16 @@ class DirectiveTest {
                 xp = RefinementService.get(owner).xp();
                 for (int i = 0; i < 200 && target.getHealth() >= health; i++) {
                     tick(server, guard);
-                    target.invulnerableTime = 0;
+                    com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(target, 0);
                 }
                 assertTrue(target.getHealth() < health, "the guard kept at it on its own");
                 assertEquals(xp, RefinementService.get(owner).xp(), 1.0e-6, "and earned them nothing");
 
                 // None of these are their landing a hit or an ability on something real.
                 TestServer.advanceGameTime(server, window + repeat);
-                owner.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(owner, 0);
                 assertTrue(owner.hurtServer((net.minecraft.server.level.ServerLevel) owner.level(), level.damageSources().mobAttack(other), 1f), "setup: being hit");
-                spare.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(spare, 0);
                 spare.hurt(owner.damageSources().playerAttack(owner), 1f);
                 Landings.land(owner, stand, PuppetManipulation.CURIO_BURST);
                 Landings.land(owner, spare, PuppetManipulation.CURIO_BURST);
@@ -277,7 +277,7 @@ class DirectiveTest {
                 assertTrue(RefinementService.get(owner).xp() > xp, "an ability landed on something real");
 
                 TestServer.advanceGameTime(server, window + repeat);
-                other.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(other, 0);
                 assertTrue(other.hurtServer((net.minecraft.server.level.ServerLevel) other.level(), CurioBursts.source(level, spare, owner), 1f), "setup: the blast landed");
                 TestServer.advanceGameTime(server, repeat);
                 xp = RefinementService.get(owner).xp();
@@ -363,14 +363,14 @@ class DirectiveTest {
                 DirectiveAbility.give(owner, PuppetOrder.GUARD, null);
                 cow.snapTo(owner.getX() + 2, ground, owner.getZ(), 0f, 0f);
                 level.addFreshEntity(cow);
-                owner.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(owner, 0);
                 assertTrue(owner.hurtServer((net.minecraft.server.level.ServerLevel) owner.level(), level.damageSources().mobAttack(cow), 1f), "setup: the cow's hit landed");
                 assertSame(cow, b.getTarget(), "the guard goes for the cow");
                 assertNull(far.getTarget(), "the far puppet doesn't (out of range)");
                 float cowHealth = cow.getHealth();
                 for (int i = 0; i < 120 && cow.getHealth() >= cowHealth; i++) {
                     tick(server, b);
-                    cow.invulnerableTime = 0;
+                    com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(cow, 0);
                 }
                 assertTrue(cow.getHealth() < cowHealth, "the guard landed a punch");
                 assertTrue(cowHealth - cow.getHealth() <= PuppetConfig.MELEE_DAMAGE.get() + 1e-3, "a weak one");
@@ -440,7 +440,7 @@ class DirectiveTest {
                 puppet.snapTo(victim.getX() - 0.6, ground, victim.getZ(), -90f, 0f);
                 for (int i = 0; i < 60 && victim.getHealth() >= 20f; i++) {
                     tick(server, puppet);
-                    victim.invulnerableTime = 0;
+                    com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(victim, 0);
                 }
                 assertTrue(victim.getHealth() < 20f, "and the puppets hit them");
 

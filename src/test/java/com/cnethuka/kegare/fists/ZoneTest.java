@@ -56,7 +56,7 @@ class ZoneTest {
 
                 // 120%: damage of every kind, and RMT, which ignores the fatigue.
                 assertEquals(2f * zone, BlackSparkTest.swing(p, golem, 2f), EPS, "melee x1.2");
-                golem.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(golem, 0);
                 float hp = golem.getHealth();
                 golem.hurt(com.cnethuka.kegare.innate_technique.rime.RimeDamage.source(level, p, p), 2f);
                 assertEquals(2f * zone, hp - golem.getHealth(), EPS, "a technique x1.2 too");

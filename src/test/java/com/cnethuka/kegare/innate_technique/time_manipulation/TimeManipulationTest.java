@@ -401,7 +401,7 @@ class TimeManipulationTest {
                 // TimeTargetEvent cancelled: the slows land, the cooldown slow doesn't.
                 CooldownRates.clear();
                 target.removeAllEffects();
-                target.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(target, 0);
                 NeoForge.EVENT_BUS.addListener(refuse);
                 DecelerateEntity.strike(hand, caster, target, 1f);
                 assertTrue(target.hasEffect(MobEffects.SLOWNESS));
@@ -413,7 +413,7 @@ class TimeManipulationTest {
                 wither.setNoGravity(true);
                 level.addFreshEntity(wither);
                 float health = wither.getHealth();
-                wither.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(wither, 0);
                 DecelerateEntity.strike(hand, caster, wither, 3f);
                 assertTrue(wither.getHealth() < health, "the boss is hurt");
                 assertFalse(wither.hasEffect(MobEffects.SLOWNESS), "and never slowed");
@@ -565,7 +565,7 @@ class TimeManipulationTest {
                 // The one hit is capped.
                 target.getAttribute(Attributes.MAX_HEALTH).setBaseValue(100.0);
                 target.setHealth(100f);
-                target.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(target, 0);
                 TimeStops.start(caster, caster.position(), 48, 60);
                 target.hurt(caster.damageSources().playerAttack(caster), 30f);
                 target.hurt(caster.damageSources().playerAttack(caster), 30f);
@@ -577,7 +577,7 @@ class TimeManipulationTest {
                 // the stop goes on without them.
                 float cap = TimeConfig.STANDSTILL_DAMAGE_CAP.get().floatValue();
                 target.setHealth(100f);
-                target.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(target, 0);
                 TimeStops.start(caster, caster.position(), 48, 60);
                 target.hurt(caster.damageSources().playerAttack(caster), 30f);
                 target.hurt(caster.damageSources().playerAttack(caster), 30f);
@@ -591,7 +591,7 @@ class TimeManipulationTest {
 
                 // Sent to another level: the same, before they go.
                 target.setHealth(100f);
-                target.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(target, 0);
                 TimeStops.start(caster, caster.position(), 48, 60);
                 target.hurt(caster.damageSources().playerAttack(caster), 10f);
                 NeoForge.EVENT_BUS.post(new EntityTravelToDimensionEvent(target, Level.NETHER));
@@ -602,7 +602,7 @@ class TimeManipulationTest {
 
                 // A frozen player who dies during it has nothing left to land.
                 target.setHealth(100f);
-                target.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(target, 0);
                 TimeStops.start(caster, caster.position(), 48, 60);
                 target.hurt(caster.damageSources().playerAttack(caster), 10f);
                 NeoForge.EVENT_BUS.post(new LivingDeathEvent(target, caster.damageSources().generic()));
@@ -611,7 +611,7 @@ class TimeManipulationTest {
                 assertEquals(100f, target.getHealth(), EPS, "dropped");
 
                 // The caster dies: it ends early, and what was held lands.
-                target.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(target, 0);
                 TimeStops.start(caster, caster.position(), 48, 60);
                 target.hurt(caster.damageSources().playerAttack(caster), 10f);
                 NeoForge.EVENT_BUS.post(new LivingDeathEvent(caster, caster.damageSources().generic()));
@@ -621,7 +621,7 @@ class TimeManipulationTest {
                 // Logging out is no way out: if what was held kills them, they die.
                 target.getAttribute(Attributes.MAX_HEALTH).setBaseValue(20.0);
                 target.setHealth(5f);
-                target.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(target, 0);
                 TimeStops.start(caster, caster.position(), 48, 60);
                 target.hurt(caster.damageSources().playerAttack(caster), 12f);
                 TimeStops.onLeaving(target);

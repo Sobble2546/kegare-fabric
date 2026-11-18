@@ -62,7 +62,7 @@ class SeveredBodyTest {
 
     private static float took(LivingEntity victim, DamageSource source, float amount) {
         victim.setHealth(victim.getMaxHealth());
-        victim.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(victim, 0);
         victim.hurt(source, amount);
         return victim.getMaxHealth() - victim.getHealth();
     }

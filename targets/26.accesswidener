@@ -4,3 +4,6 @@ accessible field net/minecraft/client/gui/GuiGraphicsExtractor guiRenderState Ln
 accessible field net/minecraft/client/gui/GuiGraphicsExtractor scissorStack Lnet/minecraft/client/gui/GuiGraphicsExtractor$ScissorStack;
 accessible class net/minecraft/client/gui/GuiGraphicsExtractor$ScissorStack
 accessible method net/minecraft/client/gui/GuiGraphicsExtractor$ScissorStack peek ()Lnet/minecraft/client/gui/navigation/ScreenRectangle;
+# EntityCompat.clearSwing (tests): the swing state has no public reset.
+accessible field net/minecraft/world/entity/LivingEntity swingState Lnet/minecraft/world/entity/LivingEntity$SwingState;
+accessible field net/minecraft/world/entity/LivingEntity$SwingState currentSwing Lnet/minecraft/world/entity/LivingEntity$SwingDescription;

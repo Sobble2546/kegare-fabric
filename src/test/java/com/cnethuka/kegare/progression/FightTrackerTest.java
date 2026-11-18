@@ -34,7 +34,7 @@ class FightTrackerTest {
     }
 
     private static void hit(ServerPlayer attacker, ServerPlayer victim, float amount) {
-        victim.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(victim, 0);
         assertTrue(victim.hurtServer((net.minecraft.server.level.ServerLevel) victim.level(), attacker.damageSources().playerAttack(attacker), amount), "setup: the hit lands");
     }
 
@@ -92,7 +92,7 @@ class FightTrackerTest {
             InnateTechniqueService.setInnateTechnique(a, PuppetManipulation.PUPPET_MANIPULATION.get());
 
             a.hurt(a.damageSources().playerAttack(a), 2);
-            a.invulnerableTime = 0;
+            com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(a, 0);
             a.hurt(a.damageSources().fall(), 2);
             assertTrue(FightTracker.of(a).isEmpty(), "yourself and the environment are never a fight");
 

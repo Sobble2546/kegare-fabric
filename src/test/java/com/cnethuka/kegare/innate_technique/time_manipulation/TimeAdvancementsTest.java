@@ -142,7 +142,7 @@ class TimeAdvancementsTest {
                 DecelerateEntity.strike(hand, caster, other, 1f);
                 assertFalse(has(server, caster, TimeAdvancements.SLOW_MOTION), "nothing on cooldown");
                 InnateTechniqueService.startCooldown(other, Swap.POSITIONS);
-                other.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(other, 0);
                 DecelerateEntity.strike(hand, caster, other, 1f);
                 assertTrue(has(server, caster, TimeAdvancements.SLOW_MOTION), "Slow Motion");
                 CooldownRates.clear();

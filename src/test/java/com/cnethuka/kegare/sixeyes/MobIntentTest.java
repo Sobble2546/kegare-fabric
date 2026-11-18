@@ -115,12 +115,12 @@ class MobIntentTest {
 
     /** A melee mob's first swing as it closes in, then the swing after it. */
     private static void swings(MinecraftServer server, ServerLevel level, Mob mob, int maxTicks) {
-        int first = pulsedBefore(server, level, mob, SightPayloads.Pulse.SWING, () -> mob.swinging, maxTicks);
+        int first = pulsedBefore(server, level, mob, SightPayloads.Pulse.SWING, () -> com.cnethuka.kegare.platform.EntityCompat.isSwinging(mob), maxTicks);
         assertTrue(first >= 1, "the first swing is read as it closes in");
         // Hoglins never clear this themselves: reset it so the next swing shows.
-        mob.swinging = false;
+        com.cnethuka.kegare.platform.EntityCompat.clearSwing(mob);
         mob.swingTime = 0;
-        int second = pulsedBefore(server, level, mob, SightPayloads.Pulse.SWING, () -> mob.swinging, maxTicks);
+        int second = pulsedBefore(server, level, mob, SightPayloads.Pulse.SWING, () -> com.cnethuka.kegare.platform.EntityCompat.isSwinging(mob), maxTicks);
         assertTrue(second >= 1, "and the swing after it");
     }
 

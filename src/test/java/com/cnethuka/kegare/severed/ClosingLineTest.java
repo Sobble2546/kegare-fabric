@@ -128,7 +128,7 @@ class ClosingLineTest {
                     impacts.clear();
                     target.setDeltaMovement(Vec3.ZERO);
                     target.setHealth(target.getMaxHealth());
-                    target.invulnerableTime = 0;
+                    com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(target, 0);
                     target.hurt(s.damageSources().playerAttack(s), 1f);
                     float dealt = target.getMaxHealth() - target.getHealth();
                     assertEquals(1f * SeveredBody.strength() + SeveredConfig.MOMENTUM_DAMAGE.get() * speed, dealt, 1.0e-3, "Strength, then the momentum on top");
@@ -142,7 +142,7 @@ class ClosingLineTest {
                 }
                 assertFalse(ClosingLine.momentumReady(s), "spent on the first hit");
                 target.setHealth(target.getMaxHealth());
-                target.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(target, 0);
                 target.hurt(s.damageSources().playerAttack(s), 1f);
                 assertEquals(SeveredBody.strength(), target.getMaxHealth() - target.getHealth(), 1.0e-3, "the next is a plain hit");
 
@@ -308,7 +308,7 @@ class ClosingLineTest {
                     impacts.clear();
                     target.setHealth(target.getMaxHealth());
                     target.setDeltaMovement(Vec3.ZERO);
-                    target.invulnerableTime = 0;
+                    com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(target, 0);
                     arrived(s, level);
                     target.hurt(s.damageSources().playerAttack(s), weapons[i]);
                     com.cnethuka.kegare.impact.Impacts.flush();

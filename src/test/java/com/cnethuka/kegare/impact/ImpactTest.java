@@ -132,7 +132,7 @@ class ImpactTest {
             a.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.ItemStack.EMPTY);
 
             seen.clear();
-            b.invulnerableTime = 0;
+            com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(b, 0);
             b.hurt(RimeDamage.source(server.overworld(), null, a), 12f);
             Impacts.charge(b, 1.0);
             Impacts.flush();
@@ -144,7 +144,7 @@ class ImpactTest {
             // Inside a paid cast (a Glacial Lance at its base cost of 100): that cast's base cost goes in, whatever the surroundings made
             // it cost.
             seen.clear();
-            b.invulnerableTime = 0;
+            com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(b, 0);
             com.cnethuka.kegare.innatetechnique.InnateTechniqueService.setInnateTechnique(a, com.cnethuka.kegare.innate_technique.rime.Rime.RIME.get());
             var lance = com.cnethuka.kegare.innate_technique.rime.Rime.GLACIAL_LANCE;
             double multiplier = com.cnethuka.kegare.innatetechnique.InnateTechniqueService.current(a).orElseThrow().environment(a).multiplier();

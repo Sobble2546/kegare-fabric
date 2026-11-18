@@ -49,7 +49,7 @@ class BackgroundReinforcementTest {
     }
 
     private static float taken(ServerPlayer p, DamageSource source) {
-        p.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(p, 0);
         p.setHealth(p.getMaxHealth());
         float before = p.getHealth();
         p.hurt(source, 4f);

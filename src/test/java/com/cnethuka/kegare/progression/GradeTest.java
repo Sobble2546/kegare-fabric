@@ -39,7 +39,7 @@ class GradeTest {
     }
 
     private static void hit(ServerPlayer attacker, ServerPlayer victim, float amount) {
-        victim.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(victim, 0);
         assertTrue(victim.hurtServer((net.minecraft.server.level.ServerLevel) victim.level(), attacker.damageSources().playerAttack(attacker), amount), "setup: the hit lands");
     }
 

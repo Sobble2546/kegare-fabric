@@ -55,7 +55,7 @@ class ParryTimingTest {
 
     private static void swing(ServerPlayer attacker, ServerPlayer defender, double swungAt, double arrivedAt) {
         SubTick.stamp(attacker, TimedInput.ATTACK, Math.round(swungAt), arrivedAt);
-        defender.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(defender, 0);
         attacker.attack(defender);
     }
 

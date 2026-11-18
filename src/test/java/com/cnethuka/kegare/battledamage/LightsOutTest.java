@@ -40,7 +40,7 @@ class LightsOutTest {
     private static void spark(ServerPlayer attacker, LivingEntity target) {
         BlackSpark.force(attacker);
         NeoForge.EVENT_BUS.post(new AttackEntityEvent(attacker, target));
-        target.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(target, 0);
         target.hurt(attacker.damageSources().playerAttack(attacker), 0.01f);
         BlackSpark.knockBack();
         Impacts.flush();

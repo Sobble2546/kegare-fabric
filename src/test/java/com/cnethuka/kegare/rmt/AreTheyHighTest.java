@@ -39,7 +39,7 @@ class AreTheyHighTest {
         ServerPlayer p = player(server, name + "_p", 0.5);
         ServerPlayer q = player(server, name + "_q", 6.5);
         KegareAdvancements.award(p, KegareAdvancements.ITS_BEEN_A_WHILE);
-        q.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(q, 0);
         q.hurt(p.damageSources().playerAttack(p), 1f); // a hit between them
         q.setHealth(q.getMaxHealth());
         return new ServerPlayer[] {p, q};

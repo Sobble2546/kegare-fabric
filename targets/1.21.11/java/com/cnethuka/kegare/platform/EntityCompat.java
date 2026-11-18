@@ -52,4 +52,14 @@ public final class EntityCompat {
     public static void giveBack(net.minecraft.world.entity.player.Inventory inventory, net.minecraft.world.item.ItemStack stack) {
         inventory.placeItemBackInInventory(stack);
     }
+
+    public static boolean isSwinging(LivingEntity entity) {
+        return entity.swinging;
+    }
+
+    /** Ends a swing at once (tests reset an attacker between cases). */
+    public static void clearSwing(LivingEntity entity) {
+        entity.swinging = false;
+        entity.swingTime = 0;
+    }
 }

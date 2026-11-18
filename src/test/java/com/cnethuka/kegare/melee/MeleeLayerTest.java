@@ -86,7 +86,7 @@ class MeleeLayerTest {
 
     /** Hits {@code victim} with a melee hit from {@code attacker}, past the game's hit immunity. Returns the damage taken. */
     private static float melee(LivingEntity victim, LivingEntity attacker, float amount) {
-        victim.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(victim, 0);
         float before = victim.getHealth();
         victim.hurt(attacker instanceof ServerPlayer p ? p.damageSources().playerAttack(p) : attacker.damageSources().mobAttack(attacker), amount);
         return before - victim.getHealth();
@@ -298,7 +298,7 @@ class MeleeLayerTest {
             ServerPlayer caster = player(server, "parry_caster", 1000);
             send(p, Action.PARRY_PRESS);
 
-            p.invulnerableTime = 0;
+            com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(p, 0);
             float before = p.getHealth();
             p.hurt(RimeDamage.source(level, caster, caster), 10f);
             assertEquals(10f * (1f - MeleeConfig.GUARD_TECHNIQUE_REDUCTION.get().floatValue()), before - p.getHealth(), EPS, "in the perfect window: only the slight reduction");
@@ -306,7 +306,7 @@ class MeleeLayerTest {
             assertFalse(caster.hasEffect(MobEffects.SLOWNESS), "and no stagger");
 
             p.setHealth(p.getMaxHealth());
-            p.invulnerableTime = 0;
+            com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(p, 0);
             Arrow arrow = new Arrow(EntityType.ARROW, level);
             arrow.setOwner(caster);
             before = p.getHealth();
@@ -637,11 +637,11 @@ class MeleeLayerTest {
                 dashAside(p, level);
                 MeleeLayer.tick(p);
                 assertFalse(ReinforcedStrike.isReady(p), "nothing thrown yet");
-                attacker.swing(InteractionHand.MAIN_HAND);
+                com.cnethuka.kegare.platform.EntityCompat.swing(attacker, InteractionHand.MAIN_HAND);
                 MeleeLayer.tick(p);
                 assertTrue(ReinforcedStrike.isReady(p), "they swung at the old spot and missed");
             } finally {
-                attacker.swinging = false;
+                com.cnethuka.kegare.platform.EntityCompat.clearSwing(attacker);
                 level.removePlayerImmediately(attacker, net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
             }
         });
@@ -660,10 +660,10 @@ class MeleeLayerTest {
                 p.snapTo(8.5, ground(level), 2.5, 0f, 0f);
                 attacker.lookAt(EntityAnchorArgument.Anchor.EYES, new Vec3(20, attacker.getEyeY(), 2.5));
                 dashAside(p, level);
-                attacker.swing(InteractionHand.MAIN_HAND);
+                com.cnethuka.kegare.platform.EntityCompat.swing(attacker, InteractionHand.MAIN_HAND);
                 MeleeLayer.tick(p);
                 assertFalse(ReinforcedStrike.isReady(p), "not aimed at them");
-                attacker.swinging = false;
+                com.cnethuka.kegare.platform.EntityCompat.clearSwing(attacker);
 
                 // They didn't really get out of the way: the swing reaches where they are now too.
                 ServerPlayer near = player(server, "dodge_miss_near", 1000);
@@ -671,10 +671,10 @@ class MeleeLayerTest {
                 attacker.lookAt(EntityAnchorArgument.Anchor.EYES, near.getEyePosition());
                 send(near, Action.DASH);
                 MeleeLayer.state(near).dashDirection = null;
-                attacker.swing(InteractionHand.MAIN_HAND);
+                com.cnethuka.kegare.platform.EntityCompat.swing(attacker, InteractionHand.MAIN_HAND);
                 MeleeLayer.tick(near);
                 assertFalse(ReinforcedStrike.isReady(near), "still in the way");
-                attacker.swinging = false;
+                com.cnethuka.kegare.platform.EntityCompat.clearSwing(attacker);
 
                 // Too late.
                 ServerPlayer late = player(server, "dodge_miss_late", 1000);
@@ -682,10 +682,10 @@ class MeleeLayerTest {
                 attacker.lookAt(EntityAnchorArgument.Anchor.EYES, late.getEyePosition());
                 dashAside(late, level);
                 advance(server, late, MeleeConfig.ticks(MeleeConfig.DODGE_WINDOW.get()) + 1);
-                attacker.swing(InteractionHand.MAIN_HAND);
+                com.cnethuka.kegare.platform.EntityCompat.swing(attacker, InteractionHand.MAIN_HAND);
                 MeleeLayer.tick(late);
                 assertFalse(ReinforcedStrike.isReady(late), "past the window");
-                attacker.swinging = false;
+                com.cnethuka.kegare.platform.EntityCompat.clearSwing(attacker);
 
                 // Hit in the window: not clean, whatever follows.
                 ServerPlayer hit = player(server, "dodge_miss_hit", 1000);
@@ -693,11 +693,11 @@ class MeleeLayerTest {
                 attacker.lookAt(EntityAnchorArgument.Anchor.EYES, hit.getEyePosition());
                 dashAside(hit, level);
                 melee(hit, attacker, 1f);
-                attacker.swing(InteractionHand.MAIN_HAND);
+                com.cnethuka.kegare.platform.EntityCompat.swing(attacker, InteractionHand.MAIN_HAND);
                 MeleeLayer.tick(hit);
                 assertFalse(ReinforcedStrike.isReady(hit), "a hit landed: not clean");
             } finally {
-                attacker.swinging = false;
+                com.cnethuka.kegare.platform.EntityCompat.clearSwing(attacker);
                 level.removePlayerImmediately(attacker, net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
             }
         });

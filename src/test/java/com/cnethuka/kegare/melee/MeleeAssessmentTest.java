@@ -59,7 +59,7 @@ class MeleeAssessmentTest {
     }
 
     private static void hit(LivingEntity victim, LivingEntity attacker) {
-        victim.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(victim, 0);
         victim.hurt(attacker instanceof ServerPlayer p ? p.damageSources().playerAttack(p) : attacker.damageSources().mobAttack(attacker), 4f);
     }
 
@@ -181,12 +181,12 @@ class MeleeAssessmentTest {
             level.addNewPlayer(attacker);
             try {
                 dashAside(p, level);
-                attacker.swing(InteractionHand.MAIN_HAND);
+                com.cnethuka.kegare.platform.EntityCompat.swing(attacker, InteractionHand.MAIN_HAND);
                 MeleeLayer.tick(p);
                 assertTrue(ReinforcedStrike.isReady(p), "dodged");
                 assertEquals(List.of(MeleeMoves.CLEAN_DODGE), moves(p, attacker));
             } finally {
-                attacker.swinging = false;
+                com.cnethuka.kegare.platform.EntityCompat.clearSwing(attacker);
                 level.removePlayerImmediately(attacker, Entity.RemovalReason.DISCARDED);
             }
         });

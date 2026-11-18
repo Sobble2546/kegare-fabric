@@ -122,11 +122,11 @@ class UnderstudyTest {
                 owner.setOldPosAndRot();
                 owner.snapTo(owner.getX(), ground, owner.getZ() + 1.0, 30f, 10f);
                 owner.setYHeadRot(30f);
-                owner.swing(InteractionHand.MAIN_HAND);
+                com.cnethuka.kegare.platform.EntityCompat.swing(owner, InteractionHand.MAIN_HAND);
                 DirectiveTest.tick(server, puppet);
                 assertEquals(from.z + 1.0, puppet.getZ(), 0.05, "moved the same step");
                 assertEquals(30f, puppet.getYRot(), EPS, "faces where the owner faces");
-                assertTrue(puppet.swinging, "swings when the owner swings");
+                assertTrue(com.cnethuka.kegare.platform.EntityCompat.isSwinging(puppet), "swings when the owner swings");
                 assertFalse(puppet.attack(owner), "never attacks");
                 owner.setShiftKeyDown(true);
                 owner.setPose(net.minecraft.world.entity.Pose.CROUCHING);

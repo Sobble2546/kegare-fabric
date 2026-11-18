@@ -189,12 +189,12 @@ class PossessionTest {
                 // The puppet dies: snap back with backlash (nausea, a stun, Malice lost); the player lives.
                 InnateTechniqueService.clearCooldowns(p);
                 MaliceService.refill(p);
-                p.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(p, 0);
                 aimAt(p, puppet);
                 CastManager.handleIntent(p, CastIntent.SPECIAL_PRESS);
                 assertTrue(Possession.isPossessing(p));
                 double malice = PuppetTest.malice(p);
-                p.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(p, 0);
                 p.hurt(level.damageSources().playerAttack(attacker), 50f);
                 assertTrue(p.isAlive(), "the player doesn't die");
                 assertFalse(Possession.isPossessing(p), "snapped back");

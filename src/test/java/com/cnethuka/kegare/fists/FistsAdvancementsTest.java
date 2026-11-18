@@ -54,7 +54,7 @@ class FistsAdvancementsTest {
     }
 
     private static void hit(ServerPlayer attacker, LivingEntity target) {
-        target.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(target, 0);
         target.hurt(attacker.damageSources().playerAttack(attacker), 0.05f);
         target.setHealth(target.getMaxHealth());
     }

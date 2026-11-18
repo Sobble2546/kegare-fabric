@@ -373,7 +373,7 @@ class BattleDamageTest {
                     Impacts.hit(a, b, ImpactKind.TECHNIQUE, 2.0, 0, 1, false); // a Total Swap's worth, from Swap
                     Impacts.flush();
                     assertSame(Blocks.GLASS, level.getBlockState(AT.below()).getBlock(), "Swap is a clean magic trick");
-                    b.invulnerableTime = 0;
+                    com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(b, 0);
                     b.hurt(a.damageSources().playerAttack(a), 1f); // a punch
                     Impacts.flush();
                     assertSame(Blocks.GLASS, level.getBlockState(AT.below()).getBlock(), "a light hit never breaks anything");

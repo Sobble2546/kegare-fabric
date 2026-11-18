@@ -74,7 +74,7 @@ class FistsTest {
     }
 
     static float melee(LivingEntity victim, ServerPlayer attacker, float amount) {
-        victim.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(victim, 0);
         float before = victim.getHealth();
         victim.hurt(attacker.damageSources().playerAttack(attacker), amount);
         return before - victim.getHealth();
@@ -168,7 +168,7 @@ class FistsTest {
                 assertTrue(FistsConfig.FIST_BONUS.get() > FistsConfig.WEAPON_BONUS.get(), "the fist's is bigger");
                 p.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                 // Not a melee hit: no bonus.
-                golem.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(golem, 0);
                 float hp = golem.getHealth();
                 golem.hurt(level.damageSources().thorns(p), 2f);
                 assertEquals(2f, hp - golem.getHealth(), EPS, "thorns isn't a fist");
@@ -206,7 +206,7 @@ class FistsTest {
                 assertEquals(1, SecondImpact.pending(), "one coming");
 
                 int delay = FistsConfig.ticks(FistsConfig.SECOND_IMPACT_DELAY);
-                golem.invulnerableTime = 14; // what's left of the Strike's hurt cooldown by then
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(golem, 14); // what's left of the Strike's hurt cooldown by then
                 float hp = golem.getHealth();
                 TestServer.advanceGameTime(server, delay - 1);
                 SecondImpact.tick(level);
@@ -214,7 +214,7 @@ class FistsTest {
                 TestServer.advanceGameTime(server, 1);
                 SecondImpact.tick(level);
                 assertEquals(expected * FistsConfig.SECOND_IMPACT_DAMAGE.get(), hp - golem.getHealth(), EPS, "secondImpactDamage of the Strike, through the cooldown");
-                assertEquals(14, golem.invulnerableTime, "and the hurt cooldown isn't lengthened");
+                assertEquals(14, com.cnethuka.kegare.platform.EntityCompat.invulnerableTime(golem), "and the hurt cooldown isn't lengthened");
                 assertEquals(0, SecondImpact.pending());
                 assertTrue(SecondImpact.source(level, p).is(DamageTypeTags.NO_KNOCKBACK), "it never moves anyone (bosses)");
             } finally {

@@ -104,7 +104,7 @@ class LandingsTest {
             assertEquals(List.of(PuppetManipulation.PUPPET_CREATION.id().toString()), landed(owner, enemy));
             assertEquals(0.0, RefinementService.get(owner).xp(), 1.0e-6, "on the fight's record, but the owner has done nothing to earn from it");
 
-            puppet.invulnerableTime = 0;
+            com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(puppet, 0);
             puppet.hurt(owner.damageSources().playerAttack(owner), 1f);
             assertEquals(0.0, GradeService.get(owner).xp(), 1.0e-6, "your own puppet gives nothing");
             Landings.land(owner, puppet, PuppetManipulation.CURIO_BURST);

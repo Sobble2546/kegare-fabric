@@ -42,7 +42,7 @@ class RmtFatigueTest {
 
     private static void hit(ServerPlayer p, float amount) {
         p.setHealth(p.getMaxHealth());
-        p.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(p, 0);
         p.hurt(p.damageSources().generic(), amount);
     }
 

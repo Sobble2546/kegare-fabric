@@ -25,7 +25,7 @@ class SixEyesAdvancementsTest {
     }
 
     private static void hit(LivingEntity victim, ServerPlayer attacker, float amount) {
-        victim.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(victim, 0);
         victim.hurt(attacker.damageSources().playerAttack(attacker), amount);
     }
 

@@ -238,6 +238,11 @@ class BlockMarksTest {
 
     private static VertexConsumer recorder(List<float[]> corners) {
         return new VertexConsumer() {
+            // 26.x adds a third UV set to the interface (no @Override: 1.21.11 has no such method).
+            public VertexConsumer setUv3(float u, float v) {
+                return this;
+            }
+
             @Override
             public VertexConsumer addVertex(float x, float y, float z) {
                 corners.add(new float[] {x, y, z});

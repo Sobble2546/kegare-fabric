@@ -36,7 +36,7 @@ class SeveredAdvancementsTest {
 
     /** {@code killer} kills {@code victim} with a hit (then the victim is stood back up for the next test step). */
     private static void kill(ServerPlayer killer, LivingEntity victim) {
-        victim.invulnerableTime = 0;
+        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(victim, 0);
         victim.hurt(killer.damageSources().playerAttack(killer), 1000f);
         victim.setHealth(victim.getMaxHealth());
     }
@@ -116,10 +116,10 @@ class SeveredAdvancementsTest {
 
                 // Brought to the line by a Malice user, then that player killed while the fight is on.
                 s.setHealth(s.getMaxHealth());
-                s.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(s, 0);
                 m.hurt(m.damageSources().playerAttack(s), 1f); // the fight starts
                 s.setHealth(low + 2);
-                s.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(s, 0);
                 s.hurt(s.damageSources().playerAttack(m), 4f); // down to the line in it
                 assertTrue(s.getHealth() <= low, "setup: low");
                 s.setHealth(s.getMaxHealth()); // golden apples and healing are fine
@@ -133,7 +133,7 @@ class SeveredAdvancementsTest {
                 m2.snapTo(0.5, Y, 0.5);
                 m2.hurt(m2.damageSources().playerAttack(s2), 1f);
                 s2.setHealth(low + 2);
-                s2.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(s2, 0);
                 s2.hurt(s2.damageSources().playerAttack(m2), 4f);
                 NeoForge.EVENT_BUS.post(new LivingUseTotemEvent(s2, s2.damageSources().playerAttack(m2), new ItemStack(Items.TOTEM_OF_UNDYING), InteractionHand.OFF_HAND));
                 s2.setHealth(s2.getMaxHealth());
@@ -147,7 +147,7 @@ class SeveredAdvancementsTest {
                 m3.snapTo(0.5, Y, 0.5);
                 m3.hurt(m3.damageSources().playerAttack(s3), 1f);
                 s3.setHealth(low + 2);
-                s3.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(s3, 0);
                 s3.hurt(s3.damageSources().playerAttack(m3), 4f);
                 FightTracker.onLogout(m3); // the fight ends
                 s3.setHealth(s3.getMaxHealth());
@@ -159,7 +159,7 @@ class SeveredAdvancementsTest {
                 m4.snapTo(0.5, Y, 0.5);
                 bystander.hurt(bystander.damageSources().playerAttack(m4), 1f);
                 m4.setHealth(low + 2);
-                m4.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(m4, 0);
                 m4.hurt(m4.damageSources().playerAttack(bystander), 4f);
                 kill(m4, bystander);
                 assertFalse(has(server, m4, SeveredAdvancements.JUST_GETTING_STARTED), "not Severed");

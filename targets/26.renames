@@ -24,7 +24,7 @@
 \.renderFakeItem\(	.fakeItem(
 \.renderItemDecorations\(	.itemDecorations(
 \.submitEntityRenderState\(	.entity(
-\.mulPose\(	.rotate(
+\.mulPose\((?!view\.invert)	.rotate(
 \.displayClientMessage\((.*), true\);	.sendOverlayMessage($1);
 \.displayClientMessage\((.*), false\);	.sendSystemMessage($1);
 \.getMainCamera\(\)	.mainCamera()
@@ -82,3 +82,8 @@ kegare\$knockback\(double strength, double x, double z, CallbackInfo ci\)	kegare
 , null, 0, null\);$	, null, 0);
 , null, state\.outlineColor, null\);$	, null, state.outlineColor);
 , null, color, null\);$	, null, color, 0);
+(?<![\w.])(?:net\.minecraft\.world\.entity\.)?EntityType\.(?!CODEC\b|STREAM_CODEC\b)([A-Z][A-Z0-9_]+)\b	net.minecraft.world.entity.EntityTypes.$1
+\b(display|bush|missing)\.isHidden\(\)	$1.hidden()
+orElseThrow\(\)\.isHidden\(\)	orElseThrow().hidden()
+\b(display|bush|missing)\.getType\(\)	$1.type()
+\.render\(null, null\)	.extractRenderState(null, null)

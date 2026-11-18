@@ -179,7 +179,7 @@ class StandstillHitsTest {
                 Mob golem = mob(level, EntityType.IRON_GOLEM, 2.4, 0.5, all);
                 charged(caster);
                 caster.attack(golem);
-                assertEquals(20, golem.invulnerableTime, "setup: its hurt cooldown running");
+                assertEquals(20, com.cnethuka.kegare.platform.EntityCompat.invulnerableTime(golem), "setup: its hurt cooldown running");
                 CastManager.handleIntent(caster, CastIntent.ULTIMATE_PRESS);
                 resume(server, level); // its cooldown stood still with it
                 float before = golem.getHealth();
@@ -217,14 +217,14 @@ class StandstillHitsTest {
                 cube.playerTouch(caster);
                 assertEquals(health, caster.getHealth(), 1.0e-4, "the caster untouched, even walking into a frozen magma cube");
                 assertTrue(com.cnethuka.kegare.platform.event.EventHooks.onEnderTeleport(enderman, 20.5, Y, 20.5).isCanceled(), "a frozen enderman never teleports");
-                zombie.knockback(1.0, -1.0, 0.0);
+                com.cnethuka.kegare.platform.EntityCompat.knockback(zombie, 1.0, -1.0, 0.0);
                 assertEquals(Vec3.ZERO, zombie.getDeltaMovement(), "and nothing frozen is pushed");
                 resume(server, level);
-                caster.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(caster, 0);
                 float now = caster.getHealth();
                 cube.playerTouch(caster);
                 assertTrue(caster.getHealth() < now, "the same touch hurts once time runs again (so the check above meant something)");
-                caster.invulnerableTime = 0;
+                com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(caster, 0);
                 assertTrue(caster.hurtServer((net.minecraft.server.level.ServerLevel) caster.level(), caster.damageSources().mobAttack(zombie), 3f), "and so does its blow");
             } finally {
                 all.forEach(Mob::discard);

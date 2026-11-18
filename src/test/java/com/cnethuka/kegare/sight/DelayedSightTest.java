@@ -278,7 +278,7 @@ class DelayedSightTest {
                         DelayedSight.clear();
                         mover.snapTo(0.5, Y, 20.5, -90f, 0f);
                         mover.setHealth(mover.getMaxHealth());
-                        mover.invulnerableTime = 0;
+                        com.cnethuka.kegare.platform.EntityCompat.setInvulnerableTime(mover, 0);
                         run(server, mover, speed, 12); // up to speed, the image eased in
                         attacker.snapTo(mover.getX() + 4, Y, 8.5, 0f, 0f);
                         Vec3 aim = DelayedSight.seenAt(attacker, mover).add(0, 1.2, 0);
