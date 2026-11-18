@@ -1,6 +1,6 @@
 # Kegare
 
-**An unofficial, fan-made Jujutsu Kaisen mod for Minecraft 1.21.1 (NeoForge), made for PvP between friends.**
+**An unofficial, fan-made Jujutsu Kaisen mod for Minecraft (Fabric: 1.21.11, 26.2 and 26.3), made for PvP between friends.**
 
 Kegare brings the world of Gege Akutami's *Jujutsu Kaisen* into Minecraft. Every player is born with **Malice**, the mod's take on
 cursed energy, and an **Innate Technique** to fight with, or is born **Severed**: no Malice at all, and a superhuman body in its
@@ -57,7 +57,7 @@ that will share the mod's name, are still to come.
 - **Background Tasks:** keep Reinforcement or Reverse Malice Technique running without a bar slot, weaker than on the bar.
 
 **Also**
-- **Eyewear:** a Blindfold and Sunglasses, worn in their own Curios slot.
+- **Eyewear:** a Blindfold and Sunglasses, worn in their own Trinkets slot (1.21.11 only for now).
 - **Your own settings:** ability effects at Full, Reduced or Vanilla, screen shake from 0 to 200%, and impact frames on or off
   (Sorcerer screen, then Settings).
 - **Server-authoritative:** every gameplay number is in `config/kegare-server.toml`.
@@ -67,18 +67,33 @@ Every system is described in full in [DESIGN.md](DESIGN.md).
 
 ## Installing
 
-Kegare runs on Minecraft 1.21.1 with NeoForge 21.1.x. Every player **and** the server need Kegare and these mods in their
-`mods` folder:
+Kegare is a Fabric mod (Fabric Loader 0.20 or newer) with one jar per Minecraft version: **1.21.11**, **26.2** and **26.3**.
+Every player **and** the server need the Kegare jar for their own Minecraft version and these mods in their `mods` folder:
 
-| Mod | Version | Download | Why |
-|---|---|---|---|
-| Player Animation Library (by ZigyTheBird, *not* KosmX's playerAnimator) | 1.1.6 or newer | [Modrinth](https://modrinth.com/mod/player-animation-library) | player animations |
-| Photon (by KilaBash) | 2.2.10 or newer | [Modrinth](https://modrinth.com/mod/photon-editor) | ability visual effects |
-| LDLib2 (by KilaBash) | 2.2.45 or newer | [Modrinth](https://modrinth.com/mod/ldlib) | required by Photon |
-| Curios API (by TheIllusiveC4) | 9.5.1 or newer | [Modrinth](https://modrinth.com/mod/curios) | the slot eyewear sits in |
+| Mod | 1.21.11 | 26.2 | 26.3 | Why |
+|---|---|---|---|---|
+| [Fabric API](https://modrinth.com/mod/fabric-api) | 0.141.6+1.21.11 | 0.161.0+26.2 | 0.166.2+26.3 | required |
+| [Player Animation Library](https://modrinth.com/mod/player-animation-library) (by ZigyTheBird, *not* KosmX's playerAnimator) | 1.1.12 | 1.2.9 | 1.2.9 | player animations |
+| [Forge Config API Port](https://modrinth.com/mod/forge-config-api-port) (by Fuzs) | 21.11.1 | 26.2.1 | 26.3.1 | the config files and config screen |
+| [Trinkets (Updated)](https://modrinth.com/mod/trinkets-updated), optional | 3.11.0-beta.2 | not used | not used | the slot eyewear sits in (1.21.11 only for now) |
 
-KilaGraph, which Photon needs, is bundled inside Photon. Don't install it separately. Pick the NeoForge 1.21.1 file of each
-one. Minecraft refuses to start and names the missing mod if one is absent.
+The versions listed are the ones Kegare was built against; newer ones for the same Minecraft version should work. Minecraft
+refuses to start and names the missing mod if a required one is absent.
+
+**What differs between the versions.** 1.21.11 is the complete build. On 26.2 and 26.3 the full-screen effects (grayscale and
+invert screens, the hit-stop hold), the Severed Senses outline and the eyewear slot are not there yet; everything else is the
+same game (DESIGN.md §3.13 lists it). Ability effects that used Photon on NeoForge currently draw with vanilla particles on
+every Fabric version; a Fabric port of Photon is in progress and will be bundled inside the Kegare jar.
+
+**Joining a server that doesn't run Kegare.** You can keep Kegare installed: it stays switched off (no HUD, no keys, nothing
+sent) on any server that doesn't announce itself as a Kegare server, and switches on again when you join one. A Kegare server
+only accepts players who have Kegare with the same network version, and says so when it turns someone away.
+
+**Older client, newer server (ViaVersion).** A 1.21.11 player with the 1.21.11 Kegare jar can join a 26.x Kegare server that
+runs [ViaFabric](https://modrinth.com/mod/viafabric) and [ViaBackwards](https://modrinth.com/mod/viabackwards). The server
+owner must set `ignore-registry-sync-errors: true` in `config/ViaFabric/viafabric.yml`; without it Fabric's registry check
+disconnects the older client before Kegare gets a say (this is true of any Fabric mod that adds items, not only Kegare).
+26.x servers ship with the whitelist on; add your players or turn it off in `server.properties`.
 
 Until there's a published release, build Kegare's jar yourself: see [Building from source](#building-from-source).
 
@@ -89,7 +104,7 @@ Until there's a published release, build Kegare's jar yourself: see [Building fr
   channel), **R** + a number key casts that slot's special, **R** alone casts the selected ability's special, and **V** is the
   ultimate. The scroll wheel stays on the hotbar. Out of the mode, number keys are the hotbar and nothing casts.
 - Severed players have no Technique Mode: for them **G** is Blur, and **R** while Blurring is Closing Line.
-- **K** opens the Sorcerer screen. **M** opens the Six Eyes' map (only for a player with the Six Eyes trait). **J** opens Curios' screen, for eyewear.
+- **K** opens the Sorcerer screen. **M** opens the Six Eyes' map (only for a player with the Six Eyes trait). Eyewear goes in the Trinkets slot shown in your inventory (1.21.11, with Trinkets installed).
 - Right-click is always vanilla.
 
 See DESIGN.md §3.5.
@@ -175,11 +190,13 @@ Kegare was made with AI, and you're welcome to use AI tools when you help with i
 
 ## Building from source
 
-Requires JDK 21 (e.g. Temurin). Point `JAVA_HOME` at it if it isn't your default Java.
+Requires JDK 25 (e.g. Temurin) to run Gradle, for every target; point `JAVA_HOME` at it if it isn't your default Java. Add
+`-Ptarget=1.21.11`, `-Ptarget=26.2` or `-Ptarget=26.3` to any command (1.21.11 is the default). Tests and `runData` are
+1.21.11 only; build the 26.x jars with `./gradlew -Ptarget=26.3 build -x test -x compileTestJava`.
 
 | Command | What it does |
 |---|---|
-| `./gradlew build` | Compile, run unit tests, build `build/libs/kegare-<minecraft version>-<version>.jar` (for example `kegare-1.21.1-0.1.0-alpha.jar`) |
+| `./gradlew build` | Compile, run unit tests, build `build/libs/kegare-<minecraft version>-<version>.jar` (for example `kegare-1.21.11-0.1.0-alpha.jar`) |
 | `./gradlew test` | Unit tests (roll/pity math, trait rules, lang keys) plus in-game tests on a throwaway server (e.g. no reroll path changes Malice capacity) |
 | `./gradlew runData` | Regenerate lang, models, tags, recipes, advancements into `src/generated/resources` |
 | `./gradlew runClient` | Dev client |
