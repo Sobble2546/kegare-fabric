@@ -63,7 +63,7 @@ public final class FistBurn {
         return shown == null || !shown.has(FistsPayload.ZONE) ? null : MeleeTell.bright(shown.color()) & 0xFFFFFF;
     }
 
-    private static final net.minecraft.resources.Identifier WHITE = net.minecraft.resources.Identifier.withDefaultNamespace("textures/misc/white.png");
+    private static final net.minecraft.resources.Identifier WHITE = com.cnethuka.kegare.Kegare.id("textures/misc/white.png");
     private static final int BLACK = 0x050307;
     /** How many chips can be round a fist at once, and how often one shows (per tick, each). */
     private static final int FLICKER_CHIPS = 4;

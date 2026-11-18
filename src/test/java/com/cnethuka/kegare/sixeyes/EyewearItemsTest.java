@@ -26,7 +26,7 @@ class EyewearItemsTest {
     @Test
     void theOldNameStillFindsTheSunglasses() {
         assertEquals(Kegare.id("sunglasses"), BuiltInRegistries.ITEM.getKey(KegareItems.SUNGLASSES.get()), "named as they're shown");
-        assertEquals(KegareItems.SUNGLASSES.get(), BuiltInRegistries.ITEM.get(Kegare.id("tinted_glasses")), "the alias");
+        assertEquals(KegareItems.SUNGLASSES.get(), BuiltInRegistries.ITEM.getValue(Kegare.id("tinted_glasses")), "the alias");
     }
 
     @Test

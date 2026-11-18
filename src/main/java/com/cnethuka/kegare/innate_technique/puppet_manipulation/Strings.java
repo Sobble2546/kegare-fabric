@@ -415,7 +415,7 @@ public final class Strings {
         EntityCompat.markHurt(e);
         e.resetFallDistance();
         if (e instanceof Mob mob) mob.getNavigation().stop();
-        if (e instanceof FakePlayer) e.move(MoverType.SELF, v); // nothing else would move one
+        if (com.cnethuka.kegare.platform.Players.isFakeBody(e)) e.move(MoverType.SELF, v); // nothing else would move one
     }
 
     /** A pull is over: only {@code keep} of its speed is left, so it isn't thrown past where it was going. */

@@ -135,7 +135,7 @@ class RimeSpecialsTest {
             CastManager.handleIntent(p, CastIntent.SPECIAL_PRESS);
             assertEquals(before - noShell, malice(p), 1e-3, "paid the without-shell cost");
 
-            // Shattered Pressure: three players caught by one Shatter Shell (two aren't enough). NeoForge's fake
+            // Shattered Pressure: three players caught by one Shatter Shell (two aren't enough). Fake
             // players ignore advancements, so this caster keeps real ones.
             ServerPlayer shatterCaster = withRealAdvancements(server, level, "rime_shatter_caster");
             BirthService.rebirth(shatterCaster, OptionalInt.of(1000));
@@ -176,8 +176,8 @@ class RimeSpecialsTest {
 
     private static ServerPlayer withRealAdvancements(MinecraftServer server, ServerLevel level, String name) {
         java.util.UUID uuid = java.util.UUID.nameUUIDFromBytes(("kegare-test:" + name).getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        // A Fabric API fake player keeps real advancements; it counts as a real player to Kegare's code.
-        return com.cnethuka.kegare.platform.Players.treatAsReal(new net.fabricmc.fabric.api.entity.FakePlayer(level, new com.mojang.authlib.GameProfile(uuid, name)) {});
+        // Not a Fabric API FakePlayer: those never earn advancements (its mixin refuses them), as NeoForge's didn't either.
+        return com.cnethuka.kegare.platform.Players.treatAsReal(new com.cnethuka.kegare.TestPlayer(level, new com.mojang.authlib.GameProfile(uuid, name)));
     }
 
     private static boolean hasAdvancement(MinecraftServer server, ServerPlayer p, net.minecraft.resources.Identifier id) {

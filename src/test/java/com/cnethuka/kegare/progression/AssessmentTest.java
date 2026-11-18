@@ -224,7 +224,7 @@ class AssessmentTest {
             AssessmentData loaded = AssessmentData.CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE, saved).getOrThrow();
             assertEquals(assessed.technique(), loaded.history().get(0).technique(), EPS);
             net.minecraft.nbt.CompoundTag old = ((net.minecraft.nbt.CompoundTag) saved).copy();
-            old.getList("history", net.minecraft.nbt.Tag.TAG_COMPOUND).getCompound(0).remove("technique");
+            old.getListOrEmpty("history").getCompoundOrEmpty(0).remove("technique");
             assertEquals(0.0, AssessmentData.CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE, old).getOrThrow().history().get(0).technique(), EPS);
         });
     }

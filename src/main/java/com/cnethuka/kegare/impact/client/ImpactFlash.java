@@ -34,7 +34,7 @@ import org.joml.Vector3f;
  * smaller the closer it is to your camera. Reduced: fewer spikes, sooner gone. Vanilla: vanilla's crit sparks, or dust in the color.
  */
 final class ImpactFlash {
-    private static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
+    private static final Identifier WHITE = com.cnethuka.kegare.Kegare.id("textures/misc/white.png");
     private static RenderType type() {
         return RenderTypes.entityTranslucentEmissive(WHITE);
     }

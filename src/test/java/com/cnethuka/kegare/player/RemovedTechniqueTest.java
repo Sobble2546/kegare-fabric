@@ -79,13 +79,18 @@ public class RemovedTechniqueTest {
             TestServer.ensureOverworld(server);
             try {
                 CompoundTag file = oldSave();
-                assertEquals("kegare:test_apex", file.getCompound(AttachmentHolder.ATTACHMENTS_NBT_KEY).getCompound("kegare:innate_technique").getString("innate_technique"), "setup: the old save");
+                // The fixture is a file the NeoForge build wrote: its attachments sit under neoforge:attachments.
+                assertEquals("kegare:test_apex", file.getCompoundOrEmpty(AttachmentHolder.NEOFORGE_NBT_KEY).getCompoundOrEmpty("kegare:innate_technique")
+                        .getStringOr("innate_technique", ""), "setup: the old save");
                 Map<String, String> before = new HashMap<>(PlayerDataCodec.fromPlayerFile(file));
+                // What PlayerList.loadPlayerData does to every file as it is read (PlayerListLoadMixin), before the player loads from it.
+                assertTrue(AttachmentHolder.migrateNeoForgeKey(file), "setup: the old key moves");
                 file.remove("UUID");
                 file.remove("Pos");
 
                 ServerPlayer player = TestServer.playerWithAdvancements(server, "old_save");
-                player.load(file); // Minecraft's own load: every attachment through its own serializer
+                // Minecraft's own load: every attachment through its own serializer
+                player.load(net.minecraft.world.level.storage.TagValueInput.create(net.minecraft.util.ProblemReporter.DISCARDING, server.registryAccess(), file));
                 assertEquals("kegare:test_apex", InnateTechniqueService.get(player).innateTechniqueId().orElseThrow().toString(), "it loaded as it was");
                 assertEquals(9, LoadoutService.slots(player).size(), "the old bar loaded");
                 PlayerEvents.handleLogin(player);

@@ -34,7 +34,7 @@ public final class Severed {
         SeveredAdvancements.init();
         NeoForge.EVENT_BUS.addListener(SeveredBody::onDamage);
         NeoForge.EVENT_BUS.addListener((PlayerTickEvent.Post e) -> {
-            if (e.getEntity() instanceof ServerPlayer p && !(p instanceof FakePlayer)) {
+            if (e.getEntity() instanceof ServerPlayer p && !(com.cnethuka.kegare.platform.Players.isFakeBody(p))) {
                 Senses.tick(p);
                 if (Severed.is(p) && p.tickCount % 5 == 0) SeveredAdvancements.noteIfLow(p); // once noted, healing back up doesn't undo it
                 if (p.hasData(STATE)) Blur.tick(p, state(p));

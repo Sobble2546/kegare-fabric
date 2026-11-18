@@ -18,14 +18,14 @@ public final class DatabaseEvents {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
         KegareDatabase database = KegareDatabase.current();
-        if (database != null && event.getEntity() instanceof ServerPlayer player && !(player instanceof FakePlayer)) database.snapshot(player);
+        if (database != null && event.getEntity() instanceof ServerPlayer player && !(com.cnethuka.kegare.platform.Players.isFakeBody(player))) database.snapshot(player);
     }
 
     /** Last, after the casts have stopped and everything else has tidied up. */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         KegareDatabase database = KegareDatabase.current();
-        if (database != null && event.getEntity() instanceof ServerPlayer player && !(player instanceof FakePlayer)) database.logout(player);
+        if (database != null && event.getEntity() instanceof ServerPlayer player && !(com.cnethuka.kegare.platform.Players.isFakeBody(player))) database.logout(player);
     }
 
     @SubscribeEvent

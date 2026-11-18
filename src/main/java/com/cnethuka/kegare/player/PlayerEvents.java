@@ -35,7 +35,7 @@ public final class PlayerEvents {
 
     @SubscribeEvent
     static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
+        if (!(event.getEntity() instanceof ServerPlayer player) || com.cnethuka.kegare.platform.Players.isFakeBody(player)) return;
         handleLogin(player);
     }
 
@@ -65,7 +65,7 @@ public final class PlayerEvents {
 
     @SubscribeEvent
     static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
+        if (!(event.getEntity() instanceof ServerPlayer player) || com.cnethuka.kegare.platform.Players.isFakeBody(player)) return;
         CastManager.stopAll(player, EndReason.LOGOUT);
         VisualService.stopAll(player);
         TraitSuccession.markSeen(player);
@@ -75,7 +75,7 @@ public final class PlayerEvents {
     /** A charge, channel or toggle never carries through a portal, and neither do its visuals. */
     @SubscribeEvent
     static void onChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
+        if (!(event.getEntity() instanceof ServerPlayer player) || com.cnethuka.kegare.platform.Players.isFakeBody(player)) return;
         CastManager.stopAll(player, EndReason.DIMENSION_CHANGE);
         VisualService.stopAll(player);
     }
@@ -95,7 +95,7 @@ public final class PlayerEvents {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     static void onDeath(LivingDeathEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer victim) || victim instanceof FakePlayer) return;
+        if (!(event.getEntity() instanceof ServerPlayer victim) || com.cnethuka.kegare.platform.Players.isFakeBody(victim)) return;
         CastManager.stopAll(victim, EndReason.DEATH);
         VisualService.stopAll(victim);
         // Runs on the dying entity, before its data is copied to the respawned player.
@@ -125,7 +125,7 @@ public final class PlayerEvents {
 
     @SubscribeEvent
     static void onPlayerTick(PlayerTickEvent.Post event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
+        if (!(event.getEntity() instanceof ServerPlayer player) || com.cnethuka.kegare.platform.Players.isFakeBody(player)) return;
         if (player.isAlive()) {
             com.cnethuka.kegare.innatetechnique.Burnout.tick(player);
             com.cnethuka.kegare.innatetechnique.CooldownRates.tick(player);

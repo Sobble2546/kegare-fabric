@@ -109,10 +109,10 @@ class PlayerDataCodecTest {
         tag.putDouble("half", 0.5);
         tag.putString("text", "12");
         CompoundTag back = (CompoundTag) PlayerDataCodec.fromJson(JsonParser.parseString(PlayerDataCodec.toJson(tag)));
-        assertEquals(big, back.getLong("big"), "past what a double can hold");
-        assertEquals(7, back.getInt("small"));
-        assertEquals(0.5, back.getDouble("half"));
-        assertEquals("12", back.getString("text"), "a string stays a string");
+        assertEquals(big, back.getLongOr("big", 0L), "past what a double can hold");
+        assertEquals(7, back.getIntOr("small", 0));
+        assertEquals(0.5, back.getDoubleOr("half", Double.NaN));
+        assertEquals("12", back.getStringOr("text", ""), "a string stays a string");
         assertTrue(back.get("big") instanceof LongTag);
     }
 

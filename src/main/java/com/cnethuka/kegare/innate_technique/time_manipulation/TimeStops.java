@@ -276,7 +276,7 @@ public final class TimeStops {
                     ServerPlayer p = e.getKey();
                     Vec3 at = e.getValue().at;
                     if (p.position().distanceToSqr(at) > 1.0e-4) {
-                        if (p instanceof FakePlayer) p.setPos(at);
+                        if (com.cnethuka.kegare.platform.Players.isFakeBody(p)) p.setPos(at);
                         else p.connection.teleport(at.x, at.y, at.z, p.getYRot(), p.getXRot());
                     }
                     p.setDeltaMovement(Vec3.ZERO);

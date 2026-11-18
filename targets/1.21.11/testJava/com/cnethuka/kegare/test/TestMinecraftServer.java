@@ -118,7 +118,9 @@ final class TestMinecraftServer extends MinecraftServer {
 
     @Override
     public void tickServer(BooleanSupplier haveTime) {
-        super.tickServer(haveTime);
+        // Until a test asks for the levels there are none (TestServer.ensureOverworld), and 1.21.11's tick reads the overworld's respawn data
+        // (updateEffectiveRespawnData) without a null check: the server only reports in, as 1.21.1's tick of no levels amounted to.
+        if (overworld() != null) super.tickServer(haveTime);
         EphemeralTestServerProvider.SERVER.set(this);
     }
 

@@ -123,7 +123,7 @@ final class PointMarks {
     }
 
     private static void send(ServerPlayer player, @Nullable Mark mark) {
-        if (player instanceof FakePlayer || player.connection == null) return;
+        if (com.cnethuka.kegare.platform.Players.isFakeBody(player) || player.connection == null) return;
         PacketDistributor.sendToPlayer(player, mark == null ? TimeNet.Mark.none()
                 : new TimeNet.Mark(true, mark.block, mark.hourHand, mark.minuteHand, mark.until));
     }

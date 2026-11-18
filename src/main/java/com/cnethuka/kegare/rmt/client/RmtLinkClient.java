@@ -33,7 +33,7 @@ import org.joml.Vector3fc;
  * White and green, never Malice violet.
  */
 final class RmtLinkClient {
-    private static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
+    private static final Identifier WHITE = com.cnethuka.kegare.Kegare.id("textures/misc/white.png");
     /** A link not heard of for this long (its healer resends every second) goes out. */
     private static final int LINK_TIMEOUT = 30;
     private static final int GREEN = 0x5FE38A, CORE = 0xF2FFF6, GLOW = 0x8CF5A9;

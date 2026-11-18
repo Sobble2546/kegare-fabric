@@ -38,7 +38,7 @@ import org.joml.Vector3f;
  * to the camera. Reduced: fewer arcs and sparks, sooner gone. Vanilla: black dust, dust in the color, and crit sparks.
  */
 public final class BlackSparkClient {
-    private static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
+    private static final Identifier WHITE = com.cnethuka.kegare.Kegare.id("textures/misc/white.png");
     private static RenderType type() {
         return RenderTypes.entityTranslucentEmissive(WHITE);
     }

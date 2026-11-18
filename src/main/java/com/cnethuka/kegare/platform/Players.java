@@ -19,6 +19,15 @@ public final class Players {
         return player instanceof FakePlayer && !REAL.contains(player);
     }
 
+    /**
+     * Whether this is a body nothing drives (no client, no tick): Fabric API's {@link FakePlayer}, and the test stand-ins registered with
+     * {@link #treatAsReal}. NeoForge's tests overrode {@code isFakePlayer()} on a FakePlayer subclass, so {@code instanceof FakePlayer}
+     * stayed true for them; this keeps that.
+     */
+    public static boolean isFakeBody(Object e) {
+        return e instanceof FakePlayer || e instanceof Player p && REAL.contains(p);
+    }
+
     /** Tests: a FakePlayer that must count as a real one for {@link #isFake} (what overriding {@code isFakePlayer()} did on NeoForge). */
     public static <P extends Player> P treatAsReal(P player) {
         REAL.add(player);

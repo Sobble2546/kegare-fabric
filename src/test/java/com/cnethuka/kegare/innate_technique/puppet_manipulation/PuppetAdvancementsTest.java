@@ -73,7 +73,7 @@ class PuppetAdvancementsTest {
                 assertTrue(has(server, owner, PuppetAdvancements.LITTLE_ME), "Little Me");
                 Possession.release(owner, Possession.Return.RETURNED);
                 other.setHealth(20f);
-                other.revive();
+                TestServer.revive(other);
                 owner.setHealth(20f);
 
                 // Who's Real?: a player hits the Stand-In (a mob doesn't count).
@@ -108,7 +108,7 @@ class PuppetAdvancementsTest {
                 other.invulnerableTime = 0;
                 CurioBursts.detonate(bomb2, owner);
                 assertTrue(has(server, owner, PuppetAdvancements.CURIOSITY_KILLED), "Curiosity Killed");
-                other.revive();
+                TestServer.revive(other);
                 other.setHealth(20f);
 
                 // Decoy: a player kills your puppet while you're more than 16 blocks away (not when you're close).

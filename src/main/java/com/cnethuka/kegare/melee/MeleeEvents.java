@@ -25,7 +25,7 @@ public final class MeleeEvents {
 
     @SubscribeEvent
     static void onTick(PlayerTickEvent.Post event) {
-        if (event.getEntity() instanceof ServerPlayer player && !(player instanceof FakePlayer) && player.isAlive()) MeleeLayer.tick(player);
+        if (event.getEntity() instanceof ServerPlayer player && !(com.cnethuka.kegare.platform.Players.isFakeBody(player)) && player.isAlive()) MeleeLayer.tick(player);
     }
 
     /** A perfect parry cancels the hit outright. */

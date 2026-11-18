@@ -34,7 +34,7 @@ public final class StatEvents {
 
     private static void record(ServerPlayer player, String kind, double amount, String detail, boolean announced) {
         KegareDatabase database = KegareDatabase.current();
-        if (database != null && !(player instanceof FakePlayer)) database.recordStat(player.getUUID(), kind, amount, detail, announced);
+        if (database != null && !(com.cnethuka.kegare.platform.Players.isFakeBody(player))) database.recordStat(player.getUUID(), kind, amount, detail, announced);
     }
 
     private static void onDeath(LivingDeathEvent event) {

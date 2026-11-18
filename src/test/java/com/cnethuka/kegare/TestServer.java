@@ -24,16 +24,16 @@ public final class TestServer {
         return FakePlayerFactory.get(server.overworld(), new GameProfile(uuid, name));
     }
 
-    /** A fake player that keeps REAL advancements and counts as a real player to Kegare's code ({@link Players#treatAsReal}). */
+    /** A test player that keeps REAL advancements and counts as a real player to Kegare's code ({@link TestPlayer}, {@link Players#treatAsReal}). */
     public static ServerPlayer playerWithAdvancements(MinecraftServer server, String name) {
         UUID uuid = UUID.nameUUIDFromBytes(("kegare-test:" + name).getBytes(StandardCharsets.UTF_8));
-        return Players.treatAsReal(new net.fabricmc.fabric.api.entity.FakePlayer(server.overworld(), new GameProfile(uuid, name)) {});
+        return Players.treatAsReal(new TestPlayer(server.overworld(), new GameProfile(uuid, name)));
     }
 
-    /** A test player that can be hurt and hurt others (Fabric API's fake players can't), with real advancements. */
+    /** A test player that can be hurt and hurt others (Fabric API's fake players can't), with real advancements ({@link TestPlayer}). */
     public static ServerPlayer damageable(MinecraftServer server, String name) {
         UUID uuid = UUID.nameUUIDFromBytes(("kegare-test:" + name).getBytes(StandardCharsets.UTF_8));
-        ServerPlayer player = Players.treatAsReal(new net.fabricmc.fabric.api.entity.FakePlayer(server.overworld(), new GameProfile(uuid, name)) {
+        ServerPlayer player = Players.treatAsReal(new TestPlayer(server.overworld(), new GameProfile(uuid, name)) {
             @Override
             public boolean isInvulnerableTo(net.minecraft.server.level.ServerLevel level, net.minecraft.world.damagesource.DamageSource source) {
                 return false;
@@ -45,7 +45,7 @@ public final class TestServer {
             }
 
             /**
-             * This FakePlayer's death does nothing at all, and not calling super skips the death mixin; a real player's first fires
+             * A test player dies with no connection to tell and not calling super skips the death mixin; a real player's first fires
              * LivingDeathEvent (cancellable).
              */
             @Override
@@ -64,6 +64,57 @@ public final class TestServer {
             throw new IllegalStateException(e);
         }
         return player;
+    }
+
+    /** What an entity writes to its save (1.21.11 saves through a ValueOutput, with the registries and the attachments), as the tag. */
+    public static net.minecraft.nbt.CompoundTag saveWithoutId(net.minecraft.world.entity.Entity entity) {
+        net.minecraft.world.level.storage.TagValueOutput out = net.minecraft.world.level.storage.TagValueOutput.createWithContext(
+                net.minecraft.util.ProblemReporter.DISCARDING, entity.level().registryAccess());
+        entity.saveWithoutId(out);
+        return out.buildResult();
+    }
+
+    /** The same with the id, as a chunk stores it ({@link net.minecraft.world.entity.Entity#save}). */
+    public static net.minecraft.nbt.CompoundTag save(net.minecraft.world.entity.Entity entity) {
+        net.minecraft.world.level.storage.TagValueOutput out = net.minecraft.world.level.storage.TagValueOutput.createWithContext(
+                net.minecraft.util.ProblemReporter.DISCARDING, entity.level().registryAccess());
+        entity.save(out);
+        return out.buildResult();
+    }
+
+    /** Loads a tag onto an entity, as its own load does. */
+    public static void load(net.minecraft.world.entity.Entity entity, net.minecraft.nbt.CompoundTag tag) {
+        entity.load(net.minecraft.world.level.storage.TagValueInput.create(
+                net.minecraft.util.ProblemReporter.DISCARDING, entity.level().registryAccess(), tag));
+    }
+
+    /** An entity made from a saved tag (with its id), as a chunk loads it. */
+    public static java.util.Optional<net.minecraft.world.entity.Entity> create(net.minecraft.nbt.CompoundTag tag, net.minecraft.world.level.Level level) {
+        return net.minecraft.world.entity.EntityType.create(
+                net.minecraft.world.level.storage.TagValueInput.create(net.minecraft.util.ProblemReporter.DISCARDING, level.registryAccess(), tag),
+                level, net.minecraft.world.entity.EntitySpawnReason.LOAD);
+    }
+
+    /**
+     * What NeoForge's {@code Entity.revive()} did: a killed (or removed) entity is alive to the game again. Health is the caller's to set. The death
+     * guard ({@code dead}) and the removal reason are private to Minecraft, so the tests reach the fields.
+     */
+    public static void revive(net.minecraft.world.entity.Entity entity) {
+        try {
+            if (entity.isRemoved()) {
+                java.lang.reflect.Field reason = net.minecraft.world.entity.Entity.class.getDeclaredField("removalReason");
+                reason.setAccessible(true);
+                reason.set(entity, null);
+            }
+            if (entity instanceof net.minecraft.world.entity.LivingEntity living) {
+                java.lang.reflect.Field dead = net.minecraft.world.entity.LivingEntity.class.getDeclaredField("dead");
+                dead.setAccessible(true);
+                dead.setBoolean(living, false);
+                living.deathTime = 0;
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     /** FoodData has no getter or setter for the exhaustion level on 1.21.11 (only addExhaustion), so the tests reach its field. */

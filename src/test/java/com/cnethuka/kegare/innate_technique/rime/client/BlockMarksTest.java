@@ -250,6 +250,11 @@ class BlockMarksTest {
             }
 
             @Override
+            public VertexConsumer setColor(int argb) {
+                return this;
+            }
+
+            @Override
             public VertexConsumer setUv(float u, float v) {
                 return this;
             }
@@ -266,6 +271,11 @@ class BlockMarksTest {
 
             @Override
             public VertexConsumer setNormal(float x, float y, float z) {
+                return this;
+            }
+
+            @Override
+            public VertexConsumer setLineWidth(float width) {
                 return this;
             }
         };

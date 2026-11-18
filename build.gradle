@@ -26,6 +26,8 @@ repositories {
     mavenCentral()
     maven { name = 'RedlanceMinecraft'; url = 'https://repo.redlance.org/public'; content { includeGroupByRegex 'com\\.zigythebird(\\..*)?'; includeGroup 'org.redlance.mochafloats'; includeGroup 'org.redlance.common-utils' } }
     maven { name = 'Modrinth'; url = 'https://api.modrinth.com/maven'; content { includeGroup 'maven.modrinth' } }
+    // Cardinal Components (Trinkets' own requirement; Loom does not load the copies nested in the Trinkets jar in dev runs and tests).
+    maven { name = 'Ladysnake'; url = 'https://maven.ladysnake.org/releases'; content { includeGroup 'org.ladysnake.cardinal-components-api' } }
     // Forge Config API Port (Fuzs): ModConfigSpec and the config screen, as in NeoForge.
     maven { name = 'Fuzs'; url = 'https://raw.githubusercontent.com/Fuzss/modresources/main/maven/'; content { includeGroup 'fuzs.forgeconfigapiport' } }
 }
@@ -42,6 +44,7 @@ sourceSets.main {
 sourceSets.test.java.srcDir "targets/${targetName}/testJava"
 
 def mc = tp.getProperty('minecraft_version')
+loom { accessWidenerPath = file('src/main/resources/kegare.accesswidener') }
 dependencies {
     minecraft "com.mojang:minecraft:${mc}"
     if (remap) mappings loom.officialMojangMappings()
@@ -54,6 +57,14 @@ dependencies {
     mod "maven.modrinth:trinkets-updated:${tp.getProperty('trinkets_version')}"
     // Config: Kegare's ModConfigSpec code compiles unchanged against the net.neoforged classes this ships (and NightConfig with it).
     mod "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${tp.getProperty('fcap_version')}"
+    // Dev runs, datagen and tests only (not in the jar): Trinkets needs Cardinal Components and Loom skips its nested copies.
+    if (remap) {
+        modLocalRuntime "org.ladysnake.cardinal-components-api:cardinal-components-base:7.3.0"
+        modLocalRuntime "org.ladysnake.cardinal-components-api:cardinal-components-entity:7.3.0"
+    } else {
+        runtimeOnly "org.ladysnake.cardinal-components-api:cardinal-components-base:7.3.0"
+        runtimeOnly "org.ladysnake.cardinal-components-api:cardinal-components-entity:7.3.0"
+    }
     // PostgreSQL JDBC (DESIGN 3.33): bundled inside our jar, only ever opened on a dedicated server with storage on.
     implementation('org.postgresql:postgresql:42.7.4') { exclude group: 'org.checkerframework' }
     include('org.postgresql:postgresql:42.7.4') { exclude group: 'org.checkerframework' }
@@ -62,7 +73,7 @@ dependencies {
 
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.junit.platform:junit-platform-launcher' // also on the compile path: src/test's KnotLauncherInterceptor
     testCompileOnly 'com.google.code.findbugs:jsr305:3.0.2' // javax.annotation.Nullable, which some tests use as well
     // Starts Fabric's Knot class loader (mixins, mod discovery) around the JUnit run; the throwaway server is src/test's EphemeralTestServerProvider.
     testImplementation "net.fabricmc:fabric-loader-junit:${loader_version}"

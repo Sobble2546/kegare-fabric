@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "A": {
-      "item": "minecraft:amethyst_shard"
-    },
-    "G": {
-      "item": "minecraft:gold_ingot"
-    },
-    "P": {
-      "item": "minecraft:paper"
-    }
+    "A": "minecraft:amethyst_shard",
+    "G": "minecraft:gold_ingot",
+    "P": "minecraft:paper"
   },
   "pattern": [
     "GAG",

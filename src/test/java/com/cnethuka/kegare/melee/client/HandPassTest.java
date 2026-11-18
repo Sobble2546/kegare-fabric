@@ -17,7 +17,7 @@ class HandPassTest {
     /** Vanilla's camera, turned the way it turns itself. */
     private static final class Aimed extends Camera {
         Aimed(float yaw, float pitch) {
-            setRotation(yaw, pitch, 0f);
+            setRotation(yaw, pitch);
         }
     }
 
@@ -38,11 +38,11 @@ class HandPassTest {
                 // Where vanilla puts a right hand's item, in the view: right of the middle, low, and in front.
                 pose.translate(0.56f, -0.52f, -0.72f);
                 Vector3f fist = FistTell.handPassPoint(pose.last(), 0f, 0f, 0f);
-                Vector3f right = camera.getLeftVector().negate(new Vector3f());
+                Vector3f right = camera.leftVector().negate(new Vector3f());
                 String at = "yaw " + yaw + ", pitch " + pitch + ": " + fist;
-                assertTrue(fist.dot(camera.getLookVector()) > 0.6f, "in front of the camera, " + at);
+                assertTrue(fist.dot(camera.forwardVector()) > 0.6f, "in front of the camera, " + at);
                 assertTrue(fist.dot(right) > 0.4f, "off to the right, " + at);
-                assertTrue(fist.dot(camera.getUpVector()) < -0.4f, "and low, " + at);
+                assertTrue(fist.dot(camera.upVector()) < -0.4f, "and low, " + at);
                 assertTrue(Math.abs(fist.length() - new Vector3f(0.56f, -0.52f, -0.72f).length()) < 1.0e-4f, "as far off as it is in the view, " + at);
             }
         }

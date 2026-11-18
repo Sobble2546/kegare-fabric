@@ -29,6 +29,7 @@ public class EphemeralTestServerProvider implements ParameterResolver {
     public static final AtomicBoolean IN_CONSTRUCTION = new AtomicBoolean();
     /** Why the server never came up, kept so every later test fails at once instead of waiting (a hung suite holds the build lock). */
     private static volatile Throwable startFailure;
+    private static volatile MinecraftServer started;
 
     private static final long START_TIMEOUT_NANOS = TimeUnit.MINUTES.toNanos(5);
 
@@ -52,6 +53,7 @@ public class EphemeralTestServerProvider implements ParameterResolver {
                 LevelStorageSource.LevelStorageAccess access = source.validateAndCreateAccess("main");
                 PackRepository packs = ServerPacksSource.createPackRepository(access);
                 MinecraftServer server = MinecraftServer.spin(thread -> TestMinecraftServer.create(thread, tempDir, access, packs));
+                started = server;
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                     server.stopServer();
                     org.apache.logging.log4j.LogManager.shutdown();
@@ -66,6 +68,10 @@ public class EphemeralTestServerProvider implements ParameterResolver {
         long deadline = System.nanoTime() + START_TIMEOUT_NANOS;
         while (SERVER.get() == null) {
             if (startFailure != null) throw new IllegalStateException("the test server failed to start", startFailure);
+            if (started != null && started.isStopped()) {
+                startFailure = new IllegalStateException("the test server stopped before its first tick (see its crash report under run/test)");
+                throw new IllegalStateException(startFailure);
+            }
             if (System.nanoTime() > deadline) {
                 startFailure = new IllegalStateException("the test server didn't tick within 5 minutes");
                 throw new IllegalStateException(startFailure);

@@ -1,7 +1,5 @@
 package com.cnethuka.kegare.fists;
 
-import com.cnethuka.kegare.mixin.BiomeClimateAccessor;
-import com.cnethuka.kegare.mixin.ClimateSettingsAccessor;
 import com.cnethuka.kegare.innate_technique.rime.FreezeService;
 import com.cnethuka.kegare.malice.MaliceData;
 import com.cnethuka.kegare.malice.MaliceService;
@@ -73,7 +71,7 @@ public record SparkWindow(double malice, double opponent, double body, double we
     static double weather(Level level, BlockPos at) {
         Biome biome = level.getBiome(at).value();
         boolean rain = level.isRainingAt(at.above());
-        return weather(biome.getBaseTemperature(), ((ClimateSettingsAccessor) ((BiomeClimateAccessor) (Object) biome).kegare$climateSettings()).kegare$downfall(), rain, rain && level.isThundering());
+        return weather(biome.getBaseTemperature(), biome.climateSettings.downfall, rain, rain && level.isThundering());
     }
 
     /** The same, from the raw numbers: the biome's temperature and rainfall, and whether it's raining or storming there. */

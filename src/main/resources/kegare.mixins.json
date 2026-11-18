@@ -22,6 +22,7 @@
     "ShulkerAttackGoalAccessor",
     "WitherBossAccessor",
     "MobAttackBoxInvoker",
+    "MobGoalsAccessor",
     "EntityHolderMixin",
     "LevelHolderMixin",
     "PlayerDataStorageMixin",

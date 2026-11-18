@@ -1,0 +1,6 @@
+accessWidener v2 named
+
+# A biome's rainfall: vanilla has no public getter for it (Black Spark's weather window, DESIGN 3.28).
+accessible class net/minecraft/world/level/biome/Biome$ClimateSettings
+accessible field net/minecraft/world/level/biome/Biome climateSettings Lnet/minecraft/world/level/biome/Biome$ClimateSettings;
+accessible field net/minecraft/world/level/biome/Biome$ClimateSettings downfall F

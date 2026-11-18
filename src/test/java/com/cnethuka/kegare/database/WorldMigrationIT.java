@@ -56,8 +56,8 @@ class WorldMigrationIT {
 
     private Path writePlayerFile(ServerPlayer player, int capacity) throws Exception {
         MaliceService.adminBirth(player, capacity);
-        CompoundTag tag = player.saveWithoutId(new CompoundTag());
-        CompoundTag attachments = tag.getCompound(AttachmentHolder.ATTACHMENTS_NBT_KEY);
+        CompoundTag tag = TestServer.saveWithoutId(player);
+        CompoundTag attachments = tag.getCompoundOrEmpty(AttachmentHolder.ATTACHMENTS_NBT_KEY);
         attachments.put(GONE_LATER, new CompoundTag());
         tag.put(AttachmentHolder.ATTACHMENTS_NBT_KEY, attachments);
         Path file = files().resolve(player.getUUID() + ".dat");
@@ -85,7 +85,7 @@ class WorldMigrationIT {
                 ServerPlayer one = TestServer.damageable(server, "migrate_one"), two = TestServer.damageable(server, "migrate_two");
                 UUID newToThisWorld = UUID.randomUUID(), onlineNow = UUID.randomUUID();
                 Path fileOne = writePlayerFile(one, 1234), fileTwo = writePlayerFile(two, 2345);
-                CompoundTag noKegare = one.saveWithoutId(new CompoundTag());
+                CompoundTag noKegare = TestServer.saveWithoutId(one);
                 PlayerDataCodec.stripFromPlayerFile(noKegare);
                 NbtIo.writeCompressed(noKegare, files().resolve(UUID.randomUUID() + ".dat"));
                 Path broken = files().resolve(UUID.randomUUID() + ".dat");
@@ -175,11 +175,11 @@ class WorldMigrationIT {
                     // Export: everything goes back.
                     CompoundTag saved = new CompoundTag();
                     saved.put(AttachmentHolder.ATTACHMENTS_NBT_KEY, new CompoundTag());
-                    saved.getCompound(AttachmentHolder.ATTACHMENTS_NBT_KEY).putString("kegare:malice", "kept");
+                    saved.getCompoundOrEmpty(AttachmentHolder.ATTACHMENTS_NBT_KEY).putString("kegare:malice", "kept");
                     KegareDatabase.setCurrent(database);
                     try {
                         KegareDatabase.beforePlayerFileWritten(saved);
-                        assertTrue(saved.getCompound(AttachmentHolder.ATTACHMENTS_NBT_KEY).isEmpty(), "setup: with storage on the keys come out");
+                        assertTrue(saved.getCompoundOrEmpty(AttachmentHolder.ATTACHMENTS_NBT_KEY).isEmpty(), "setup: with storage on the keys come out");
 
                         WorldMigration.Exported exported = done(host, WorldMigration.export(database, target));
                         assertEquals(4, exported.players());
@@ -191,9 +191,9 @@ class WorldMigrationIT {
 
                         // From here on a save keeps them.
                         saved.put(AttachmentHolder.ATTACHMENTS_NBT_KEY, new CompoundTag());
-                        saved.getCompound(AttachmentHolder.ATTACHMENTS_NBT_KEY).putString("kegare:malice", "kept");
+                        saved.getCompoundOrEmpty(AttachmentHolder.ATTACHMENTS_NBT_KEY).putString("kegare:malice", "kept");
                         KegareDatabase.beforePlayerFileWritten(saved);
-                        assertEquals("kept", saved.getCompound(AttachmentHolder.ATTACHMENTS_NBT_KEY).getString("kegare:malice"), "after an export, player files keep Kegare's keys");
+                        assertEquals("kept", saved.getCompoundOrEmpty(AttachmentHolder.ATTACHMENTS_NBT_KEY).getStringOr("kegare:malice", ""), "after an export, player files keep Kegare's keys");
                     } finally {
                         KegareDatabase.setCurrent(null);
                     }
@@ -206,13 +206,13 @@ class WorldMigrationIT {
                         assertEquals(JsonParser.parseString(inDatabase.get(key)), JsonParser.parseString(inFile.get(key)), key);
                     }
                     assertEquals(9999, capacityIn(inFile.get("kegare:malice")), "the newest data");
-                    for (String key : vanillaBefore.getAllKeys()) {
+                    for (String key : vanillaBefore.keySet()) {
                         if (!key.equals(AttachmentHolder.ATTACHMENTS_NBT_KEY)) assertEquals(vanillaBefore.get(key), afterOne.get(key), "vanilla's own " + key + " is as it was");
                     }
 
                     // What Minecraft will really read: the file on a player.
                     ServerPlayer reader = TestServer.damageable(server, "migrate_reader");
-                    reader.load(afterOne);
+                    TestServer.load(reader, afterOne);
                     assertEquals(9999, MaliceService.get(reader).capacity(), "and a player loads it");
 
                     Path created = files().resolve(newToThisWorld + ".dat");
@@ -220,7 +220,7 @@ class WorldMigrationIT {
                     assertEquals(9999, capacityIn(PlayerDataCodec.fromPlayerFile(fresh).get("kegare:malice")));
                     assertTrue(fresh.contains("DataVersion"), "or Minecraft would try to upgrade it from nothing");
                     ServerPlayer newcomer = TestServer.damageable(server, "migrate_newcomer");
-                    newcomer.load(fresh);
+                    TestServer.load(newcomer, fresh);
                     assertEquals(new BlockPos(7, 65, -3), newcomer.blockPosition(), "they come in at the world's spawn, not 0, 0, 0");
                     assertFalse(Files.exists(files().resolve(onlineNow + ".dat")), "someone online goes in at their next save");
                     assertEquals(Files.size(broken), "this isn't a player file".length(), "and what it couldn't read it left alone");

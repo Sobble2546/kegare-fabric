@@ -23,13 +23,13 @@ public final class RmtEvents {
         if (!com.cnethuka.kegare.platform.Players.isFake(victim) && !event.getSource().is(Repair.DAMAGE)) RmtFatigue.onDamageTaken(victim, event.getNewDamage());
         double low = RmtConfig.MOMENT_HEALTH.get();
         if (victim.isAlive() && victim.getHealth() <= low && victim.getHealth() + event.getNewDamage() > low) RmtOnAnother.onDroppedLow(victim);
-        if (victim instanceof FakePlayer) return;
+        if (com.cnethuka.kegare.platform.Players.isFakeBody(victim)) return;
         if (event.getSource().getEntity() instanceof Player attacker && attacker != victim) GreenOrbService.onHitByPlayer(victim);
     }
 
     @SubscribeEvent
     static void onPlayerTick(PlayerTickEvent.Post event) {
-        if (event.getEntity() instanceof ServerPlayer player && !(player instanceof FakePlayer)) {
+        if (event.getEntity() instanceof ServerPlayer player && !(com.cnethuka.kegare.platform.Players.isFakeBody(player))) {
             GreenOrbService.tick(player);
             RmtFatigue.tick(player);
             BrainDamage.tick(player);

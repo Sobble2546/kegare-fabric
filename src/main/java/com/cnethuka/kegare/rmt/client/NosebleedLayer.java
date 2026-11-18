@@ -21,7 +21,7 @@ import net.minecraft.resources.Identifier;
  * blob, and a bar carried on down the chest as a tongue. The drops ({@link NosebleedClient}) take it from the chin.
  */
 final class NosebleedLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
-    private static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
+    private static final Identifier WHITE = com.cnethuka.kegare.Kegare.id("textures/misc/white.png");
     /** On the head, in skin pixels from its pivot: out past the hat (4.5), so any skin shows it. */
     private static final float FACE_OUT = 4.55f;
     /** The nostrils' row on the head, counted down from its top (8 pixels tall, its pivot at the bottom). */

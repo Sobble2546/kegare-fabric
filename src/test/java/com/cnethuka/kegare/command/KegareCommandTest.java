@@ -540,7 +540,10 @@ class KegareCommandTest {
     /** The dev client's tree can't be built on a server, so this reads the source. */
     @Test
     void theFxCommandMovedToo() throws IOException {
-        String fx = Files.readString(SOURCES.resolve("com/cnethuka/kegare/client/visual/FxDevCommand.java"));
+        // The Fabric port keeps the Photon authoring tools in src/photon/java, outside the shipped tree; before it they sat under src/main/java.
+        Path fxSource = Path.of("com/cnethuka/kegare/client/visual/FxDevCommand.java");
+        Path photon = SOURCES.resolveSibling("../photon/java").normalize().resolve(fxSource);
+        String fx = Files.readString(Files.exists(photon) ? photon : SOURCES.resolve(fxSource));
         assertFalse(fx.contains("Commands.literal(\"kegarefx\")"));
         assertTrue(fx.contains("Commands.literal(\"kegare\")"));
         assertTrue(fx.contains("Commands.literal(\"debug\")"));

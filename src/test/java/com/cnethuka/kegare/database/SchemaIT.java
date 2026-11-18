@@ -84,12 +84,15 @@ class SchemaIT {
                 }
             });
             var tag = (net.minecraft.nbt.CompoundTag) PlayerDataCodec.fromJson(com.google.gson.JsonParser.parseString(back));
-            assertEquals(1152921504606846979L, tag.getLong("big"), "exact, through Postgres");
-            assertEquals(0.5, tag.getDouble("half"));
-            assertEquals(1.0, tag.getDouble("one"));
-            assertEquals(1.0E-4, tag.getDouble("small"), 1e-12);
-            assertEquals(3, tag.getList("list", net.minecraft.nbt.Tag.TAG_INT).size());
-            assertEquals("12", tag.getString("text"));
+            assertEquals(1152921504606846979L, tag.getLongOr("big", 0L), "exact, through Postgres");
+            assertEquals(0.5, tag.getDoubleOr("half", Double.NaN));
+            assertEquals(1.0, tag.getDoubleOr("one", Double.NaN));
+            assertEquals(1.0E-4, tag.getDoubleOr("small", Double.NaN), 1e-12);
+            net.minecraft.nbt.ListTag list = tag.getListOrEmpty("list");
+            assertEquals(3, list.size());
+            // The old getList(..., TAG_INT) only answered for an int list: the elements must still come back as ints, not longs or doubles.
+            for (net.minecraft.nbt.Tag element : list) assertTrue(element instanceof net.minecraft.nbt.IntTag, "an int in the list: " + element);
+            assertEquals("12", tag.getStringOr("text", ""));
         }
     }
 }

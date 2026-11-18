@@ -108,7 +108,7 @@ public final class TraitSuccession {
             if (trait == null || pending.dueTick() > now) continue;
             List<TransferRules.Candidate> online = new ArrayList<>();
             for (ServerPlayer p : server.getPlayerList().getPlayers()) {
-                if (!(p instanceof FakePlayer)) online.add(candidate(p, trait));
+                if (!(com.cnethuka.kegare.platform.Players.isFakeBody(p))) online.add(candidate(p, trait));
             }
             Optional<UUID> heir = TransferRules.pickHeir(trait.successionMode(), online, pending.previousBearer(),
                     pending.killer().orElse(null), server.overworld().getRandom()::nextInt);

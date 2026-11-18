@@ -128,6 +128,22 @@ class MobIntentTest {
         return !level.getEntitiesOfClass(type, new AABB(-40, 100, -40, 40, 160, 40)).isEmpty();
     }
 
+    /**
+     * Strips a mob of every goal. NeoForge's access transformer made {@code goalSelector}/{@code targetSelector} public; on Fabric they are
+     * protected in {@code Mob}, so the test reaches the fields.
+     */
+    private static void clearGoals(Mob mob) {
+        try {
+            for (String name : new String[] {"goalSelector", "targetSelector"}) {
+                java.lang.reflect.Field field = Mob.class.getDeclaredField(name);
+                field.setAccessible(true);
+                ((net.minecraft.world.entity.ai.goal.GoalSelector) field.get(mob)).removeAllGoals(g -> true);
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     @Test
     void theFirstSwingOfTheVanillaMeleeGoalIsReadAsItClosesIn(MinecraftServer server) throws Exception {
         scene(server, (s, level, target) -> {
@@ -220,8 +236,7 @@ class MobIntentTest {
         scene(server, (s, level, target) -> {
             // A zombie stripped of its goals looks to the eyes like a modded mob's own AI.
             Zombie custom = spawn(level, EntityType.ZOMBIE, 8.5, 0.5);
-            custom.goalSelector.removeAllGoals(g -> true);
-            custom.targetSelector.removeAllGoals(g -> true);
+            clearGoals(custom);
             List<SightTest.Sent> sent = SightTest.capture();
             MobIntent.check(level, custom);
             assertTrue(pulses(sent, custom).isEmpty(), "nothing with no target");

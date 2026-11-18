@@ -121,8 +121,7 @@ class PuppetTest {
                     assertCapFizzles(owner, 3);
 
                     // Its chunk unloads: it's still theirs, so it still counts.
-                    net.minecraft.nbt.CompoundTag saved = new net.minecraft.nbt.CompoundTag();
-                    far.save(saved);
+                    net.minecraft.nbt.CompoundTag saved = TestServer.save(far);
                     far.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);
                     assertEquals(2, puppetsOf(level, owner).size(), "setup: only two are loaded");
                     assertEquals(3, Puppets.count(owner), "the unloaded one still counts");
@@ -137,7 +136,7 @@ class PuppetTest {
                     assertCapFizzles(owner, 3);
 
                     // The unloaded one loads again: still current, still theirs, not counted twice.
-                    PuppetEntity back = (PuppetEntity) EntityType.create(saved, level).orElseThrow();
+                    PuppetEntity back = (PuppetEntity) TestServer.create(saved, level).orElseThrow();
                     level.addFreshEntity(back);
                     back.tick();
                     assertTrue(back.isAlive(), "a current puppet survives loading");
@@ -199,8 +198,7 @@ class PuppetTest {
                 InnateTechniqueService.clearCooldowns(owner);
                 PuppetEntity unloaded = create(server, owner, 0);
                 // Its chunk unloads: saved to disk, still counted.
-                CompoundTag saved = new CompoundTag();
-                unloaded.save(saved);
+                CompoundTag saved = TestServer.save(unloaded);
                 unloaded.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);
                 assertEquals(2, Puppets.count(owner), "an unloaded puppet still counts toward the cap");
 
@@ -216,14 +214,14 @@ class PuppetTest {
                 assertNotEquals(generation, PuppetSavedData.get(server).generation(owner.getUUID()), "the generation moved on");
 
                 // ...and the unloaded one the moment its chunk loads again.
-                PuppetEntity reloaded = (PuppetEntity) EntityType.create(saved, level).orElseThrow();
+                PuppetEntity reloaded = (PuppetEntity) TestServer.create(saved, level).orElseThrow();
                 level.addFreshEntity(reloaded);
                 reloaded.tick();
                 assertTrue(reloaded.isRemoved(), "a stale puppet dissolves on its first tick");
 
                 // Even if they roll Puppet Manipulation again later, old puppets never come back.
                 InnateTechniqueService.setInnateTechnique(owner, PuppetManipulation.PUPPET_MANIPULATION.get());
-                PuppetEntity again = (PuppetEntity) EntityType.create(saved, level).orElseThrow();
+                PuppetEntity again = (PuppetEntity) TestServer.create(saved, level).orElseThrow();
                 level.addFreshEntity(again);
                 again.tick();
                 assertTrue(again.isRemoved(), "stale for good");

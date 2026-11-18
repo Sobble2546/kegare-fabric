@@ -53,7 +53,7 @@ import org.joml.Vector3f;
  * Reduced: fewer threads. Vanilla: small lavender specks in the same places ({@link #SPECK}), never the explosion's puffs.
  */
 public final class PuppetFx {
-    static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
+    static final Identifier WHITE = com.cnethuka.kegare.Kegare.id("textures/misc/white.png");
     /** Lavender (#C4B5FD), its white highlight, and a lighter and deeper step (the braid's ramp for Strings). */
     static final int LAVENDER = 0xC4B5FD, PALE = 0xF5F3FF, LIGHT = 0xDDD6FE, DEEP = 0xA78BFA;
     /** The Vanilla-quality stand-in: a small lavender speck (small dust also dies fast, as its life scales with its size). */

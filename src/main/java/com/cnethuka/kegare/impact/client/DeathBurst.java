@@ -34,7 +34,7 @@ import org.joml.Matrix4f;
  * {@code DeathPoofMixin}.
  */
 public final class DeathBurst {
-    private static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
+    private static final Identifier WHITE = com.cnethuka.kegare.Kegare.id("textures/misc/white.png");
     private static RenderType type() {
         return RenderTypes.entityTranslucentEmissive(WHITE);
     }

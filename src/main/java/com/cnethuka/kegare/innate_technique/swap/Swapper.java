@@ -65,11 +65,11 @@ public final class Swapper {
 
     public static void moveTo(Entity entity, Vec3 pos, float yaw, float pitch) {
         Vec3 spot = clearOfBlocks(entity, pos);
-        if (entity instanceof ServerPlayer player && !(entity instanceof FakePlayer)) {
+        if (entity instanceof ServerPlayer player && !(com.cnethuka.kegare.platform.Players.isFakeBody(entity))) {
             if (player.isSleeping()) player.stopSleepInBed(true, true);
             player.stopRiding();
             player.teleportTo(player.level(), spot.x, spot.y, spot.z, Set.of(), yaw, pitch, true);
-        } else if (entity instanceof FakePlayer) { // no client to tell, and its connection ignores teleports
+        } else if (com.cnethuka.kegare.platform.Players.isFakeBody(entity)) { // no client to tell, and its connection ignores teleports
             entity.stopRiding();
             entity.snapTo(spot.x, spot.y, spot.z, yaw, pitch);
         } else {
@@ -80,7 +80,7 @@ public final class Swapper {
         }
         entity.setYHeadRot(yaw);
         entity.resetFallDistance();
-        if (!(entity instanceof FakePlayer)) {
+        if (!(com.cnethuka.kegare.platform.Players.isFakeBody(entity))) {
             // Tell watchers now rather than waiting for the tracker (teleportTo already told the moved player). The tracker's
             // base is updated too, since its next relative step is sent from where it thinks watchers have the entity.
             ServerLevel level = (ServerLevel) entity.level();

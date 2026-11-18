@@ -30,7 +30,7 @@ public final class PuppetHud {
 
     /** Every 10 ticks for holders (and anyone still possessing): send if anything changed. */
     static void check(ServerPlayer player) {
-        if (player instanceof FakePlayer || player.connection == null) return;
+        if (com.cnethuka.kegare.platform.Players.isFakeBody(player) || player.connection == null) return;
         update(player, now -> PacketDistributor.sendToPlayer(player, now));
     }
 
