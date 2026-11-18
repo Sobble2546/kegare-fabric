@@ -10,8 +10,11 @@
       "translate": "advancements.kegare.reawakening.description"
     },
     "icon": {
+      "components": {
+        "minecraft:item_model": "kegare:purification_talisman"
+      },
       "count": 1,
-      "id": "kegare:purification_talisman"
+      "id": "minecraft:paper"
     },
     "title": {
       "translate": "advancements.kegare.reawakening.title"

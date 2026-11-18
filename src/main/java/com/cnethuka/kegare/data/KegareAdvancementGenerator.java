@@ -104,7 +104,7 @@ public final class KegareAdvancementGenerator {
         for (InnateTechnique innateTechnique : KegareRegistries.INNATE_TECHNIQUE) {
             if (!innateTechnique.id().getNamespace().equals(Kegare.MODID)) continue;
             AdvancementHolder techniqueRoot = Advancement.Builder.advancement()
-                    .display(innateTechnique.tabIcon(), innateTechnique.displayName(),
+                    .display(icon(innateTechnique.tabIcon()), innateTechnique.displayName(),
                             Component.translatable("advancements.kegare.innate_technique_root.description"),
                             INNATE_TECHNIQUE_BACKGROUND, AdvancementType.TASK, true, false, false)
                     .addCriterion("rolled", impossible())
@@ -181,9 +181,22 @@ public final class KegareAdvancementGenerator {
         boolean secret = KegareAdvancements.SECRET_IDENTITY.contains(id);
         boolean forceHidden = secret && !KegareAdvancements.SECRET_VISIBLE_ROOTS.contains(id);
         return Advancement.Builder.advancement()
-                .display(icon, title(key), description(key), background, type, true, announces(id), hidden || forceHidden)
+                .display(icon(icon), title(key), description(key), background, type, true, announces(id), hidden || forceHidden)
                 .addCriterion(criterion, impossible())
                 .save(saver, id.toString());
+    }
+
+    /**
+     * The icon as a stack. A Kegare item is sent as paper wearing that item's model: it looks the same, and it is a vanilla item id on the
+     * wire. ViaBackwards cannot translate a modded item id in the advancements packet and drops the player (seen: a 1.21.11 client on a
+     * 26.3 server was disconnected on join by the Reawakening icon).
+     */
+    private static net.minecraft.world.item.ItemStack icon(ItemLike icon) {
+        Identifier id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(icon.asItem());
+        if (!id.getNamespace().equals(com.cnethuka.kegare.Kegare.MODID)) return new net.minecraft.world.item.ItemStack(icon);
+        net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(Items.PAPER);
+        stack.set(net.minecraft.core.component.DataComponents.ITEM_MODEL, id);
+        return stack;
     }
 
     /** Secret-identity IDs are always hidden and never announced to chat, whatever the caller passes. */
@@ -192,7 +205,7 @@ public final class KegareAdvancementGenerator {
         boolean secret = KegareAdvancements.SECRET_IDENTITY.contains(id);
         return Advancement.Builder.advancement()
                 .parent(parent)
-                .display(icon, title(key), description(key), null, type, true, announces(id), hidden || secret)
+                .display(icon(icon), title(key), description(key), null, type, true, announces(id), hidden || secret)
                 .addCriterion("granted", impossible())
                 .save(saver, id.toString());
     }
@@ -202,7 +215,7 @@ public final class KegareAdvancementGenerator {
                                                     String key, ItemLike icon, AdvancementType type) {
         return Advancement.Builder.advancement()
                 .parent(parent)
-                .display(icon, title(key), description(key), null, type, true, false, true)
+                .display(icon(icon), title(key), description(key), null, type, true, false, true)
                 .addCriterion("granted", impossible())
                 .save(saver, id.toString());
     }
