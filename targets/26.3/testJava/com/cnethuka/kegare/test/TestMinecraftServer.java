@@ -1,3 +1,7 @@
+// NOT PORTED TO 26.3 YET. This is the 1.21.11 file with the 26.x renames applied; it does not compile here. 26.3 changed how a server is
+// built (MinecraftServer takes Optional<GameRules>, a boolean and a NotificationManager; LevelSettings takes DifficultySettings and no
+// GameRules; PrimaryLevelData takes no WorldOptions; getChatSpamThresholdSeconds/getCommandSpamThresholdSeconds are new abstract methods;
+// stopServer is protected). Until it is ported, `./gradlew -Ptarget=26.3 test` cannot run; build the jar with `-x test -x compileTestJava`.
 package com.cnethuka.kegare.test;
 
 import com.mojang.authlib.GameProfile;

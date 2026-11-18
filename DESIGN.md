@@ -826,6 +826,21 @@ things changed in how it is built; what the player sees is meant to be the same.
   that runs Kegare (`ClientNet.isActive()`); on any other it is vanilla. Swap's afterimage works its pose out when someone leaves (their state
   is extracted and posed on a model of our own), not every frame for every player. The held Glacial Lance only records where it is drawn
   for the world's pass, not for the inventory's preview of a player. A possessed puppet casts no shadow.
+- **26.2 and 26.3 (Fabric): what is different, and what is missing.** One source tree builds all three targets; `targets/<target>/java`
+  holds the classes that differ and `targets/26*.renames` the names Mojang only renamed (build.gradle swaps them in a copy of the sources).
+  - *World geometry.* 26.x has no immediate buffer source. Every level stage is posted from Fabric's `LevelRenderEvents.COLLECT_SUBMITS`
+    with `platform.client.KBuffers` standing in for `MultiBufferSource`: an effect's vertices are recorded and handed to the frame's
+    submit collector as one custom-geometry node per render type when it ends the batch. Vanilla then sorts and draws them, so the
+    order between Kegare's stages no longer decides what covers what.
+  - *Not ported on 26.x yet (the effect is skipped, the game is otherwise unaffected):* the full-screen shader effects (`FullscreenFx`:
+    grayscale, invert, the hit-stop hold, impact-frame screen pass) and the Severed Senses outline (`SilhouetteMask`). Both report
+    themselves invalid, which callers treat like a shader that failed to compile. Held items are left out of body copies.
+  - *Eyewear slot.* Trinkets 4.x (26.x) has another API and slot data format; `EyewearSlots.SUPPORTED` is false there, so
+    `Eyewear.slotAvailable()` is false and the Blindfold and Sunglasses cannot be worn on 26.x (the items still exist).
+  - *Data.* The data generators only run on 1.21.11; 26.x ships the same generated files. 26.3 renamed the `recipe_unlocked` trigger's
+    condition key, which build.gradle rewrites for that target (`recipe_unlocked_key`).
+  - *Unverified.* On 26.x only a dedicated-server boot has been observed. Knockback through `EntityCompat` passes a generic damage source
+    and 0 for the new arguments; the "swing started this tick" test reads the animation progress; neither was checked in game.
 
 - **Libraries:** player animations use Player Animation Library (PAL, by ZigyTheBird). VFX use Photon (by
   KilaBash), which needs LDLib2. All three are required mods; see README.
