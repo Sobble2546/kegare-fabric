@@ -16,9 +16,6 @@ import com.cnethuka.kegare.platform.event.ServerEventHooks;
 import com.cnethuka.kegare.platform.net.PlatformNet;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.resources.Identifier;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
 import org.slf4j.Logger;
 
 /**
