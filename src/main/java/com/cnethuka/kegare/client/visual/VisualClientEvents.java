@@ -8,8 +8,8 @@ import com.cnethuka.kegare.platform.bus.IEventBus;
 import com.cnethuka.kegare.platform.bus.SubscribeEvent;
 import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
+import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
+import com.cnethuka.kegare.platform.client.event.ClientTickEvent;
 
 /** Wires the client visual system: payload handler, PAL layer, Photon preloading, per-tick work and cleanup. */
 @EventBusSubscriber(modid = Kegare.MODID, value = Dist.CLIENT)

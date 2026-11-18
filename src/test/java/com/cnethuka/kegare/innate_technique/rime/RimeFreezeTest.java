@@ -120,9 +120,9 @@ class RimeFreezeTest {
     }
 
     /** 10 damage from {@code source} to a Rime Shell holder, through the real event (runs RimeEvents). */
-    private static net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Pre shellHit(ServerPlayer shell,
+    private static com.cnethuka.kegare.platform.event.entity.living.LivingDamageEvent.Pre shellHit(ServerPlayer shell,
                                                                                          net.minecraft.world.damagesource.DamageSource source) {
-        var event = new net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Pre(shell,
+        var event = new com.cnethuka.kegare.platform.event.entity.living.LivingDamageEvent.Pre(shell,
                 new net.neoforged.neoforge.common.damagesource.DamageContainer(source, 10f));
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(event);
         return event;

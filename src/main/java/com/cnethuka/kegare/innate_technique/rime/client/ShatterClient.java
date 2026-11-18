@@ -24,7 +24,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import com.cnethuka.kegare.platform.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
 /**

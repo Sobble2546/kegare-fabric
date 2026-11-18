@@ -36,7 +36,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import com.cnethuka.kegare.platform.client.event.EntityRenderersEvent;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 

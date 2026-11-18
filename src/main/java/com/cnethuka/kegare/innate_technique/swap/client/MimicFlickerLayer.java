@@ -18,7 +18,7 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.PlayerSkin;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import com.cnethuka.kegare.platform.client.event.EntityRenderersEvent;
 
 /**
  * Mimic's flicker (DESIGN §3.19): the caster's body drawn again as a flat teal figure, its boxes slightly bigger all round

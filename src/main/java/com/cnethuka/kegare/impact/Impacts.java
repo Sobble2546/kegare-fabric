@@ -23,11 +23,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import com.cnethuka.kegare.platform.bus.EventPriority;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
-import net.neoforged.neoforge.event.entity.living.LivingKnockBackEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import com.cnethuka.kegare.platform.NeoForge;
+import com.cnethuka.kegare.platform.event.entity.living.LivingDamageEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingKnockBackEvent;
+import com.cnethuka.kegare.platform.event.server.ServerStoppedEvent;
+import com.cnethuka.kegare.platform.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
@@ -60,7 +60,7 @@ public final class Impacts {
             clear();
             CastMalice.clear();
         });
-        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent e) ->
+        NeoForge.EVENT_BUS.addListener((com.cnethuka.kegare.platform.event.entity.player.PlayerEvent.PlayerLoggedOutEvent e) ->
                 CastMalice.forget(e.getEntity().getUUID()));
         MeleeImpact.listen(Impacts::onMoment);
         listen(ImpactSounds::play);

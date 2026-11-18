@@ -14,10 +14,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import com.cnethuka.kegare.platform.bus.IEventBus;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
+import com.cnethuka.kegare.platform.client.event.ClientTickEvent;
+import com.cnethuka.kegare.platform.client.event.EntityRenderersEvent;
+import com.cnethuka.kegare.platform.NeoForge;
 
 /**
  * A repair's tell (DESIGN §3.17): while someone repairs a burnt-out technique, their nose bleeds. It starts at the nostrils and runs down

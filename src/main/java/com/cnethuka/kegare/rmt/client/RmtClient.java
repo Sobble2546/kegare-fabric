@@ -5,7 +5,7 @@ import com.cnethuka.kegare.client.visual.VanillaFallback;
 import com.cnethuka.kegare.innatetechnique.visual.VisualHooks;
 import com.cnethuka.kegare.rmt.OrbPayload;
 import com.cnethuka.kegare.rmt.RmtIds;
-import net.neoforged.neoforge.common.NeoForge;
+import com.cnethuka.kegare.platform.NeoForge;
 import net.minecraft.core.particles.ParticleTypes;
 
 /**
@@ -21,7 +21,7 @@ public final class RmtClient {
     public static void init() {
         OrbPayload.setClientHandler(GreenOrbClient::handle);
         com.cnethuka.kegare.rmt.RmtOutputPayload.setClientHandler(payload -> output = payload);
-        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut e) ->
+        NeoForge.EVENT_BUS.addListener((com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent.LoggingOut e) ->
                 output = com.cnethuka.kegare.rmt.RmtOutputPayload.NONE);
         // Under its stats on the Sorcerer screen: how strongly it heals right now.
         com.cnethuka.kegare.client.gui.SorcererScreen.addDetailLines(ability -> ability.id().equals(RmtIds.ABILITY)

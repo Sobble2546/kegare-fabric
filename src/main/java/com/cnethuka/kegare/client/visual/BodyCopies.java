@@ -1,7 +1,7 @@
 package com.cnethuka.kegare.client.visual;
 
-import net.neoforged.neoforge.client.event.RenderNameTagEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import com.cnethuka.kegare.platform.client.event.RenderNameTagEvent;
+import com.cnethuka.kegare.platform.NeoForge;
 import net.neoforged.neoforge.common.util.TriState;
 
 /**

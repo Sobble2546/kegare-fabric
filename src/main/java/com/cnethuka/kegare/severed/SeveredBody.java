@@ -8,8 +8,8 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingDamageEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingIncomingDamageEvent;
 
 /**
  * A Severed player's body, always on (DESIGN §3.27). Strength: their melee hits ({@link MeleeHits}: fists and weapons) deal

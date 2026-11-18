@@ -27,7 +27,7 @@ import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
+import com.cnethuka.kegare.platform.NeoForge;
 import net.neoforged.testframework.junit.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -536,7 +536,7 @@ class StringsTest {
             // The caster logs out, or possesses a puppet, or rerolls away.
             InnateTechniqueService.clearCooldowns(caster);
             press(caster, a, CastIntent.CAST_PRESS);
-            NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(caster));
+            NeoForge.EVENT_BUS.post(new com.cnethuka.kegare.platform.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(caster));
             assertNull(Strings.phase(caster), "the caster logged out");
 
             InnateTechniqueService.clearCooldowns(caster);

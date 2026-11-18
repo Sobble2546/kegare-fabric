@@ -6,10 +6,10 @@ import com.cnethuka.kegare.platform.bus.EventPriority;
 import com.cnethuka.kegare.platform.bus.SubscribeEvent;
 import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
 import net.neoforged.neoforge.common.util.FakePlayer;
-import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import com.cnethuka.kegare.platform.event.entity.player.AttackEntityEvent;
+import com.cnethuka.kegare.platform.event.entity.player.PlayerEvent;
+import com.cnethuka.kegare.platform.event.server.ServerStoppedEvent;
+import com.cnethuka.kegare.platform.event.tick.PlayerTickEvent;
 
 /** Where sub-tick timing meets the game (DESIGN §3.29): the clock pings, and the melee attack's time. */
 @EventBusSubscriber(modid = Kegare.MODID)

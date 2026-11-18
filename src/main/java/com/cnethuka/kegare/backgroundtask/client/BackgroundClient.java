@@ -14,8 +14,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
+import com.cnethuka.kegare.platform.NeoForge;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**

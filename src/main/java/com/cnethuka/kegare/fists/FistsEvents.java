@@ -7,11 +7,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import com.cnethuka.kegare.platform.bus.SubscribeEvent;
 import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingIncomingDamageEvent;
+import com.cnethuka.kegare.platform.event.entity.player.PlayerEvent;
+import com.cnethuka.kegare.platform.event.server.ServerStoppedEvent;
+import com.cnethuka.kegare.platform.event.tick.PlayerTickEvent;
+import com.cnethuka.kegare.platform.event.tick.ServerTickEvent;
 
 /** Where Reinforced Fists meet the game (DESIGN §3.28). */
 @EventBusSubscriber(modid = Kegare.MODID)
@@ -42,7 +42,7 @@ public final class FistsEvents {
     }
 
     @SubscribeEvent
-    static void onDamaged(net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Post event) {
+    static void onDamaged(com.cnethuka.kegare.platform.event.entity.living.LivingDamageEvent.Post event) {
         FistsAdvancements.onDamaged(event);
     }
 

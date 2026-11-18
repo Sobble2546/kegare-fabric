@@ -13,10 +13,10 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import com.cnethuka.kegare.platform.bus.IEventBus;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
+import com.cnethuka.kegare.platform.client.event.RegisterGuiLayersEvent;
+import com.cnethuka.kegare.platform.client.event.ViewportEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
-import net.neoforged.neoforge.common.NeoForge;
+import com.cnethuka.kegare.platform.NeoForge;
 import org.joml.Matrix4f;
 
 /**

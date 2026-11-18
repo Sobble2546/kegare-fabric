@@ -15,11 +15,11 @@ import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import com.cnethuka.kegare.platform.bus.IEventBus;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
+import com.cnethuka.kegare.platform.client.event.ClientTickEvent;
+import com.cnethuka.kegare.platform.client.event.RegisterClientReloadListenersEvent;
+import com.cnethuka.kegare.platform.client.event.RenderLevelStageEvent;
+import com.cnethuka.kegare.platform.NeoForge;
 
 /** Severed players' client side (DESIGN §3.27): Senses, Blur's drive, feel, smear and HUD cues. */
 public final class SeveredClient {

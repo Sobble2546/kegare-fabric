@@ -46,7 +46,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import com.cnethuka.kegare.platform.bus.SubscribeEvent;
 import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import com.cnethuka.kegare.platform.event.RegisterCommandsEvent;
 
 /**
  * {@code /kegare <system> <action> [player] [value]}. Everything takes permission level 2 but {@code help}: each system asks

@@ -6,22 +6,22 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import com.cnethuka.kegare.platform.bus.EventPriority;
 import com.cnethuka.kegare.platform.bus.ICancellableEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.entity.EntityTravelToDimensionEvent;
-import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
-import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.neoforge.event.level.BlockEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import com.cnethuka.kegare.platform.NeoForge;
+import com.cnethuka.kegare.platform.event.entity.EntityJoinLevelEvent;
+import com.cnethuka.kegare.platform.event.entity.EntityTravelToDimensionEvent;
+import com.cnethuka.kegare.platform.event.entity.ProjectileImpactEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingDeathEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingEntityUseItemEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingIncomingDamageEvent;
+import com.cnethuka.kegare.platform.event.entity.player.AttackEntityEvent;
+import com.cnethuka.kegare.platform.event.entity.player.PlayerEvent;
+import com.cnethuka.kegare.platform.event.entity.player.PlayerInteractEvent;
+import com.cnethuka.kegare.platform.event.level.BlockEvent;
+import com.cnethuka.kegare.platform.event.server.ServerStoppedEvent;
+import com.cnethuka.kegare.platform.event.tick.EntityTickEvent;
+import com.cnethuka.kegare.platform.event.tick.LevelTickEvent;
+import com.cnethuka.kegare.platform.event.tick.PlayerTickEvent;
+import com.cnethuka.kegare.platform.event.tick.ServerTickEvent;
 
 /**
  * Time Manipulation's server hooks: Point Maker's marks, the position history Rewind reads, Stasis Fields, Standstill's stops and the

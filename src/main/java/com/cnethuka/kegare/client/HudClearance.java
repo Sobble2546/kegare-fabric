@@ -6,7 +6,7 @@ import com.cnethuka.kegare.platform.Dist;
 import com.cnethuka.kegare.platform.bus.EventPriority;
 import com.cnethuka.kegare.platform.bus.SubscribeEvent;
 import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import com.cnethuka.kegare.platform.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 /**

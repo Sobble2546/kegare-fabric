@@ -9,10 +9,10 @@ import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
 import com.cnethuka.kegare.platform.bus.IEventBus;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
+import com.cnethuka.kegare.platform.client.event.EntityRenderersEvent;
+import com.cnethuka.kegare.platform.client.event.RegisterClientReloadListenersEvent;
+import com.cnethuka.kegare.platform.NeoForge;
 
 /** Puppet Manipulation's client side: the puppet renderer, its spin keyframes, outlines and its effects (PuppetFx). */
 public final class PuppetClient {

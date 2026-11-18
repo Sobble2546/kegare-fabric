@@ -17,10 +17,10 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import com.cnethuka.kegare.platform.bus.EventPriority;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.RenderNameTagEvent;
-import net.neoforged.neoforge.client.event.RenderPlayerEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
+import com.cnethuka.kegare.platform.client.event.RenderNameTagEvent;
+import com.cnethuka.kegare.platform.client.event.RenderPlayerEvent;
+import com.cnethuka.kegare.platform.NeoForge;
 
 /**
  * Draws Swap's disguises ({@link Disguises}, synced). A disguised player is drawn as who they look like: skin, arm

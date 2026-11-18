@@ -11,7 +11,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
-import net.neoforged.neoforge.client.event.RenderHandEvent;
+import com.cnethuka.kegare.platform.client.event.RenderHandEvent;
 
 /**
  * The guard in first person, where the melee animations leave the hands to vanilla: the same hand and item, brought in and turned

@@ -28,9 +28,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
+import com.cnethuka.kegare.platform.client.event.RenderLevelStageEvent;
+import com.cnethuka.kegare.platform.NeoForge;
 
 /**
  * What a Severed player senses, drawn (DESIGN §3.27): every body the server says they sense gets a faint, pale outline, through

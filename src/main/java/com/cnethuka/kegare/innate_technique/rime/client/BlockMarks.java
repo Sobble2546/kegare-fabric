@@ -24,7 +24,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import com.cnethuka.kegare.platform.client.event.RenderLevelStageEvent;
 import org.jetbrains.annotations.Nullable;
 
 /**

@@ -10,11 +10,11 @@ import net.minecraft.world.entity.LivingEntity;
 import com.cnethuka.kegare.platform.bus.EventPriority;
 import com.cnethuka.kegare.platform.bus.SubscribeEvent;
 import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingDamageEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingDeathEvent;
+import com.cnethuka.kegare.platform.event.tick.EntityTickEvent;
+import com.cnethuka.kegare.platform.event.tick.LevelTickEvent;
+import com.cnethuka.kegare.platform.event.tick.PlayerTickEvent;
 import net.minecraft.server.level.ServerLevel;
 
 /**

@@ -26,7 +26,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.neoforged.neoforge.common.NeoForgeMod;
-import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingEntityUseItemEvent;
 
 /**
  * Accelerate (TOGGLE, DESIGN §3.26): your own clock runs {@code rate} times as fast. Walking, sprinting and swimming (attribute

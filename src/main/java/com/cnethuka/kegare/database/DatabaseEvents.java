@@ -6,8 +6,8 @@ import com.cnethuka.kegare.platform.bus.EventPriority;
 import com.cnethuka.kegare.platform.bus.SubscribeEvent;
 import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
 import net.neoforged.neoforge.common.util.FakePlayer;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import com.cnethuka.kegare.platform.event.entity.player.PlayerEvent;
+import com.cnethuka.kegare.platform.event.tick.ServerTickEvent;
 
 /** The game's side of the storage (DESIGN §3.33): saving on the interval and on the way out. Does nothing with it off. */
 @EventBusSubscriber(modid = Kegare.MODID)

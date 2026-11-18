@@ -1,10 +1,10 @@
 package com.cnethuka.kegare.backgroundtask;
 
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import com.cnethuka.kegare.platform.NeoForge;
+import com.cnethuka.kegare.platform.event.entity.player.PlayerEvent;
+import com.cnethuka.kegare.platform.event.server.ServerStoppedEvent;
+import com.cnethuka.kegare.platform.event.tick.PlayerTickEvent;
 
 /** Ticks every player's Background Tasks on the server and keeps each client in sync. */
 public final class BackgroundTaskEvents {

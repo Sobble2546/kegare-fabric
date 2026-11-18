@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import com.cnethuka.kegare.platform.bus.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import com.cnethuka.kegare.platform.client.event.RegisterClientReloadListenersEvent;
 import org.lwjgl.glfw.GLFW;
 import top.theillusivec4.curios.api.client.CuriosRendererRegistry;
 
@@ -34,7 +34,7 @@ public final class EyewearClient {
 
     public static void init(IEventBus modBus) {
         // A disguise wears the face's eyewear: a layer on every player renderer draws it.
-        modBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.AddLayers e) -> {
+        modBus.addListener((com.cnethuka.kegare.platform.client.event.EntityRenderersEvent.AddLayers e) -> {
             for (net.minecraft.client.resources.PlayerSkin.Model skin : e.getSkins()) {
                 if (e.getSkin(skin) instanceof net.minecraft.client.renderer.entity.player.PlayerRenderer renderer) renderer.addLayer(new DisguisedEyewearLayer(renderer));
             }

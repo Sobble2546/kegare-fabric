@@ -26,7 +26,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingIncomingDamageEvent;
 
 /**
  * Black Spark (DESIGN §3.28): Malice landing within a hair of the hit. The first melee hit on a living target within {@code tryMs} of

@@ -7,14 +7,14 @@ import com.cnethuka.kegare.platform.bus.EventPriority;
 import com.cnethuka.kegare.platform.bus.SubscribeEvent;
 import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
 import net.neoforged.neoforge.common.util.TriState;
-import net.neoforged.neoforge.event.entity.EntityTravelToDimensionEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
-import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerContainerEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import com.cnethuka.kegare.platform.event.entity.EntityTravelToDimensionEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingDeathEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingHealEvent;
+import com.cnethuka.kegare.platform.event.entity.player.ItemEntityPickupEvent;
+import com.cnethuka.kegare.platform.event.entity.player.PlayerContainerEvent;
+import com.cnethuka.kegare.platform.event.entity.player.PlayerEvent;
+import com.cnethuka.kegare.platform.event.server.ServerStoppedEvent;
+import com.cnethuka.kegare.platform.event.tick.PlayerTickEvent;
 
 /** Puppet Manipulation's server hooks: possession's ways back and limits, and the owner's HUD. */
 @EventBusSubscriber(modid = Kegare.MODID)
@@ -77,7 +77,7 @@ public final class PuppetEvents {
 
     /** Guard: whoever damages a Puppet Manipulation player has their guarding puppets to deal with. */
     @SubscribeEvent
-    static void onOwnerDamaged(net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Post event) {
+    static void onOwnerDamaged(com.cnethuka.kegare.platform.event.entity.living.LivingDamageEvent.Post event) {
         if (event.getNewDamage() <= 0 || !(event.getEntity() instanceof ServerPlayer owner)) return;
         if (event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker && attacker != owner
                 && !(attacker instanceof PuppetEntity puppet && puppet.isOwnedBy(owner))) {
@@ -90,7 +90,7 @@ public final class PuppetEvents {
      * doing, or one stray hit would call every idle guard over. A Curio Burst is: the owner set it off.
      */
     @SubscribeEvent
-    static void onOwnerDealtDamage(net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Post event) {
+    static void onOwnerDealtDamage(com.cnethuka.kegare.platform.event.entity.living.LivingDamageEvent.Post event) {
         if (event.getNewDamage() <= 0 || !(event.getEntity().level() instanceof net.minecraft.server.level.ServerLevel level)
                 || event.getSource().getEntity() instanceof PuppetEntity) return;
         com.cnethuka.kegare.progression.Attribution.Hit hit = com.cnethuka.kegare.progression.Attribution.of(event.getSource(), level.getServer());
@@ -118,7 +118,7 @@ public final class PuppetEvents {
     }
 
     @SubscribeEvent
-    static void onServerTick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) {
+    static void onServerTick(com.cnethuka.kegare.platform.event.tick.ServerTickEvent.Post event) {
         CurioBursts.tick(event.getServer());
         Strings.tick(event.getServer());
         if (event.getServer().getTickCount() % 20 == 0 && event.getServer().overworld() != null) {

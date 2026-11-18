@@ -6,9 +6,9 @@ import net.minecraft.world.entity.player.Player;
 import com.cnethuka.kegare.platform.bus.SubscribeEvent;
 import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
 import net.neoforged.neoforge.common.util.FakePlayer;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingDamageEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingDeathEvent;
+import com.cnethuka.kegare.platform.event.tick.PlayerTickEvent;
 
 /** Server hooks for the green orb and the RMT advancements. */
 @EventBusSubscriber(modid = Kegare.MODID)
@@ -51,7 +51,7 @@ public final class RmtEvents {
      * once ever, so anyone already paid gets nothing.
      */
     @SubscribeEvent
-    static void onLogin(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) {
+    static void onLogin(com.cnethuka.kegare.platform.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) payUnlockedRmt(player);
     }
 
@@ -62,7 +62,7 @@ public final class RmtEvents {
     }
 
     @SubscribeEvent
-    static void onLogout(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
+    static void onLogout(com.cnethuka.kegare.platform.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             RmtFatigue.reset(player);
             GreenOrbService.state(player).survivedLowAt = Long.MAX_VALUE;
@@ -71,18 +71,18 @@ public final class RmtEvents {
     }
 
     @SubscribeEvent
-    static void onStartTracking(net.neoforged.neoforge.event.entity.player.PlayerEvent.StartTracking event) {
+    static void onStartTracking(com.cnethuka.kegare.platform.event.entity.player.PlayerEvent.StartTracking event) {
         if (event.getEntity() instanceof ServerPlayer viewer) Repair.onStartTracking(viewer, event.getTarget());
     }
 
     /** A night slept through clears the brain meter of everyone who slept it. */
     @SubscribeEvent
-    static void onNightSlept(net.neoforged.neoforge.event.level.SleepFinishedTimeEvent event) {
+    static void onNightSlept(com.cnethuka.kegare.platform.event.level.SleepFinishedTimeEvent event) {
         if (event.getLevel() instanceof net.minecraft.server.level.ServerLevel level) BrainDamage.nightSlept(level);
     }
 
     @SubscribeEvent
-    static void onStopped(net.neoforged.neoforge.event.server.ServerStoppedEvent event) {
+    static void onStopped(com.cnethuka.kegare.platform.event.server.ServerStoppedEvent event) {
         Repair.clear();
     }
 }

@@ -14,7 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
+import com.cnethuka.kegare.platform.NeoForge;
 
 /**
  * Understudy (INSTANT): swap places with the puppet you're looking at. It fires {@link SwapTargetEvent} with the

@@ -11,11 +11,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.Entity;
 import com.cnethuka.kegare.platform.bus.IEventBus;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
+import com.cnethuka.kegare.platform.client.event.ClientTickEvent;
+import com.cnethuka.kegare.platform.client.event.EntityRenderersEvent;
+import com.cnethuka.kegare.platform.client.event.RenderLevelStageEvent;
+import com.cnethuka.kegare.platform.NeoForge;
 
 /** Time Manipulation's client entry point (DESIGN §3.26): its renderer, what it draws, Standstill's freeze, and its hand rules. */
 public final class TimeClient {

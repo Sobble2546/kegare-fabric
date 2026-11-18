@@ -216,7 +216,7 @@ class StandstillHitsTest {
                 assertFalse(caster.hurt(caster.damageSources().thorns(zombie), 2f), "the thorns on its armour: nothing");
                 cube.playerTouch(caster);
                 assertEquals(health, caster.getHealth(), 1.0e-4, "the caster untouched, even walking into a frozen magma cube");
-                assertTrue(net.neoforged.neoforge.event.EventHooks.onEnderTeleport(enderman, 20.5, Y, 20.5).isCanceled(), "a frozen enderman never teleports");
+                assertTrue(com.cnethuka.kegare.platform.event.EventHooks.onEnderTeleport(enderman, 20.5, Y, 20.5).isCanceled(), "a frozen enderman never teleports");
                 zombie.knockback(1.0, -1.0, 0.0);
                 assertEquals(Vec3.ZERO, zombie.getDeltaMovement(), "and nothing frozen is pushed");
                 resume(server, level);

@@ -41,10 +41,10 @@ import net.minecraft.world.level.block.entity.LecternBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
+import com.cnethuka.kegare.platform.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.level.BlockEvent;
+import com.cnethuka.kegare.platform.event.entity.EntityJoinLevelEvent;
+import com.cnethuka.kegare.platform.event.level.BlockEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**

@@ -38,7 +38,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import com.cnethuka.kegare.platform.client.event.EntityRenderersEvent;
 
 /**
  * Freeze on a player, for everyone who can see them: frost creeping over the body as the stacks build, pixel art on the skin's own

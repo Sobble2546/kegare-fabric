@@ -21,12 +21,12 @@ import com.cnethuka.kegare.platform.bus.EventPriority;
 import com.cnethuka.kegare.platform.bus.SubscribeEvent;
 import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
 import net.neoforged.neoforge.common.util.FakePlayer;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.server.ServerStartedEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingDamageEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingDeathEvent;
+import com.cnethuka.kegare.platform.event.entity.player.PlayerEvent;
+import com.cnethuka.kegare.platform.event.server.ServerStartedEvent;
+import com.cnethuka.kegare.platform.event.tick.PlayerTickEvent;
+import com.cnethuka.kegare.platform.event.tick.ServerTickEvent;
 
 /** Player and server lifecycle wiring (game bus, server side). */
 @EventBusSubscriber(modid = Kegare.MODID)
@@ -155,12 +155,12 @@ public final class PlayerEvents {
     }
 
     @SubscribeEvent
-    static void onServerAboutToStart(net.neoforged.neoforge.event.server.ServerAboutToStartEvent event) {
+    static void onServerAboutToStart(com.cnethuka.kegare.platform.event.server.ServerAboutToStartEvent event) {
         com.cnethuka.kegare.database.KegareDatabase.serverStarting(event.getServer());
     }
 
     @SubscribeEvent
-    static void onServerStopped(net.neoforged.neoforge.event.server.ServerStoppedEvent event) {
+    static void onServerStopped(com.cnethuka.kegare.platform.event.server.ServerStoppedEvent event) {
         com.cnethuka.kegare.database.KegareDatabase.serverStopped();
     }
 

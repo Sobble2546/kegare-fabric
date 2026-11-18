@@ -14,11 +14,11 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.Projectile;
 import com.cnethuka.kegare.platform.bus.EventPriority;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.ServerChatEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import com.cnethuka.kegare.platform.NeoForge;
+import com.cnethuka.kegare.platform.event.ServerChatEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingDamageEvent;
+import com.cnethuka.kegare.platform.event.entity.player.PlayerEvent;
+import com.cnethuka.kegare.platform.event.server.ServerStoppedEvent;
 
 /**
  * "Are They High?" (DESIGN §3.31's companion, Base tab: task, hidden, announced; under It's been a while, and only for those who have
@@ -61,7 +61,7 @@ public final class AreTheyHigh {
                 PENDING.add(new Pending(player, text, player.server.getTickCount() + 1));
             }
         });
-        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.tick.ServerTickEvent.Post e) -> {
+        NeoForge.EVENT_BUS.addListener((com.cnethuka.kegare.platform.event.tick.ServerTickEvent.Post e) -> {
             List<Pending> due = new ArrayList<>();
             synchronized (PENDING) {
                 PENDING.removeIf(p -> p.tick() <= e.getServer().getTickCount() && due.add(p));

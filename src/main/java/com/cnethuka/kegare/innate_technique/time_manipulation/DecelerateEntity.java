@@ -17,7 +17,7 @@ import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.neoforged.neoforge.common.NeoForge;
+import com.cnethuka.kegare.platform.NeoForge;
 
 /**
  * Decelerate's projectile: a silver clock hand thrown like a blade, spinning end over end (drawn by {@code DecelerateRenderer}).

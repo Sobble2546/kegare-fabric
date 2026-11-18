@@ -17,7 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingDamageEvent;
 
 /**
  * Reinforced Fists' and Black Spark's advancements (DESIGN §3.28): Base tab, hidden, announced in chat, Challenge, players only, awarded

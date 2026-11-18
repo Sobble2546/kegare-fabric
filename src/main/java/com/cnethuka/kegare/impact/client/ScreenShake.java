@@ -6,7 +6,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import net.minecraft.client.Camera;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.ViewportEvent;
+import com.cnethuka.kegare.platform.client.event.ViewportEvent;
 
 /**
  * Screen shake (DESIGN §3.23): only the drawn camera angles, never your aim, facing or position, so a shake can't throw a swing or a

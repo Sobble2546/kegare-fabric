@@ -11,7 +11,7 @@ import net.minecraft.client.gui.components.toasts.Toast;
 import com.cnethuka.kegare.platform.Dist;
 import com.cnethuka.kegare.platform.bus.SubscribeEvent;
 import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ToastAddEvent;
+import com.cnethuka.kegare.platform.client.event.ToastAddEvent;
 
 /**
  * Pending reveals. A reveal opens as soon as the player is in-game with no other screen open, so it never

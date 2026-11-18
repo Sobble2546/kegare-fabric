@@ -40,8 +40,8 @@ import net.minecraft.world.entity.monster.breeze.Breeze;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import com.cnethuka.kegare.platform.NeoForge;
+import com.cnethuka.kegare.platform.event.tick.ServerTickEvent;
 
 /**
  * The eyes read a hostile mob's flow before it acts (DESIGN §3.32): its outline pulses just before the attack. Read only: nothing here

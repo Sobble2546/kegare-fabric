@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import com.cnethuka.kegare.platform.client.event.EntityRenderersEvent;
 
 /**
  * The nosebleed's line (DESIGN §3.17), drawn on the player's own model with hard edges, so it turns with the head and follows any animation:

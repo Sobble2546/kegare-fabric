@@ -30,11 +30,11 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.util.FakePlayer;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
-import net.neoforged.neoforge.event.entity.living.LivingKnockBackEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import com.cnethuka.kegare.platform.event.entity.EntityJoinLevelEvent;
+import com.cnethuka.kegare.platform.event.entity.ProjectileImpactEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingIncomingDamageEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingKnockBackEvent;
+import com.cnethuka.kegare.platform.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
@@ -366,7 +366,7 @@ public final class TimeStops {
     }
 
     /** Nothing frozen moves itself: an enderman hit by one of the caster's still-flying projectiles stays where it stands. */
-    static void onEnderTeleport(net.neoforged.neoforge.event.entity.EntityTeleportEvent.EnderEntity event) {
+    static void onEnderTeleport(com.cnethuka.kegare.platform.event.entity.EntityTeleportEvent.EnderEntity event) {
         if (!event.getEntity().level().isClientSide && frozen(event.getEntity())) event.setCanceled(true);
     }
 

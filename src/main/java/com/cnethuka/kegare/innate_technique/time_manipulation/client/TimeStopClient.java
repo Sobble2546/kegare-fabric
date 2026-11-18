@@ -16,15 +16,15 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
-import net.neoforged.neoforge.client.event.sound.PlaySoundEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
+import com.cnethuka.kegare.platform.client.event.ClientTickEvent;
+import com.cnethuka.kegare.platform.client.event.InputEvent;
+import com.cnethuka.kegare.platform.client.event.MovementInputUpdateEvent;
+import com.cnethuka.kegare.platform.client.event.sound.PlaySoundEvent;
+import com.cnethuka.kegare.platform.NeoForge;
 import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import com.cnethuka.kegare.platform.event.entity.EntityJoinLevelEvent;
+import com.cnethuka.kegare.platform.event.tick.EntityTickEvent;
 
 /**
  * Standstill on the client (DESIGN §3.26), mirroring the server's {@code TimeStops}: everything frozen there is frozen here too, its

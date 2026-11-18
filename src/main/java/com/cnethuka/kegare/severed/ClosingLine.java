@@ -6,7 +6,7 @@ import com.cnethuka.kegare.melee.MeleeHits;
 import com.cnethuka.kegare.progression.Attribution;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingIncomingDamageEvent;
 import com.cnethuka.kegare.innatetechnique.CastIntent;
 import java.util.Optional;
 import net.minecraft.network.chat.Component;

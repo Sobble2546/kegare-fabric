@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.UUID;
 import com.cnethuka.kegare.platform.bus.SubscribeEvent;
 import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import com.cnethuka.kegare.platform.event.server.ServerStoppedEvent;
 
 /**
  * DEBUG (op command {@code /kegare debug strings unmovable <player> <on>}): a stand-in for a future immunity. Cancels

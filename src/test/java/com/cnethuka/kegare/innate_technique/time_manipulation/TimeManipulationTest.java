@@ -38,11 +38,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.EntityTravelToDimensionEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import com.cnethuka.kegare.platform.NeoForge;
+import com.cnethuka.kegare.platform.event.entity.EntityTravelToDimensionEvent;
+import com.cnethuka.kegare.platform.event.entity.living.LivingDeathEvent;
+import com.cnethuka.kegare.platform.event.entity.player.AttackEntityEvent;
+import com.cnethuka.kegare.platform.event.tick.EntityTickEvent;
 import net.neoforged.testframework.junit.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -320,7 +320,7 @@ class TimeManipulationTest {
                 net.minecraft.world.item.ItemStack bread = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BREAD);
                 int left = 32, ticks = 0;
                 while (left > 0) {
-                    var use = new net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Tick(p, bread, left);
+                    var use = new com.cnethuka.kegare.platform.event.entity.living.LivingEntityUseItemEvent.Tick(p, bread, left);
                     net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(use);
                     left = use.getDuration() - 1; // the game counts one off itself
                     ticks++;

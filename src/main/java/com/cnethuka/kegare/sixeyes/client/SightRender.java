@@ -13,8 +13,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import com.cnethuka.kegare.platform.client.event.RenderLevelStageEvent;
+import com.cnethuka.kegare.platform.NeoForge;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 

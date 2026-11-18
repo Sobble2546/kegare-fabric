@@ -80,9 +80,9 @@ public final class SightClient {
         SightPayloads.Handlers.mobs = SightClient::mobs;
         SightPayloads.Handlers.pulse = p -> PULSES.put(p.entityId(), now() + PULSE_MS);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
-                (net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut e) -> clear());
+                (com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent.LoggingOut e) -> clear());
         // A Stand-In wears its owner's name; the eyes see a puppet.
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.RenderNameTagEvent e) -> {
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((com.cnethuka.kegare.platform.client.event.RenderNameTagEvent e) -> {
             if (bearer && e.getEntity() instanceof PuppetEntity puppet && puppet.isStandIn()) {
                 e.setContent(net.minecraft.network.chat.Component.translatable("gui.kegare.six_eyes.puppet_name", puppet.ownerName()));
             }
