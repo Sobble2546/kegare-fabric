@@ -36,7 +36,7 @@ import com.cnethuka.kegare.platform.client.event.ClientTickEvent;
 import com.cnethuka.kegare.platform.client.event.EntityRenderersEvent;
 import com.cnethuka.kegare.platform.client.event.RenderNameTagEvent;
 import com.cnethuka.kegare.platform.NeoForge;
-import net.neoforged.neoforge.common.util.TriState;
+import com.cnethuka.kegare.platform.TriState;
 
 /**
  * Possession on every client: the possessing player is drawn as their puppet (no name tag, the puppet's glow), a thread

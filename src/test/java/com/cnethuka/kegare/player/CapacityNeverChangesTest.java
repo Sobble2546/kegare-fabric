@@ -33,7 +33,7 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 import javax.annotation.Nullable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.util.FakePlayerFactory;
+import com.cnethuka.kegare.platform.FakePlayerFactory;
 import net.neoforged.testframework.junit.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

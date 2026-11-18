@@ -8,18 +8,19 @@ import com.cnethuka.kegare.network.TalismanPromptPayload;
 import com.cnethuka.kegare.registry.KegareItems;
 import com.cnethuka.kegare.roll.RollReason;
 import com.cnethuka.kegare.roll.RollService;
-import java.util.List;
+import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 import com.cnethuka.kegare.platform.net.PacketDistributor;
 
@@ -37,14 +38,13 @@ public class PurificationTalismanItem extends Item {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
-        ItemStack stack = player.getItemInHand(hand);
-        if (!(player instanceof ServerPlayer serverPlayer)) return InteractionResultHolder.success(stack);
-        if (!canPurify(serverPlayer)) return InteractionResultHolder.fail(stack);
+    public InteractionResult use(Level level, Player player, InteractionHand hand) {
+        if (!(player instanceof ServerPlayer serverPlayer)) return InteractionResult.SUCCESS;
+        if (!canPurify(serverPlayer)) return InteractionResult.FAIL;
         PacketDistributor.sendToPlayer(serverPlayer, new TalismanPromptPayload(hand,
                 InnateTechniqueService.current(serverPlayer).map(InnateTechnique::id),
                 RollService.get(serverPlayer).rollsSinceLegendary(), RollService.settings().hardPity()));
-        return InteractionResultHolder.success(stack);
+        return InteractionResult.SUCCESS;
     }
 
     /** Server side of the confirm button. Every check is redone here; the client decides nothing. */
@@ -73,7 +73,7 @@ public class PurificationTalismanItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable(getDescriptionId() + ".desc").withStyle(ChatFormatting.GRAY));
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+        tooltip.accept(Component.translatable(getDescriptionId() + ".desc").withStyle(ChatFormatting.GRAY));
     }
 }

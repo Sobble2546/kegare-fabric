@@ -16,7 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.OptionalInt;
 import java.util.UUID;
 import net.minecraft.world.damagesource.DamageSource;
-import net.neoforged.neoforge.common.util.FakePlayer;
+import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;

@@ -93,10 +93,10 @@ public record SorcererInfoPayload(
         buf.writeFloat(regenPerSecond);
         buf.writeFloat(regenPercent);
         buf.writeBoolean(regenPaused);
-        buf.writeOptional(innateTechnique, FriendlyByteBuf::writeResourceLocation);
+        buf.writeOptional(innateTechnique, FriendlyByteBuf::writeIdentifier);
         buf.writeCollection(abilities, SorcererInfoPayload::writeInfo);
         buf.writeCollection(shared, SorcererInfoPayload::writeInfo);
-        buf.writeCollection(traits, FriendlyByteBuf::writeResourceLocation);
+        buf.writeCollection(traits, FriendlyByteBuf::writeIdentifier);
         buf.writeVarInt(rollsSinceLegendary);
         buf.writeVarInt(totalRolls);
         buf.writeVarInt(hardPity);
@@ -107,14 +107,14 @@ public record SorcererInfoPayload(
     }
 
     private static void writeInfo(FriendlyByteBuf b, AbilityInfo a) {
-        b.writeResourceLocation(a.id());
+        b.writeIdentifier(a.id());
         b.writeVarInt(a.castType());
         b.writeFloat(a.cost());
         b.writeFloat(a.upkeepPerSecond());
         b.writeVarInt(a.cooldownTicks());
         b.writeBoolean(a.ultimate());
         b.writeOptional(a.special(), (b2, sp) -> {
-            b2.writeResourceLocation(sp.id());
+            b2.writeIdentifier(sp.id());
             b2.writeVarInt(sp.castType());
             b2.writeFloat(sp.cost());
             b2.writeFloat(sp.upkeepPerSecond());
@@ -123,18 +123,18 @@ public record SorcererInfoPayload(
     }
 
     private static AbilityInfo readInfo(FriendlyByteBuf b) {
-        return new AbilityInfo(b.readResourceLocation(), b.readVarInt(), b.readFloat(), b.readFloat(), b.readVarInt(), b.readBoolean(),
-                b.readOptional(b2 -> new SpecialInfo(b2.readResourceLocation(), b2.readVarInt(), b2.readFloat(), b2.readFloat(), b2.readBoolean())));
+        return new AbilityInfo(b.readIdentifier(), b.readVarInt(), b.readFloat(), b.readFloat(), b.readVarInt(), b.readBoolean(),
+                b.readOptional(b2 -> new SpecialInfo(b2.readIdentifier(), b2.readVarInt(), b2.readFloat(), b2.readFloat(), b2.readBoolean())));
     }
 
     private static SorcererInfoPayload read(FriendlyByteBuf buf) {
         return new SorcererInfoPayload(
                 buf.readVarInt(), buf.readFloat(), buf.readVarInt(), buf.readBoolean(),
                 buf.readFloat(), buf.readFloat(), buf.readBoolean(),
-                buf.readOptional(FriendlyByteBuf::readResourceLocation),
+                buf.readOptional(FriendlyByteBuf::readIdentifier),
                 buf.readList(SorcererInfoPayload::readInfo),
                 buf.readList(SorcererInfoPayload::readInfo),
-                buf.readList(FriendlyByteBuf::readResourceLocation),
+                buf.readList(FriendlyByteBuf::readIdentifier),
                 buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readInt(),
                 buf.readVarInt(), buf.readVarInt());
     }

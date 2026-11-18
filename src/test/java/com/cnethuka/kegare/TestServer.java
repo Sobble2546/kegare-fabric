@@ -13,7 +13,7 @@ import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.storage.ServerLevelData;
-import net.neoforged.neoforge.common.util.FakePlayerFactory;
+import com.cnethuka.kegare.platform.FakePlayerFactory;
 
 /** Helpers for tests on the testframework's throwaway server. */
 public final class TestServer {
@@ -28,7 +28,7 @@ public final class TestServer {
     /** A fake player that keeps REAL advancements (NeoForge gives fake players throwaway ones). */
     public static ServerPlayer playerWithAdvancements(MinecraftServer server, String name) {
         UUID uuid = UUID.nameUUIDFromBytes(("kegare-test:" + name).getBytes(StandardCharsets.UTF_8));
-        return new net.neoforged.neoforge.common.util.FakePlayer(server.overworld(), new GameProfile(uuid, name)) {
+        return new net.fabricmc.fabric.api.entity.FakePlayer(server.overworld(), new GameProfile(uuid, name)) {
             @Override
             public boolean isFakePlayer() {
                 return false;
@@ -39,7 +39,7 @@ public final class TestServer {
     /** A test player that can be hurt and hurt others (NeoForge's fake players can't), with real advancements. */
     public static ServerPlayer damageable(MinecraftServer server, String name) {
         UUID uuid = UUID.nameUUIDFromBytes(("kegare-test:" + name).getBytes(StandardCharsets.UTF_8));
-        ServerPlayer player = new net.neoforged.neoforge.common.util.FakePlayer(server.overworld(), new GameProfile(uuid, name)) {
+        ServerPlayer player = new net.fabricmc.fabric.api.entity.FakePlayer(server.overworld(), new GameProfile(uuid, name)) {
             @Override
             public boolean isFakePlayer() {
                 return false;

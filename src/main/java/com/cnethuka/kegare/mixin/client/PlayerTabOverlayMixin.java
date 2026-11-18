@@ -18,7 +18,7 @@ public abstract class PlayerTabOverlayMixin {
 
     @Inject(method = "getNameForDisplay", at = @At("HEAD"), cancellable = true)
     private void kegare$disguisedName(PlayerInfo playerInfo, CallbackInfoReturnable<Component> cir) {
-        PlayerInfo shown = DisguiseClient.shownInfo(playerInfo.getProfile().getId());
+        PlayerInfo shown = DisguiseClient.shownInfo(playerInfo.getProfile().id());
         if (shown != null) cir.setReturnValue(DisguiseClient.resolving(() -> getNameForDisplay(shown)));
     }
 }

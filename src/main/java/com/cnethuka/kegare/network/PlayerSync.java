@@ -2,7 +2,7 @@ package com.cnethuka.kegare.network;
 
 import com.cnethuka.kegare.registry.KegareAttachments;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.common.util.FakePlayer;
+import com.cnethuka.kegare.platform.Players;
 import com.cnethuka.kegare.platform.net.PacketDistributor;
 
 /**
@@ -41,7 +41,7 @@ public final class PlayerSync {
 
     public static void syncNow(ServerPlayer player) {
         player.getData(KegareAttachments.SYNC_STATE).dirty = false;
-        if (player instanceof FakePlayer || player.connection == null) return;
+        if (Players.isFake(player) || player.connection == null) return;
         PacketDistributor.sendToPlayer(player, SyncPayload.of(player));
     }
 }

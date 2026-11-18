@@ -6,7 +6,7 @@ import net.minecraft.world.damagesource.DamageTypes;
 import com.cnethuka.kegare.platform.bus.EventPriority;
 import com.cnethuka.kegare.platform.bus.SubscribeEvent;
 import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
-import net.neoforged.neoforge.common.util.TriState;
+import com.cnethuka.kegare.platform.TriState;
 import com.cnethuka.kegare.platform.event.entity.EntityTravelToDimensionEvent;
 import com.cnethuka.kegare.platform.event.entity.living.LivingDeathEvent;
 import com.cnethuka.kegare.platform.event.entity.living.LivingHealEvent;

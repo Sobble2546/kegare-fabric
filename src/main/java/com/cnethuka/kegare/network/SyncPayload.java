@@ -115,20 +115,20 @@ public record SyncPayload(
         buf.writeVarInt(tier);
         buf.writeVarInt(capacity);
         buf.writeFloat(current);
-        buf.writeOptional(innateTechnique, FriendlyByteBuf::writeResourceLocation);
+        buf.writeOptional(innateTechnique, FriendlyByteBuf::writeIdentifier);
         buf.writeVarInt(selectedSlot);
         buf.writeCollection(cooldowns, (b, c) -> {
-            b.writeResourceLocation(c.ability());
+            b.writeIdentifier(c.ability());
             b.writeVarLong(c.endTick());
             b.writeVarInt(c.duration());
         });
-        buf.writeCollection(activeToggles, FriendlyByteBuf::writeResourceLocation);
+        buf.writeCollection(activeToggles, FriendlyByteBuf::writeIdentifier);
         buf.writeOptional(casting, (b, c) -> {
-            b.writeResourceLocation(c.ability());
+            b.writeIdentifier(c.ability());
             b.writeVarLong(c.startTick());
             b.writeVarInt(c.maxTicks());
         });
-        buf.writeCollection(traits, FriendlyByteBuf::writeResourceLocation);
+        buf.writeCollection(traits, FriendlyByteBuf::writeIdentifier);
         buf.writeFloat(environment.multiplier());
         buf.writeEnum(environment.icon());
         buf.writeCollection(environment.factors(), (b, f) -> {
@@ -136,7 +136,7 @@ public record SyncPayload(
             b.writeFloat(f.multiplier());
         });
         buf.writeCollection(costs, (b, c) -> {
-            b.writeResourceLocation(c.ability());
+            b.writeIdentifier(c.ability());
             b.writeFloat(c.cost());
             b.writeFloat(c.upkeepPerSecond());
         });
@@ -144,8 +144,8 @@ public record SyncPayload(
         buf.writeVarInt(maxFreezeStacks);
         buf.writeVarLong(frozenUntil);
         buf.writeVarLong(burntOutUntil);
-        buf.writeCollection(loadout, (b, slot) -> b.writeOptional(slot, FriendlyByteBuf::writeResourceLocation));
-        buf.writeCollection(sharedUnlocked, FriendlyByteBuf::writeResourceLocation);
+        buf.writeCollection(loadout, (b, slot) -> b.writeOptional(slot, FriendlyByteBuf::writeIdentifier));
+        buf.writeCollection(sharedUnlocked, FriendlyByteBuf::writeIdentifier);
         buf.writeBoolean(inCombat);
         progression.write(buf);
     }
@@ -157,18 +157,18 @@ public record SyncPayload(
                 buf.readVarInt(),
                 buf.readVarInt(),
                 buf.readFloat(),
-                buf.readOptional(FriendlyByteBuf::readResourceLocation),
+                buf.readOptional(FriendlyByteBuf::readIdentifier),
                 buf.readVarInt(),
-                buf.readList(b -> new CooldownEntry(b.readResourceLocation(), b.readVarLong(), b.readVarInt())),
-                buf.readList(FriendlyByteBuf::readResourceLocation),
-                buf.readOptional(b -> new CastingEntry(b.readResourceLocation(), b.readVarLong(), b.readVarInt())),
-                buf.readList(FriendlyByteBuf::readResourceLocation),
+                buf.readList(b -> new CooldownEntry(b.readIdentifier(), b.readVarLong(), b.readVarInt())),
+                buf.readList(FriendlyByteBuf::readIdentifier),
+                buf.readOptional(b -> new CastingEntry(b.readIdentifier(), b.readVarLong(), b.readVarInt())),
+                buf.readList(FriendlyByteBuf::readIdentifier),
                 new CostEnvironment(buf.readFloat(), buf.readEnum(CostEnvironment.Icon.class),
                         buf.readList(b -> new CostEnvironment.Factor(b.readUtf(128), b.readFloat()))),
-                buf.readList(b -> new AbilityCost(b.readResourceLocation(), b.readFloat(), b.readFloat())),
+                buf.readList(b -> new AbilityCost(b.readIdentifier(), b.readFloat(), b.readFloat())),
                 buf.readVarInt(), buf.readVarInt(), buf.readVarLong(), buf.readVarLong(),
-                buf.readList(b -> b.readOptional(FriendlyByteBuf::readResourceLocation)),
-                buf.readList(FriendlyByteBuf::readResourceLocation),
+                buf.readList(b -> b.readOptional(FriendlyByteBuf::readIdentifier)),
+                buf.readList(FriendlyByteBuf::readIdentifier),
                 buf.readBoolean(),
                 ProgressionSnapshot.read(buf));
     }

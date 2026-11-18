@@ -1,14 +1,16 @@
 package com.cnethuka.kegare.client;
 
+import com.cnethuka.kegare.Kegare;
+import com.cnethuka.kegare.platform.client.ClientPlatform;
+import com.cnethuka.kegare.platform.client.event.RegisterKeyMappingsEvent;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
-import com.cnethuka.kegare.platform.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import org.lwjgl.glfw.GLFW;
 
 /** Keybinds (rebindable in Controls; names in the lang file). */
 public final class KegareKeys {
-    public static final String CATEGORY = "key.categories.kegare";
+    /** The heading in Controls; its title is the lang key {@code key.category.kegare.main}. */
+    public static final KeyMapping.Category CATEGORY = ClientPlatform.keyCategory(Kegare.id("main"));
 
     /** Hold with a number key for that slot's special; on its own, the selected ability's special. Technique Mode's number keys are vanilla's hotbar keys. */
     public static final KeyMapping SPECIAL = key("key.kegare.special", GLFW.GLFW_KEY_R);
@@ -21,12 +23,12 @@ public final class KegareKeys {
     /** Six Eyes' map (DESIGN §3.32): does nothing without the eyes. */
     public static final KeyMapping SIX_EYES_MAP = key("key.kegare.six_eyes_map", GLFW.GLFW_KEY_M);
     /** Dash on a key of its own. Nothing by default: the default is double-tapping sprint. */
-    public static final KeyMapping DASH = new KeyMapping("key.kegare.dash", KeyConflictContext.IN_GAME, InputConstants.UNKNOWN, CATEGORY);
+    public static final KeyMapping DASH = ClientPlatform.newKey("key.kegare.dash", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, CATEGORY);
 
     private KegareKeys() {}
 
     private static KeyMapping key(String name, int glfwKey) {
-        return new KeyMapping(name, KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, glfwKey, CATEGORY);
+        return ClientPlatform.newKey(name, InputConstants.Type.KEYSYM, glfwKey, CATEGORY);
     }
 
     public static void register(RegisterKeyMappingsEvent event) {

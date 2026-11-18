@@ -3,23 +3,40 @@ package com.cnethuka.kegare.client;
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.client.gui.GuiDraw;
 import com.cnethuka.kegare.client.visual.VisualClientEvents;
-import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
-import com.cnethuka.kegare.platform.Dist;
+import com.cnethuka.kegare.client.gui.RevealQueue;
+import com.cnethuka.kegare.platform.NeoForge;
 import com.cnethuka.kegare.platform.bus.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.Mod;
+import com.cnethuka.kegare.platform.client.ClientEventHooks;
+import com.cnethuka.kegare.platform.client.ClientPlatform;
 import com.cnethuka.kegare.platform.client.event.RegisterClientReloadListenersEvent;
 import com.cnethuka.kegare.platform.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import com.cnethuka.kegare.platform.client.gui.VanillaGuiLayers;
+import net.fabricmc.api.ClientModInitializer;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 
-/** Client-only entry point. Never loaded on a dedicated server. */
-@Mod(value = Kegare.MODID, dist = Dist.CLIENT)
-public final class KegareClient {
-    public KegareClient(IEventBus modBus, ModContainer container) {
-        // Mods list > Kegare > Config edits both client and (in singleplayer) server configs.
-        container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+/**
+ * Client-only entry point (fabric.mod.json "client" entrypoint). Never loaded on a dedicated server.
+ * <p>
+ * Runs very early in Minecraft's startup on Fabric, before options, window and resource manager exist: nothing below may read
+ * {@code Minecraft.options}, the window or a level eagerly; everything that needs them is inside listeners.
+ */
+public final class KegareClient implements ClientModInitializer {
+    @Override
+    public void onInitializeClient() {
+        ClientEventHooks.init();
+        init(ClientEventHooks.modBus());
+        ClientEventHooks.fireRegistrationEvents();
+    }
+
+    static void init(IEventBus modBus) {
+        // Mods list > Kegare > Config edits both client and (in singleplayer) server configs (needs Mod Menu to be seen).
+        ClientPlatform.registerConfigScreen();
+        // The @EventBusSubscriber classes of the client: Fabric has no annotation scanning. Each is registered exactly once, here;
+        // their static @SubscribeEvent methods take game-bus events only (none takes a mod-bus event).
+        NeoForge.EVENT_BUS.register(ClientInput.class);
+        NeoForge.EVENT_BUS.register(HudClearance.class);
+        NeoForge.EVENT_BUS.register(RevealQueue.class);
+        NeoForge.EVENT_BUS.register(VisualClientEvents.class);
         modBus.addListener(KegareKeys::register);
         modBus.addListener(KegareClient::registerGuiLayers);
         modBus.addListener(KegareClient::registerReloadListeners);
@@ -59,10 +76,13 @@ public final class KegareClient {
     private static void registerGuiLayers(RegisterGuiLayersEvent event) {
         // Technique Mode: the combat panel takes the hotbar's place (HudClearance hides the vanilla hotbar and XP);
         // it raises Gui.leftHeight/rightHeight so hearts and food sit on top of it.
+        // Fabric draws a layer only when vanilla reaches the element it is attached to: the hotbar's layers are skipped in spectator mode.
         event.registerAbove(VanillaGuiLayers.HOTBAR, CombatPanelLayer.ID, new CombatPanelLayer());
         event.registerAbove(CombatPanelLayer.ID, CombatHotbarLayer.ID, new CombatHotbarLayer());
-        // After hearts/armour/food/air, so it clears whatever they used.
-        event.registerAbove(VanillaGuiLayers.EXPERIENCE_LEVEL, CombatNameLayer.ID, new CombatNameLayer());
+        // After hearts/armour/food/air, so it clears whatever they used. Anchored to the info bar, not the experience level: Fabric only
+        // draws a layer when vanilla reaches the element it is attached to, and vanilla draws the level only with experience and level > 0
+        // (never in creative), while the info bar is drawn every frame, after the health bars.
+        event.registerAbove(VanillaGuiLayers.EXPERIENCE_BAR, CombatNameLayer.ID, new CombatNameLayer());
         // Without the panel: freeze stacks and casting progress under the crosshair.
         event.registerAbove(VanillaGuiLayers.CROSSHAIR, StatusLayer.ID, new StatusLayer());
     }

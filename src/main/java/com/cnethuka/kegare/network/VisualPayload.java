@@ -59,8 +59,8 @@ public record VisualPayload(Action action, int entityId, String key, Visual visu
         buf.writeEnum(action);
         buf.writeVarInt(entityId);
         buf.writeUtf(key, 256);
-        buf.writeOptional(visual.animation(), FriendlyByteBuf::writeResourceLocation);
-        buf.writeOptional(visual.effect(), FriendlyByteBuf::writeResourceLocation);
+        buf.writeOptional(visual.animation(), FriendlyByteBuf::writeIdentifier);
+        buf.writeOptional(visual.effect(), FriendlyByteBuf::writeIdentifier);
         buf.writeEnum(visual.anchor());
         buf.writeBoolean(visual.linger());
         buf.writeInt(visual.tint());
@@ -76,8 +76,8 @@ public record VisualPayload(Action action, int entityId, String key, Visual visu
         Action action = buf.readEnum(Action.class);
         int entityId = buf.readVarInt();
         String key = buf.readUtf(256);
-        Optional<Identifier> animation = buf.readOptional(FriendlyByteBuf::readResourceLocation);
-        Optional<Identifier> effect = buf.readOptional(FriendlyByteBuf::readResourceLocation);
+        Optional<Identifier> animation = buf.readOptional(FriendlyByteBuf::readIdentifier);
+        Optional<Identifier> effect = buf.readOptional(FriendlyByteBuf::readIdentifier);
         Visual.Anchor anchor = buf.readEnum(Visual.Anchor.class);
         boolean linger = buf.readBoolean();
         int tint = buf.readInt();

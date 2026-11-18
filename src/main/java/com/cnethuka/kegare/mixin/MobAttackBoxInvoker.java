@@ -5,9 +5,12 @@ import net.minecraft.world.phys.AABB;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-/** A mob's own melee reach, its own overrides included: Six Eyes measures how close its target is to it (DESIGN §3.32). Read only. */
+/**
+ * A mob's own melee reach box, its own overrides included: Six Eyes measures how close its target is to it (DESIGN §3.32). Read only.
+ * 1.21.11 takes the reach as an argument (a held weapon can widen it): use {@code MobReach.attackBox(mob)}, which works it out.
+ */
 @Mixin(Mob.class)
 public interface MobAttackBoxInvoker {
     @Invoker("getAttackBoundingBox")
-    AABB kegare$attackBox();
+    AABB kegare$attackBox(double reach);
 }

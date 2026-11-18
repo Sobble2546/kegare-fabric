@@ -27,12 +27,12 @@ public record LoadoutEditPayload(LoadoutService.Action action, int slot, int oth
         buf.writeEnum(action);
         buf.writeVarInt(slot);
         buf.writeVarInt(other);
-        buf.writeOptional(ability, FriendlyByteBuf::writeResourceLocation);
+        buf.writeOptional(ability, FriendlyByteBuf::writeIdentifier);
     }
 
     private static LoadoutEditPayload read(FriendlyByteBuf buf) {
         return new LoadoutEditPayload(buf.readEnum(LoadoutService.Action.class), buf.readVarInt(), buf.readVarInt(),
-                buf.readOptional(FriendlyByteBuf::readResourceLocation));
+                buf.readOptional(FriendlyByteBuf::readIdentifier));
     }
 
     @Override

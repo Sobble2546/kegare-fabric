@@ -65,7 +65,7 @@ public final class ClientStamps {
     }
 
     private static boolean matches(KeyMapping mapping, InputConstants.Key key) {
-        return !mapping.isUnbound() && mapping.getKey().equals(key);
+        return !mapping.isUnbound() && mapping.saveString().equals(key.getName()); // KeyMapping has no public key getter on 1.21.11
     }
 
     private static void send(TimedInput input, long at) {

@@ -1,7 +1,6 @@
 package com.cnethuka.kegare.database;
 
 import com.cnethuka.kegare.Kegare;
-import com.cnethuka.kegare.mixin.AttachmentTypeAccessor;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -28,14 +27,13 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import com.cnethuka.kegare.platform.attachment.AttachmentHolder;
 import com.cnethuka.kegare.platform.attachment.AttachmentType;
-import com.cnethuka.kegare.platform.attachment.IAttachmentSerializer;
 import com.cnethuka.kegare.platform.registry.NeoForgeRegistries;
 
 /**
- * Kegare's per-player data as JSON, one document per attachment (DESIGN §3.33). Driven from the attachment registry: any Kegare attachment with a
- * serializer is stored, with no new code. A NeoForge attachment keeps its CODEC behind an NBT serializer, so encoding runs that CODEC and turns the
- * result into JSON with JsonOps; decoding builds the NBT again, keeping whole numbers whole (a long past 2^53 would not survive being a double),
- * and hands it to the same serializer.
+ * Kegare's per-player data as JSON, one document per attachment (DESIGN §3.33). Driven from the attachment registry: any Kegare attachment that is
+ * saved is stored, with no new code. Encoding runs the attachment's codec to NBT and turns that into JSON; decoding builds the NBT again,
+ * keeping whole numbers whole (a long past 2^53 would not survive being a double), and hands it to the same codec. The shape is the one in a
+ * player's file under {@code fabric:attachments} (and {@code neoforge:attachments} in a NeoForge world), so rows are the same on either loader.
  */
 public final class PlayerDataCodec {
     /** A row couldn't be decoded. Whoever gets this keeps the player out: a fresh roll over real data is the worst failure there is. */
@@ -51,8 +49,8 @@ public final class PlayerDataCodec {
     public static List<Identifier> savedAttachments() {
         List<Identifier> out = new ArrayList<>();
         for (Map.Entry<net.minecraft.resources.ResourceKey<AttachmentType<?>>, AttachmentType<?>> entry : NeoForgeRegistries.ATTACHMENT_TYPES.entrySet()) {
-            Identifier id = entry.getKey().location();
-            if (ours(id.toString()) && serializer(entry.getValue()) != null) out.add(id);
+            Identifier id = entry.getKey().identifier();
+            if (ours(id.toString()) && entry.getValue().isSaved()) out.add(id);
         }
         return out;
     }
@@ -62,18 +60,15 @@ public final class PlayerDataCodec {
         return key.startsWith(Kegare.MODID + ":");
     }
 
-    @SuppressWarnings("unchecked")
-    private static IAttachmentSerializer<Tag, Object> serializer(AttachmentType<?> type) {
-        return (IAttachmentSerializer<Tag, Object>) ((AttachmentTypeAccessor) (Object) type).kegare$serializer();
-    }
-
     /** What this player's saved attachments encode to now: attachment id to JSON. Server thread. */
+    @SuppressWarnings("unchecked")
     public static Map<String, String> snapshot(ServerPlayer player, HolderLookup.Provider registries) {
         Map<String, String> out = new LinkedHashMap<>();
-        CompoundTag all = player.serializeAttachments(registries);
-        if (all == null) return out;
-        for (String key : all.getAllKeys()) {
-            if (ours(key)) out.put(key, toJson(all.get(key)));
+        for (Identifier id : savedAttachments()) {
+            AttachmentType<Object> type = (AttachmentType<Object>) NeoForgeRegistries.ATTACHMENT_TYPES.get(id);
+            if (!player.hasData(type)) continue;
+            Tag tag = type.encode(player.getData(type), registries);
+            if (tag != null) out.put(id.toString(), toJson(tag));
         }
         return out;
     }
@@ -81,9 +76,12 @@ public final class PlayerDataCodec {
     /** Kegare's attachments out of a player file's own tag, as JSON (what the file holds from before storage was switched on). */
     public static Map<String, String> fromPlayerFile(CompoundTag file) {
         Map<String, String> out = new LinkedHashMap<>();
-        CompoundTag all = file.getCompound(AttachmentHolder.ATTACHMENTS_NBT_KEY);
-        for (String key : all.getAllKeys()) {
-            if (ours(key)) out.put(key, toJson(all.get(key)));
+        // A file the NeoForge build wrote has its attachments under the other key; the fabric one wins where both have an entry.
+        for (String fileKey : new String[] {AttachmentHolder.NEOFORGE_NBT_KEY, AttachmentHolder.ATTACHMENTS_NBT_KEY}) {
+            CompoundTag all = file.getCompoundOrEmpty(fileKey);
+            for (String key : all.keySet()) {
+                if (ours(key)) out.put(key, toJson(all.get(key)));
+            }
         }
         return out;
     }
@@ -95,13 +93,13 @@ public final class PlayerDataCodec {
         for (Map.Entry<String, String> row : rows.entrySet()) {
             Identifier id = Identifier.tryParse(row.getKey());
             AttachmentType<?> type = id == null ? null : NeoForgeRegistries.ATTACHMENT_TYPES.get(id);
-            if (type == null || serializer(type) == null) {
+            if (type == null || !type.isSaved()) {
                 Kegare.LOGGER.warn("Kegare's database has data for {}, which this version doesn't know. Leaving it there.", row.getKey());
                 continue;
             }
             try {
                 Tag tag = fromJson(JsonParser.parseString(row.getValue()));
-                decoded.put(type, serializer(type).read(player, tag, registries));
+                decoded.put(type, type.decode(tag, registries));
             } catch (RuntimeException e) {
                 throw new DecodeException(row.getKey(), e);
             }
@@ -117,23 +115,25 @@ public final class PlayerDataCodec {
     public static void toPlayerFile(CompoundTag file, Map<String, String> rows) {
         stripFromPlayerFile(file);
         if (rows.isEmpty()) return;
-        CompoundTag all = file.getCompound(AttachmentHolder.ATTACHMENTS_NBT_KEY);
+        CompoundTag all = file.getCompoundOrEmpty(AttachmentHolder.ATTACHMENTS_NBT_KEY);
         rows.forEach((attachment, json) -> all.put(attachment, fromJson(JsonParser.parseString(json))));
         file.put(AttachmentHolder.ATTACHMENTS_NBT_KEY, all);
     }
 
     /** Takes Kegare's attachments out of a tag about to be written as a player's file. Returns what it took. */
     public static int stripFromPlayerFile(CompoundTag file) {
-        if (!file.contains(AttachmentHolder.ATTACHMENTS_NBT_KEY)) return 0;
-        CompoundTag all = file.getCompound(AttachmentHolder.ATTACHMENTS_NBT_KEY);
         int removed = 0;
-        for (String key : List.copyOf(all.getAllKeys())) {
-            if (ours(key)) {
-                all.remove(key);
-                removed++;
+        for (String fileKey : new String[] {AttachmentHolder.ATTACHMENTS_NBT_KEY, AttachmentHolder.NEOFORGE_NBT_KEY}) {
+            if (!file.contains(fileKey)) continue;
+            CompoundTag all = file.getCompoundOrEmpty(fileKey);
+            for (String key : List.copyOf(all.keySet())) {
+                if (ours(key)) {
+                    all.remove(key);
+                    removed++;
+                }
             }
+            if (all.isEmpty()) file.remove(fileKey);
         }
-        if (all.isEmpty()) file.remove(AttachmentHolder.ATTACHMENTS_NBT_KEY);
         return removed;
     }
 

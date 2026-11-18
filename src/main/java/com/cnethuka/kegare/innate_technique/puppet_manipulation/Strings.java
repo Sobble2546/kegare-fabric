@@ -33,7 +33,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.phys.Vec3;
 import com.cnethuka.kegare.platform.NeoForge;
-import net.neoforged.neoforge.common.util.FakePlayer;
+import net.fabricmc.fabric.api.entity.FakePlayer;
 
 /**
  * Every caster's string (one at a time, runtime only: nothing is saved). A string is {@link Phase#ATTACHED} until its
@@ -138,7 +138,7 @@ public final class Strings {
     }
 
     private static boolean realPlayer(@Nullable LivingEntity e) {
-        return e instanceof ServerPlayer player && !player.isFakePlayer();
+        return e instanceof ServerPlayer player && !com.cnethuka.kegare.platform.Players.isFake(player);
     }
 
     /** A puppet on a running pull, tether or leash doesn't walk off, or catch up with its owner. */

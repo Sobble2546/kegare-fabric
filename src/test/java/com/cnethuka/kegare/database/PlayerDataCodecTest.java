@@ -10,7 +10,6 @@ import com.cnethuka.kegare.TestServer;
 import com.cnethuka.kegare.innate_technique.rime.Rime;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.malice.MaliceService;
-import com.cnethuka.kegare.mixin.AttachmentTypeAccessor;
 import com.cnethuka.kegare.player.BirthService;
 import com.cnethuka.kegare.progression.Grade;
 import com.cnethuka.kegare.progression.GradeService;
@@ -54,14 +53,14 @@ class PlayerDataCodecTest {
                 List<String> missing = new ArrayList<>();
                 int serialized = 0;
                 for (var entry : NeoForgeRegistries.ATTACHMENT_TYPES.entrySet()) {
-                    Identifier id = entry.getKey().location();
+                    Identifier id = entry.getKey().identifier();
                     if (!id.getNamespace().equals(Kegare.MODID)) continue;
-                    var serializer = (com.cnethuka.kegare.platform.attachment.IAttachmentSerializer<?, Object>) ((AttachmentTypeAccessor) (Object) entry.getValue()).kegare$serializer();
-                    if (serializer == null) continue;
+                    AttachmentType<Object> type = (AttachmentType<Object>) entry.getValue();
+                    if (!type.isSaved()) continue;
                     serialized++;
                     // (A serializer may write nothing for an empty value, as Possession's does when nobody's possessing: then there's nothing to store.)
-                    Object value = player.getData((AttachmentType<Object>) entry.getValue());
-                    if (serializer.write(value, server.registryAccess()) != null && !encoded.containsKey(id.toString())) missing.add(id.toString());
+                    Object value = player.getData(type);
+                    if (type.encode(value, server.registryAccess()) != null && !encoded.containsKey(id.toString())) missing.add(id.toString());
                 }
                 assertTrue(serialized >= 20, "setup: the registry was really read, " + serialized);
                 assertTrue(missing.isEmpty(), "attachments with a serializer that aren't stored: " + missing);
@@ -145,8 +144,8 @@ class PlayerDataCodecTest {
         file.put(AttachmentHolder.ATTACHMENTS_NBT_KEY, attachments);
         file.putString("Dimension", "minecraft:overworld");
         assertEquals(2, PlayerDataCodec.stripFromPlayerFile(file));
-        assertFalse(file.getCompound(AttachmentHolder.ATTACHMENTS_NBT_KEY).contains("kegare:malice"));
-        assertTrue(file.getCompound(AttachmentHolder.ATTACHMENTS_NBT_KEY).contains("curios:inventory"), "another mod's stays with the world");
+        assertFalse(file.getCompoundOrEmpty(AttachmentHolder.ATTACHMENTS_NBT_KEY).contains("kegare:malice"));
+        assertTrue(file.getCompoundOrEmpty(AttachmentHolder.ATTACHMENTS_NBT_KEY).contains("curios:inventory"), "another mod's stays with the world");
         assertTrue(file.contains("Dimension"), "vanilla's stays too");
     }
 }

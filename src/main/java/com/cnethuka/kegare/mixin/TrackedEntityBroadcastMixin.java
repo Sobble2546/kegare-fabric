@@ -22,7 +22,7 @@ public abstract class TrackedEntityBroadcastMixin {
     @Shadow @Final Entity entity;
     @Shadow @Final private Set<ServerPlayerConnection> seenBy;
 
-    @Inject(method = "broadcast", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "sendToTrackingPlayers", at = @At("HEAD"), cancellable = true)
     private void kegare$delayedImage(Packet<?> packet, CallbackInfo ci) {
         if (!DelayedSight.isMovement(packet) || !DelayedSight.hidden(entity)) return;
         for (ServerPlayerConnection connection : seenBy) {

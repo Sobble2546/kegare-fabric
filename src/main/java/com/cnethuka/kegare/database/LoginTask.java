@@ -6,6 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ConfigurationTask;
 import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
+import com.cnethuka.kegare.platform.net.PlatformNet;
 import com.cnethuka.kegare.platform.net.RegisterConfigurationTasksEvent;
 
 /**
@@ -24,8 +25,8 @@ public final class LoginTask implements ConfigurationTask {
     }
 
     public static void register(RegisterConfigurationTasksEvent event) {
-        if (KegareDatabase.isOn() && event.getListener() instanceof ServerConfigurationPacketListenerImpl impl) {
-            event.register(new LoginTask(impl, net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer()));
+        if (KegareDatabase.isOn()) {
+            event.register(new LoginTask(event.getListener(), event.getServer()));
         }
     }
 
@@ -38,17 +39,17 @@ public final class LoginTask implements ConfigurationTask {
     public void start(Consumer<Packet<?>> sender) {
         KegareDatabase database = KegareDatabase.current();
         if (database == null) {
-            listener.finishCurrentTask(TYPE);
+            PlatformNet.completeTask(listener, this);
             return;
         }
-        var player = listener.getOwner().getId();
-        database.login(player, listener.getOwner().getName()).whenComplete((result, failure) -> server.execute(() -> {
+        var player = listener.getOwner().id();
+        database.login(player, listener.getOwner().name()).whenComplete((result, failure) -> server.execute(() -> {
             if (failure != null || result == null || !result.admitted()) {
                 listener.disconnect(Component.translatable(result == null || result.refusal() == null ? KegareDatabase.UNREACHABLE : result.refusal()));
                 return;
             }
             database.loginLoaded(player, result);
-            listener.finishCurrentTask(TYPE);
+            PlatformNet.completeTask(listener, this);
         }));
     }
 }

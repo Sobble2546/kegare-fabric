@@ -13,7 +13,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.common.util.FakePlayer;
+import com.cnethuka.kegare.platform.Players;
 import com.cnethuka.kegare.platform.net.PacketDistributor;
 import com.cnethuka.kegare.platform.net.IPayloadContext;
 
@@ -57,26 +57,26 @@ public record RevealPayload(
     }
 
     private static void send(ServerPlayer player, RevealPayload payload) {
-        if (player instanceof FakePlayer || player.connection == null) return;
+        if (Players.isFake(player) || player.connection == null) return;
         PacketDistributor.sendToPlayer(player, payload);
     }
 
     private void write(FriendlyByteBuf buf) {
         buf.writeEnum(reason);
-        buf.writeOptional(innateTechnique, FriendlyByteBuf::writeResourceLocation);
+        buf.writeOptional(innateTechnique, FriendlyByteBuf::writeIdentifier);
         buf.writeVarInt(rollNumber);
         buf.writeBoolean(byHardPity);
         buf.writeBoolean(birth);
         buf.writeVarInt(capacity);
         buf.writeVarInt(tier);
         buf.writeBoolean(severed);
-        buf.writeCollection(traits, FriendlyByteBuf::writeResourceLocation);
+        buf.writeCollection(traits, FriendlyByteBuf::writeIdentifier);
     }
 
     private static RevealPayload read(FriendlyByteBuf buf) {
-        return new RevealPayload(buf.readEnum(RollReason.class), buf.readOptional(FriendlyByteBuf::readResourceLocation),
+        return new RevealPayload(buf.readEnum(RollReason.class), buf.readOptional(FriendlyByteBuf::readIdentifier),
                 buf.readVarInt(), buf.readBoolean(), buf.readBoolean(), buf.readVarInt(), buf.readVarInt(), buf.readBoolean(),
-                buf.readList(FriendlyByteBuf::readResourceLocation));
+                buf.readList(FriendlyByteBuf::readIdentifier));
     }
 
     @Override

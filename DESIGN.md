@@ -341,7 +341,35 @@ All timestamps use **level game time**. They persist across restarts and are ide
   see behind where it is), and vanilla's own teleport and head packets for the delayed image.
 - **Sub-tick timing** (§3.29): `TimingNet.Stamp` (C→S, an input stamped with the client's clock, sent at the key press), `TimingNet.Ping`
   (S→C) and `TimingNet.Pong` (C→S, the client's clock), all handled on the network thread. Reinforced Fists' look is `FistsPayload` (§3.28).
-- Network version `27` (since a disguise wears the face's eyewear, §3.19 and §3.32: `Disguises.StatePayload` carries it); `26` was Six Eyes'
+- **Presence and version (Fabric port, `platform.net`).** Fabric checks no versions on play channels, so Kegare does it itself, in the
+  configuration phase, before the player is in the world:
+  - **The hello.** The server adds a task that sends `KegareHello.S2C`: the network version and, for every `kegare:` entry of the entity
+    type, item and sound event registries, the raw id this server numbers it with. The client answers `KegareHello.C2S` with its own
+    version. Same version: the task finishes and the connection is a "Kegare client" (`KegareClients`, kept per connection). Different
+    version: the side that sees it disconnects with `kegare.network.version`. No answer in 30 s: disconnected (`kegare.network.timeout`).
+    A client without the mod gets no hello and is not refused by Kegare: Fabric's registry sync decides whether the entries it lacks
+    matter, and it never passes the gate, so it is sent no Kegare payload and its Kegare packets are dropped. The database login task
+    (§3.33) is added after the hello, so a mismatched client never reaches the database.
+  - **The gate.** `PacketDistributor` sends a payload to a player only if their connection passed the hello and their client registered
+    the channel (`Gate.ok`), and drops any Kegare C2S payload from a connection that did not pass. On the client, `ClientNet.isActive()`
+    is true only after a matching hello and is reset on every disconnect and reconfiguration: until then `sendToServer` does nothing and
+    client code (screens, HUD, keys) must treat Kegare as off, so the mod is inert on a server that does not run it.
+  - **Network thread.** Fabric runs every handler on the main thread. Sub-tick timing (§3.29) needs the connection's thread, so two small
+    mixins (`ServerboundCustomPayloadPacketMixin`, `ClientboundCustomPayloadPacketMixin`) hook the packet's own `handle`, run the handler
+    of the three `executesOn(NETWORK)` payloads as the packet arrives and cancel the rest. The ordinary receiver stays registered (it
+    keeps the channel advertised) and, if the hook ever fails to fire, runs the handler late on the main thread and logs it once.
+  - **No raw ids on the wire.** Kegare's own payloads carry names: `SightPayloads.Mobs.Dot` the mob's entity type name,
+    `BattleDamagePayload` a palette of block names (the reader takes each block's default state). In memory the records keep the local raw
+    id, so their consumers did not change.
+  - **Via servers** (a newer server running ViaFabric + ViaBackwards, an older Kegare client). Via translates vanilla ids but leaves
+    Kegare's entries as the server numbered them, and Fabric's registry sync would disconnect the client for the vanilla entries it lacks.
+    So: the server's ViaFabric must have `ignore-registry-sync-errors: true` (a dedicated server logs a warning at startup if ViaFabric is
+    loaded and the flag is not on); Kegare's sounds are always sent as direct holders (the name on the wire); and a client whose hello
+    table differs from its own ids remaps the entity type and item ids it decodes, and the ones it encodes, by name (`IdRemap`, applied
+    through `ByteBufCodecsMixin` around vanilla's registry codecs). On the same version the table is empty and every codec is vanilla's own.
+    Tested only in the lab with the spike (see the port notes), not yet with the real jar.
+- Network version `28` (the Fabric port: the hello above, `SightPayloads.Mobs.Dot` and `BattleDamagePayload` carry names instead of raw ids);
+  `27` (since a disguise wears the face's eyewear, §3.19 and §3.32: `Disguises.StatePayload` carries it); `26` was Six Eyes'
   Reads reading a body's whole state, §3.32 (`ReadsPayload` gained mob health and the focus's body); `25`
   was Six Eyes, §3.32, and RMT's repair, §3.17: `Repair.Payload`, the brain meter in `ProgressionSnapshot`, and
   Six Eyes' own (`SightPayloads`, `ReadsPayload`, `Strain.Hud`, `Strain.Collapsed`, `Edge.Spark`, `Attunement.PinPayload`); `24` was Reinforcement and Background Tasks, §3.16 and §3.31: `AuraPayload`, `BackgroundSyncPayload`,

@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.cnethuka.kegare.mixin.net",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ByteBufCodecsMixin",
+    "ServerCommonPacketListenerImplAccessor",
+    "ServerboundCustomPayloadPacketMixin"
+  ],
+  "client": [
+    "client.ClientboundCustomPayloadPacketMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

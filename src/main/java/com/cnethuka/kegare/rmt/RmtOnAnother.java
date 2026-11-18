@@ -200,7 +200,7 @@ public final class RmtOnAnother extends SpecialAbility {
         RmtState state = GreenOrbService.state(eligible);
         state.momentTarget = target.getUUID();
         state.momentUntil = eligible.level().getGameTime() + RmtConfig.ticks(RmtConfig.MOMENT_SECONDS);
-        if (eligible.connection != null && !eligible.isFakePlayer()) {
+        if (eligible.connection != null && !com.cnethuka.kegare.platform.Players.isFake(eligible)) {
             PacketDistributor.sendToPlayer(eligible, new RmtNet.Moment(target.getId(), state.momentUntil));
         }
     }
@@ -209,6 +209,6 @@ public final class RmtOnAnother extends SpecialAbility {
         RmtState state = GreenOrbService.state(player);
         state.momentTarget = null;
         state.momentUntil = 0;
-        if (player.connection != null && !player.isFakePlayer()) PacketDistributor.sendToPlayer(player, RmtNet.Moment.NONE);
+        if (player.connection != null && !com.cnethuka.kegare.platform.Players.isFake(player)) PacketDistributor.sendToPlayer(player, RmtNet.Moment.NONE);
     }
 }

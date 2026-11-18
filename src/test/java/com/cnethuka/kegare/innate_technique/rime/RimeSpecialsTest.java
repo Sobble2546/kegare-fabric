@@ -176,7 +176,7 @@ class RimeSpecialsTest {
 
     private static ServerPlayer withRealAdvancements(MinecraftServer server, ServerLevel level, String name) {
         java.util.UUID uuid = java.util.UUID.nameUUIDFromBytes(("kegare-test:" + name).getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        return new net.neoforged.neoforge.common.util.FakePlayer(level, new com.mojang.authlib.GameProfile(uuid, name)) {
+        return new net.fabricmc.fabric.api.entity.FakePlayer(level, new com.mojang.authlib.GameProfile(uuid, name)) {
             @Override
             public boolean isFakePlayer() {
                 return false; // NeoForge gives fake players throwaway advancements; this one keeps real ones

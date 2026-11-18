@@ -9,6 +9,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import com.cnethuka.kegare.platform.net.IPayloadContext;
+import com.cnethuka.kegare.platform.net.WireIds;
 
 /** What the eyes see, server to the bearer only (DESIGN §3.32). Nothing here is ever sent to anyone else. */
 public final class SightPayloads {
@@ -57,15 +58,16 @@ public final class SightPayloads {
 
     /** Every living mob loaded in the bearer's dimension: where, what, and whether its flow is hostile. */
     public record Mobs(List<Dot> dots) implements CustomPacketPayload {
+        /** {@code type} is the local raw id of the mob's entity type; on the wire it is the type's name (raw ids differ between versions). */
         public record Dot(int entityId, int type, float x, float y, float z, boolean hostile) {
             static final StreamCodec<FriendlyByteBuf, Dot> CODEC = StreamCodec.of((buf, d) -> {
                 buf.writeVarInt(d.entityId());
-                buf.writeVarInt(d.type());
+                buf.writeIdentifier(WireIds.entityTypeName(d.type()));
                 buf.writeFloat(d.x());
                 buf.writeFloat(d.y());
                 buf.writeFloat(d.z());
                 buf.writeBoolean(d.hostile());
-            }, buf -> new Dot(buf.readVarInt(), buf.readVarInt(), buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readBoolean()));
+            }, buf -> new Dot(buf.readVarInt(), WireIds.entityTypeId(buf.readIdentifier()), buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readBoolean()));
         }
 
         public static final Type<Mobs> TYPE = new Type<>(Kegare.id("sight_mobs"));

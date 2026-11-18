@@ -1,11 +1,15 @@
 package com.cnethuka.kegare.mixin;
 
+import com.cnethuka.kegare.platform.MobReach;
 import com.cnethuka.kegare.sight.DelayedSight;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.phys.AABB;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -16,18 +20,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  */
 @Mixin(Mob.class)
 public abstract class MobSightMixin {
-    @Shadow protected abstract net.minecraft.world.phys.AABB getAttackBoundingBox();
-
-    @Inject(method = "isWithinMeleeAttackRange", at = @At("HEAD"), cancellable = true)
-    private void kegare$swingAtTheImage(LivingEntity target, CallbackInfoReturnable<Boolean> cir) {
+    /** The range check measures against the target's box; for a misled mob that is where it sees them (the weapon's reach is vanilla's own). */
+    @WrapOperation(method = "isWithinMeleeAttackRange",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getHitbox()Lnet/minecraft/world/phys/AABB;"))
+    private AABB kegare$swingAtTheImage(LivingEntity target, Operation<AABB> original) {
         Mob self = (Mob) (Object) this;
-        if (DelayedSight.misleads(self, target)) cir.setReturnValue(getAttackBoundingBox().intersects(DelayedSight.seenHitbox(self, target)));
+        return DelayedSight.misleads(self, target) ? DelayedSight.seenHitbox(self, target) : original.call(target);
     }
 
     @Inject(method = "doHurtTarget", at = @At("HEAD"), cancellable = true)
-    private void kegare$missWhereTheyWere(Entity target, CallbackInfoReturnable<Boolean> cir) {
+    private void kegare$missWhereTheyWere(ServerLevel level, Entity target, CallbackInfoReturnable<Boolean> cir) {
         Mob self = (Mob) (Object) this;
-        if (target instanceof LivingEntity living && DelayedSight.misleads(self, living) && !getAttackBoundingBox().intersects(living.getHitbox())) {
+        if (target instanceof LivingEntity living && DelayedSight.misleads(self, living) && !MobReach.attackBox(self).intersects(living.getBoundingBox())) {
             cir.setReturnValue(false); // swung at where they were; they've gone
         }
     }

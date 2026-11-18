@@ -1,0 +1,25 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.cnethuka.kegare.mixin.clientev",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "ClientInputAccessor",
+    "KeyboardHandlerMixin",
+    "MouseHandlerMixin",
+    "MinecraftInteractionMixin",
+    "LocalPlayerInputMixin",
+    "GameRendererEventsMixin",
+    "CameraAnglesMixin",
+    "ToastManagerMixin",
+    "SoundEngineMixin",
+    "ItemInHandRendererEventsMixin",
+    "EntityRenderDispatcherMixin",
+    "AvatarRendererMixin",
+    "EntityRendererNameTagMixin",
+    "LevelRendererPassesMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -13,7 +13,7 @@ public abstract class SixEyesOutlineColorMixin {
     @Inject(method = "getTeamColor", at = @At("HEAD"), cancellable = true)
     private void kegare$sixEyes(CallbackInfoReturnable<Integer> cir) {
         Entity self = (Entity) (Object) this;
-        if (!self.level().isClientSide) return;
+        if (!self.level().isClientSide()) return;
         Integer color = SightClient.outlineColor(self);
         if (color != null) cir.setReturnValue(color);
     }

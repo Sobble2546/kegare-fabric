@@ -5,7 +5,7 @@ import net.minecraft.server.level.ServerPlayer;
 import com.cnethuka.kegare.platform.bus.EventPriority;
 import com.cnethuka.kegare.platform.bus.SubscribeEvent;
 import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
-import net.neoforged.neoforge.common.util.FakePlayer;
+import net.fabricmc.fabric.api.entity.FakePlayer;
 import com.cnethuka.kegare.platform.event.entity.player.PlayerEvent;
 import com.cnethuka.kegare.platform.event.tick.ServerTickEvent;
 

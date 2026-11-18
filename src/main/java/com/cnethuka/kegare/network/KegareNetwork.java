@@ -4,15 +4,16 @@ import com.cnethuka.kegare.platform.net.RegisterPayloadHandlersEvent;
 import com.cnethuka.kegare.platform.net.PayloadRegistrar;
 
 /**
- * Payload registration. Bump the version when payload formats change: mismatched clients are refused.
- * Handlers run on the main thread (NeoForge default).
+ * Payload registration. Bump the version when payload formats change: mismatched clients are refused by the configuration-phase hello
+ * ({@code platform.net.PlatformNet}, DESIGN §3.5), since Fabric does not check versions on play channels.
+ * Handlers run on the main thread, except the three sub-tick timing ones ({@code executesOn(NETWORK)}).
  * <p>
  * Client to server payloads are requests only (key intents, "open my Sorcerer screen", "confirm reroll",
  * "select slot N"); the server validates every one. Server to client payloads carry results that are already
  * decided and saved; screens are cosmetic.
  */
 public final class KegareNetwork {
-    public static final String VERSION = "27";
+    public static final String VERSION = "28";
 
     private KegareNetwork() {}
 

@@ -10,13 +10,20 @@
   "entrypoints": {
     "main": ["com.cnethuka.kegare.Kegare"]
   },
-  "mixins": ["${mod_id}.mixins.json"],
+  "mixins": ["${mod_id}.mixins.json", "${mod_id}-platform.mixins.json"],
   "depends": {
     "fabricloader": ">=0.20.1",
     "minecraft": "${minecraft_version}",
     "java": ">=${java_release}",
     "fabric-api": "*",
+    "forgeconfigapiport": "*",
     "player_animation_library": "*"
   },
-  "suggests": { "trinkets": "*" }
+  "suggests": { "trinkets": "*" },
+  "custom": {
+    "loom:injected_interfaces": {
+      "net/minecraft/world/entity/Entity": ["com/cnethuka/kegare/platform/attachment/KHolder"],
+      "net/minecraft/world/level/Level": ["com/cnethuka/kegare/platform/attachment/KHolder"]
+    }
+  }
 }

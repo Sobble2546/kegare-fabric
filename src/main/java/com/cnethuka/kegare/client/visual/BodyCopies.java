@@ -2,7 +2,7 @@ package com.cnethuka.kegare.client.visual;
 
 import com.cnethuka.kegare.platform.client.event.RenderNameTagEvent;
 import com.cnethuka.kegare.platform.NeoForge;
-import net.neoforged.neoforge.common.util.TriState;
+import com.cnethuka.kegare.platform.TriState;
 
 /**
  * Hides name tags while a body is drawn again where it isn't (an afterimage, a Severed player's sensed outline): a copy

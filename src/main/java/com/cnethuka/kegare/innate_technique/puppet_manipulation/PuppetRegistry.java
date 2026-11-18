@@ -18,13 +18,11 @@ public final class PuppetRegistry {
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENTS = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, Kegare.MODID);
 
     /** Player-sized type; the scale attribute makes it half size (PuppetConfig.SCALE). Saved with its chunk. */
-    public static final DeferredHolder<EntityType<?>, EntityType<PuppetEntity>> PUPPET = ENTITIES.register("puppet",
-            () -> EntityType.Builder.<PuppetEntity>of(PuppetEntity::new, MobCategory.MISC)
-                    .sized(0.6f, 1.8f).eyeHeight(1.62f).clientTrackingRange(10).build("puppet"));
+    public static final DeferredHolder<EntityType<?>, EntityType<PuppetEntity>> PUPPET = ENTITIES.registerKeyed("puppet", key -> EntityType.Builder.<PuppetEntity>of(PuppetEntity::new, MobCategory.MISC)
+                    .sized(0.6f, 1.8f).eyeHeight(1.62f).clientTrackingRange(10).build(key));
     /** A possessing player's body. Never saved (PossessionData restores the player instead). */
-    public static final DeferredHolder<EntityType<?>, EntityType<PuppetShellEntity>> SHELL = ENTITIES.register("puppet_shell",
-            () -> EntityType.Builder.<PuppetShellEntity>of(PuppetShellEntity::new, MobCategory.MISC)
-                    .sized(0.6f, 1.8f).eyeHeight(1.62f).noSave().clientTrackingRange(10).build("puppet_shell"));
+    public static final DeferredHolder<EntityType<?>, EntityType<PuppetShellEntity>> SHELL = ENTITIES.registerKeyed("puppet_shell", key -> EntityType.Builder.<PuppetShellEntity>of(PuppetShellEntity::new, MobCategory.MISC)
+                    .sized(0.6f, 1.8f).eyeHeight(1.62f).noSave().clientTrackingRange(10).build(key));
 
     /** On a player while possessing: the puppet, the shell, and what returning restores. Saved. */
     public static final Supplier<AttachmentType<PossessionData>> POSSESSION = ATTACHMENTS.register("possession",

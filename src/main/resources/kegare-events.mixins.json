@@ -1,0 +1,25 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.cnethuka.kegare.mixin.event",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "EnderManEventsMixin",
+    "EntityEventsMixin",
+    "ItemEntityEventsMixin",
+    "LivingEntityDamageMixin",
+    "LivingEntityEventsMixin",
+    "PlayerAdvancementsEventsMixin",
+    "PlayerDamageMixin",
+    "PlayerEventsMixin",
+    "ProjectileEventsMixin",
+    "ServerLevelEventsMixin",
+    "ServerPlayerEventsMixin"
+  ],
+  "client": [
+    "client.ClientLevelEventsMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -42,7 +42,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import com.cnethuka.kegare.platform.NeoForge;
-import net.neoforged.neoforge.common.util.FakePlayerFactory;
+import com.cnethuka.kegare.platform.FakePlayerFactory;
 import com.cnethuka.kegare.platform.event.entity.EntityJoinLevelEvent;
 import com.cnethuka.kegare.platform.event.level.BlockEvent;
 import com.cnethuka.kegare.platform.net.PacketDistributor;

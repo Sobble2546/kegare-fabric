@@ -19,9 +19,8 @@ public final class SwapRegistry {
     public static final DeferredItem<Item> ANCHOR_ITEM = ITEMS.registerSimpleItem("swap_anchor");
 
     /** Anchor's marker: thrown, sticks where it lands, never saved. */
-    public static final DeferredHolder<EntityType<?>, EntityType<AnchorEntity>> ANCHOR = ENTITIES.register("swap_anchor",
-            () -> EntityType.Builder.<AnchorEntity>of(AnchorEntity::new, MobCategory.MISC)
-                    .sized(0.25f, 0.25f).noSave().fireImmune().clientTrackingRange(8).updateInterval(2).build("swap_anchor"));
+    public static final DeferredHolder<EntityType<?>, EntityType<AnchorEntity>> ANCHOR = ENTITIES.registerKeyed("swap_anchor", key -> EntityType.Builder.<AnchorEntity>of(AnchorEntity::new, MobCategory.MISC)
+                    .sized(0.25f, 0.25f).noSave().fireImmune().clientTrackingRange(8).updateInterval(2).build(key));
 
     private SwapRegistry() {}
 

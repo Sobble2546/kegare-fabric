@@ -3,7 +3,7 @@ package com.cnethuka.kegare.mixin.client;
 import com.cnethuka.kegare.innate_technique.swap.client.DisguiseClient;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.multiplayer.PlayerInfo;
-import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.world.entity.player.PlayerSkin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,7 +21,7 @@ public abstract class PlayerInfoMixin {
 
     @Inject(method = "getSkin", at = @At("HEAD"), cancellable = true)
     private void kegare$disguisedSkin(CallbackInfoReturnable<PlayerSkin> cir) {
-        PlayerSkin skin = DisguiseClient.skinFor(getProfile().getId());
+        PlayerSkin skin = DisguiseClient.skinFor(getProfile().id());
         if (skin != null) cir.setReturnValue(skin);
     }
 }

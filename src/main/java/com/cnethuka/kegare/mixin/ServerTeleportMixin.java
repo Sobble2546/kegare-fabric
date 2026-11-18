@@ -4,7 +4,8 @@ import com.cnethuka.kegare.severed.Severed;
 import java.util.Set;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.world.entity.RelativeMovement;
+import net.minecraft.world.entity.PositionMoveRotation;
+import net.minecraft.world.entity.Relative;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,8 +21,9 @@ public abstract class ServerTeleportMixin {
     @Shadow
     public ServerPlayer player;
 
-    @Inject(method = "teleport(DDDFFLjava/util/Set;)V", at = @At("HEAD"))
-    private void kegare$movedByServer(double x, double y, double z, float yaw, float pitch, Set<RelativeMovement> relative, CallbackInfo ci) {
+    /** 1.21.11: the (x, y, z, yaw, pitch) overload delegates to this one, so every server-chosen position passes here. */
+    @Inject(method = "teleport(Lnet/minecraft/world/entity/PositionMoveRotation;Ljava/util/Set;)V", at = @At("HEAD"))
+    private void kegare$movedByServer(PositionMoveRotation to, Set<Relative> relative, CallbackInfo ci) {
         Severed.movedByServer(player);
     }
 }

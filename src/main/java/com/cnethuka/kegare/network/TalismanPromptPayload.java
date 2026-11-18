@@ -17,11 +17,11 @@ public record TalismanPromptPayload(InteractionHand hand, Optional<Identifier> c
     public static final StreamCodec<FriendlyByteBuf, TalismanPromptPayload> STREAM_CODEC = StreamCodec.of(
             (buf, p) -> {
                 buf.writeEnum(p.hand());
-                buf.writeOptional(p.current(), FriendlyByteBuf::writeResourceLocation);
+                buf.writeOptional(p.current(), FriendlyByteBuf::writeIdentifier);
                 buf.writeVarInt(p.rollsSinceLegendary());
                 buf.writeVarInt(p.hardPity());
             },
-            buf -> new TalismanPromptPayload(buf.readEnum(InteractionHand.class), buf.readOptional(FriendlyByteBuf::readResourceLocation),
+            buf -> new TalismanPromptPayload(buf.readEnum(InteractionHand.class), buf.readOptional(FriendlyByteBuf::readIdentifier),
                     buf.readVarInt(), buf.readVarInt()));
 
     @Override

@@ -20,7 +20,7 @@ import net.minecraft.world.entity.LivingEntity;
 import com.cnethuka.kegare.platform.bus.EventPriority;
 import com.cnethuka.kegare.platform.bus.SubscribeEvent;
 import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
-import net.neoforged.neoforge.common.util.FakePlayer;
+import net.fabricmc.fabric.api.entity.FakePlayer;
 import com.cnethuka.kegare.platform.event.entity.living.LivingDamageEvent;
 import com.cnethuka.kegare.platform.event.entity.living.LivingDeathEvent;
 import com.cnethuka.kegare.platform.event.entity.player.PlayerEvent;

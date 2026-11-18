@@ -42,8 +42,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelResource;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.fml.loading.FMLPaths;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.FabricLoader;
 
 /**
  * Kegare's optional Postgres storage (DESIGN §3.33). Off by default: then this is never more than a null check, and no connection is ever opened.
@@ -232,16 +232,16 @@ public final class KegareDatabase {
 
     /** Reads the settings, writing the file if it isn't there; starts the storage if it's switched on and this is a dedicated server. */
     public static void serverStarting(@Nullable MinecraftServer server) {
-        if (!FMLEnvironment.dist.isDedicatedServer() || server == null) return;
+        if (FabricLoader.getInstance().getEnvironmentType() != EnvType.SERVER || server == null) return;
         DatabaseConfig config;
         try {
-            config = DatabaseConfig.load(FMLPaths.CONFIGDIR.get(), System::getenv);
+            config = DatabaseConfig.load(FabricLoader.getInstance().getConfigDir(), System::getenv);
         } catch (IOException | RuntimeException e) {
             Kegare.LOGGER.error("Couldn't read {}. Kegare's storage stays in the world.", DatabaseConfig.FILE_NAME);
             return;
         }
         if (!config.enabled()) return;
-        KegareDatabase database = new KegareDatabase(config, FMLPaths.CONFIGDIR.get(), new ServerHost(server));
+        KegareDatabase database = new KegareDatabase(config, FabricLoader.getInstance().getConfigDir(), new ServerHost(server));
         current = database;
         database.start();
     }
@@ -495,18 +495,18 @@ public final class KegareDatabase {
     public void applyOnJoin(ServerPlayer player) {
         Loaded entry = loaded.remove(player.getUUID());
         if (entry == null) {
-            Kegare.LOGGER.error("{} came in with nothing loaded for them", player.getGameProfile().getName());
+            Kegare.LOGGER.error("{} came in with nothing loaded for them", player.getGameProfile().name());
             return;
         }
         Map<String, String> rows = entry.rows();
         try {
             PlayerDataCodec.apply(player, rows, host.registries());
         } catch (PlayerDataCodec.DecodeException e) {
-            Kegare.LOGGER.error("Keeping {} out: {}", player.getGameProfile().getName(), e.getMessage());
+            Kegare.LOGGER.error("Keeping {} out: {}", player.getGameProfile().name(), e.getMessage());
             return;
         }
         if (!rows.isEmpty() && !MaliceService.get(player).isBorn()) {
-            Kegare.LOGGER.error("Keeping {} out: they have data but it isn't a birth's", player.getGameProfile().getName());
+            Kegare.LOGGER.error("Keeping {} out: they have data but it isn't a birth's", player.getGameProfile().name());
             return;
         }
         admitted.add(player.getUUID());
@@ -815,7 +815,7 @@ public final class KegareDatabase {
             server.execute(() -> {
                 Component message = Component.translatable(langKey).withStyle(ChatFormatting.YELLOW);
                 for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-                    if (player.hasPermissions(2)) player.sendSystemMessage(message);
+                    if (player.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER)) player.sendSystemMessage(message);
                 }
             });
         }

@@ -47,7 +47,7 @@ public final class WorldMigration {
     public record Target(Path playerFiles, Predicate<UUID> online, Supplier<UniqueTraitSavedData> worldTraits, Supplier<Long> gameTime, Supplier<BlockPos> spawn) {
         public static Target of(MinecraftServer server) {
             return new Target(server.getWorldPath(LevelResource.PLAYER_DATA_DIR), player -> server.getPlayerList().getPlayer(player) != null, () -> UniqueTraitSavedData.inWorld(server),
-                    () -> server.overworld().getGameTime(), () -> server.overworld().getSharedSpawnPos());
+                    () -> server.overworld().getGameTime(), () -> server.overworld().getRespawnData().pos());
         }
     }
 

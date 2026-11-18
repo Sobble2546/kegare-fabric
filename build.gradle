@@ -26,6 +26,8 @@ repositories {
     mavenCentral()
     maven { name = 'RedlanceMinecraft'; url = 'https://repo.redlance.org/public'; content { includeGroupByRegex 'com\\.zigythebird(\\..*)?'; includeGroup 'org.redlance.mochafloats' } }
     maven { name = 'Modrinth'; url = 'https://api.modrinth.com/maven'; content { includeGroup 'maven.modrinth' } }
+    // Forge Config API Port (Fuzs): ModConfigSpec and the config screen, as in NeoForge.
+    maven { name = 'Fuzs'; url = 'https://raw.githubusercontent.com/Fuzss/modresources/main/maven/'; content { includeGroup 'fuzs.forgeconfigapiport' } }
 }
 
 sourceSets.main {
@@ -48,6 +50,8 @@ dependencies {
     mod "com.zigythebird.playeranim:${tp.getProperty('pal_artifact')}:${tp.getProperty('pal_version')}"
     // Eyewear slot (Six Eyes blindfold): Trinkets replaces Curios, which has no Fabric build.
     mod "maven.modrinth:trinkets-updated:${tp.getProperty('trinkets_version')}"
+    // Config: Kegare's ModConfigSpec code compiles unchanged against the net.neoforged classes this ships (and NightConfig with it).
+    mod "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${tp.getProperty('fcap_version')}"
     // PostgreSQL JDBC (DESIGN 3.33): bundled inside our jar, only ever opened on a dedicated server with storage on.
     implementation('org.postgresql:postgresql:42.7.4') { exclude group: 'org.checkerframework' }
     include('org.postgresql:postgresql:42.7.4') { exclude group: 'org.checkerframework' }

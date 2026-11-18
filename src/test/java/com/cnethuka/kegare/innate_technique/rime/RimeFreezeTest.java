@@ -29,7 +29,7 @@ import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
-import net.neoforged.neoforge.common.util.FakePlayerFactory;
+import com.cnethuka.kegare.platform.FakePlayerFactory;
 import net.neoforged.testframework.junit.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

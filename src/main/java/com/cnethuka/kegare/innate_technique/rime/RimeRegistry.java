@@ -23,19 +23,15 @@ public final class RimeRegistry {
     public static final DeferredItem<Item> FROST_SHARD_ITEM = ITEMS.registerSimpleItem("frost_shard");
     public static final DeferredItem<Item> GLACIAL_LANCE_ITEM = ITEMS.registerSimpleItem("glacial_lance");
 
-    public static final DeferredHolder<EntityType<?>, EntityType<FrostShardEntity>> FROST_SHARD = ENTITIES.register("frost_shard",
-            () -> EntityType.Builder.<FrostShardEntity>of(FrostShardEntity::new, MobCategory.MISC)
-                    .sized(0.3f, 0.3f).clientTrackingRange(6).updateInterval(5).build("frost_shard"));
-    public static final DeferredHolder<EntityType<?>, EntityType<GlacialLanceEntity>> GLACIAL_LANCE = ENTITIES.register("glacial_lance",
-            () -> EntityType.Builder.<GlacialLanceEntity>of(GlacialLanceEntity::new, MobCategory.MISC)
-                    .sized(0.6f, 0.6f).clientTrackingRange(6).updateInterval(5).build("glacial_lance"));
-    public static final DeferredHolder<EntityType<?>, EntityType<SplinterShardEntity>> SPLINTER_SHARD = ENTITIES.register("splinter_shard",
-            () -> EntityType.Builder.<SplinterShardEntity>of(SplinterShardEntity::new, MobCategory.MISC)
-                    .sized(0.25f, 0.25f).clientTrackingRange(6).updateInterval(5).build("splinter_shard"));
+    public static final DeferredHolder<EntityType<?>, EntityType<FrostShardEntity>> FROST_SHARD = ENTITIES.registerKeyed("frost_shard", key -> EntityType.Builder.<FrostShardEntity>of(FrostShardEntity::new, MobCategory.MISC)
+                    .sized(0.3f, 0.3f).clientTrackingRange(6).updateInterval(5).build(key));
+    public static final DeferredHolder<EntityType<?>, EntityType<GlacialLanceEntity>> GLACIAL_LANCE = ENTITIES.registerKeyed("glacial_lance", key -> EntityType.Builder.<GlacialLanceEntity>of(GlacialLanceEntity::new, MobCategory.MISC)
+                    .sized(0.6f, 0.6f).clientTrackingRange(6).updateInterval(5).build(key));
+    public static final DeferredHolder<EntityType<?>, EntityType<SplinterShardEntity>> SPLINTER_SHARD = ENTITIES.registerKeyed("splinter_shard", key -> EntityType.Builder.<SplinterShardEntity>of(SplinterShardEntity::new, MobCategory.MISC)
+                    .sized(0.25f, 0.25f).clientTrackingRange(6).updateInterval(5).build(key));
     /** Glacial Spire's marker on the ground (warning circle, then the spike). Never saved. */
-    public static final DeferredHolder<EntityType<?>, EntityType<GlacialSpireEntity>> GLACIAL_SPIRE = ENTITIES.register("glacial_spire",
-            () -> EntityType.Builder.<GlacialSpireEntity>of(GlacialSpireEntity::new, MobCategory.MISC)
-                    .sized(1.0f, 0.25f).noSave().fireImmune().clientTrackingRange(6).updateInterval(20).build("glacial_spire"));
+    public static final DeferredHolder<EntityType<?>, EntityType<GlacialSpireEntity>> GLACIAL_SPIRE = ENTITIES.registerKeyed("glacial_spire", key -> EntityType.Builder.<GlacialSpireEntity>of(GlacialSpireEntity::new, MobCategory.MISC)
+                    .sized(1.0f, 0.25f).noSave().fireImmune().clientTrackingRange(6).updateInterval(20).build(key));
 
     public static final Supplier<AttachmentType<FreezeData>> FREEZE = ATTACHMENTS.register("freeze",
             () -> AttachmentType.builder(() -> new FreezeData()).build());

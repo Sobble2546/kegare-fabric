@@ -8,7 +8,7 @@ import net.minecraft.world.entity.player.Player;
 import com.cnethuka.kegare.platform.bus.IEventBus;
 import com.cnethuka.kegare.platform.attachment.AttachmentType;
 import com.cnethuka.kegare.platform.NeoForge;
-import net.neoforged.neoforge.common.util.FakePlayer;
+import net.fabricmc.fabric.api.entity.FakePlayer;
 import com.cnethuka.kegare.platform.event.entity.player.PlayerEvent;
 import com.cnethuka.kegare.platform.event.server.ServerStoppedEvent;
 import com.cnethuka.kegare.platform.event.tick.PlayerTickEvent;

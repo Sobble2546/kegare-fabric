@@ -1,6 +1,7 @@
 package com.cnethuka.kegare.platform.event.tick;
 
 import com.cnethuka.kegare.platform.bus.Event;
+import com.cnethuka.kegare.platform.bus.ICancellableEvent;
 import net.minecraft.world.entity.Entity;
 
 /** Around every entity's tick, on either side. */
@@ -15,7 +16,8 @@ public abstract class EntityTickEvent extends Event {
         return entity;
     }
 
-    public static final class Pre extends EntityTickEvent {
+    /** Cancel: the entity does not tick this time. */
+    public static final class Pre extends EntityTickEvent implements ICancellableEvent {
         public Pre(Entity entity) {
             super(entity);
         }

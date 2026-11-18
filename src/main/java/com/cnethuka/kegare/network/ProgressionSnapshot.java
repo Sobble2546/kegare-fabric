@@ -89,7 +89,7 @@ public record ProgressionSnapshot(int grade, float gradeXp, float gradeXpNeeded,
         buf.writeVarInt(dominion);
         buf.writeVarInt(ward);
         buf.writeVarInt(output);
-        buf.writeMap(locked, FriendlyByteBuf::writeResourceLocation, FriendlyByteBuf::writeVarInt);
+        buf.writeMap(locked, FriendlyByteBuf::writeIdentifier, FriendlyByteBuf::writeVarInt);
         buf.writeVarInt(brain);
         buf.writeOptional(eyes, (b, e) -> {
             b.writeVarInt(e.attunement());
@@ -104,7 +104,7 @@ public record ProgressionSnapshot(int grade, float gradeXp, float gradeXpNeeded,
                         b.readVarInt(), b.readVarInt(), b.readVarInt(), b.readVarInt(), b.readBoolean())),
                 buf.readVarInt(), buf.readFloat(), buf.readFloat(), buf.readVarInt(), buf.readVarInt(),
                 buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
-                buf.readMap(FriendlyByteBuf::readResourceLocation, FriendlyByteBuf::readVarInt), buf.readVarInt(),
+                buf.readMap(FriendlyByteBuf::readIdentifier, FriendlyByteBuf::readVarInt), buf.readVarInt(),
                 buf.readOptional(b -> new Eyes(b.readVarInt(), b.readFloat(), b.readFloat())));
     }
 }

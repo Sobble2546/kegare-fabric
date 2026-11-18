@@ -9,7 +9,7 @@ import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.server.level.ServerPlayer;
 import com.cnethuka.kegare.platform.bus.EventPriority;
 import com.cnethuka.kegare.platform.NeoForge;
-import net.neoforged.neoforge.common.util.FakePlayer;
+import net.fabricmc.fabric.api.entity.FakePlayer;
 import com.cnethuka.kegare.platform.event.entity.living.LivingDamageEvent;
 import com.cnethuka.kegare.platform.event.entity.living.LivingDeathEvent;
 import com.cnethuka.kegare.platform.event.entity.player.AdvancementEvent;
@@ -40,7 +40,7 @@ public final class StatEvents {
     private static void onDeath(LivingDeathEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer victim)) return;
         record(victim, DEATH, 1, null, false);
-        Attribution.Hit blow = Attribution.of(event.getSource(), victim.server);
+        Attribution.Hit blow = Attribution.of(event.getSource(), victim.level().getServer());
         // Knocked off a ledge, the last blow's the fall: the kill's still whoever hit them.
         ServerPlayer killer = blow != null ? blow.attacker() : victim.getKillCredit() instanceof ServerPlayer credited ? credited : null;
         if (killer != null && killer != victim) record(killer, PVP_KILL, 1, null, false);
@@ -50,7 +50,7 @@ public final class StatEvents {
         float amount = event.getNewDamage();
         if (amount <= 0 || !(event.getEntity() instanceof ServerPlayer victim)) return;
         record(victim, DAMAGE_TAKEN, amount, null, false);
-        Attribution.Hit hit = Attribution.of(event.getSource(), victim.server);
+        Attribution.Hit hit = Attribution.of(event.getSource(), victim.level().getServer());
         if (hit != null && hit.attacker() != victim) record(hit.attacker(), DAMAGE_DEALT, amount, null, false); // to other players: a farm isn't a leaderboard
     }
 

@@ -75,7 +75,7 @@ public final class RmtFatigue {
 
     /** Tells the owner their output and fatigue, if either changed (the Sorcerer screen's RMT details). */
     static void sync(ServerPlayer player) {
-        if (player.connection == null || player.isFakePlayer()) return;
+        if (player.connection == null || com.cnethuka.kegare.platform.Players.isFake(player)) return;
         RmtState state = GreenOrbService.state(player);
         RmtOutputPayload payload = new RmtOutputPayload((float) RmtOutput.of(player), (float) of(player), RmtOnAnother.knows(player));
         if (payload.equals(state.sentOutput)) return;

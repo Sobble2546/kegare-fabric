@@ -5,7 +5,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import com.cnethuka.kegare.platform.bus.SubscribeEvent;
 import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
-import net.neoforged.neoforge.common.util.FakePlayer;
+import net.fabricmc.fabric.api.entity.FakePlayer;
 import com.cnethuka.kegare.platform.event.entity.living.LivingDamageEvent;
 import com.cnethuka.kegare.platform.event.entity.living.LivingDeathEvent;
 import com.cnethuka.kegare.platform.event.tick.PlayerTickEvent;
@@ -20,7 +20,7 @@ public final class RmtEvents {
     static void onDamage(LivingDamageEvent.Post event) {
         if (event.getNewDamage() <= 0 || !(event.getEntity() instanceof ServerPlayer victim)) return;
         // A repair's own toll isn't an injury: it never slows the repair it comes from.
-        if (!victim.isFakePlayer() && !event.getSource().is(Repair.DAMAGE)) RmtFatigue.onDamageTaken(victim, event.getNewDamage());
+        if (!com.cnethuka.kegare.platform.Players.isFake(victim) && !event.getSource().is(Repair.DAMAGE)) RmtFatigue.onDamageTaken(victim, event.getNewDamage());
         double low = RmtConfig.MOMENT_HEALTH.get();
         if (victim.isAlive() && victim.getHealth() <= low && victim.getHealth() + event.getNewDamage() > low) RmtOnAnother.onDroppedLow(victim);
         if (victim instanceof FakePlayer) return;

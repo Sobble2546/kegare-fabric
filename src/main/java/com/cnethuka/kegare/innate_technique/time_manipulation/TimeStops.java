@@ -29,7 +29,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.util.FakePlayer;
+import net.fabricmc.fabric.api.entity.FakePlayer;
 import com.cnethuka.kegare.platform.event.entity.EntityJoinLevelEvent;
 import com.cnethuka.kegare.platform.event.entity.ProjectileImpactEvent;
 import com.cnethuka.kegare.platform.event.entity.living.LivingIncomingDamageEvent;
