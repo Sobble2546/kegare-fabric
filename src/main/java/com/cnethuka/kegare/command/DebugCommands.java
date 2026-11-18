@@ -287,7 +287,7 @@ final class DebugCommands {
         int parts = com.cnethuka.kegare.impact.ImpactPayload.FLASH | com.cnethuka.kegare.impact.ImpactPayload.HIT_STOP
                 | com.cnethuka.kegare.impact.ImpactPayload.SHAKE
                 | (tier.ordinal() >= com.cnethuka.kegare.impact.ImpactTier.IMPACT_FRAME.ordinal() ? com.cnethuka.kegare.impact.ImpactPayload.FRAME : 0);
-        net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(player, new com.cnethuka.kegare.impact.ImpactPayload(tier,
+        com.cnethuka.kegare.platform.net.PacketDistributor.sendToPlayer(player, new com.cnethuka.kegare.impact.ImpactPayload(tier,
                 technique ? com.cnethuka.kegare.impact.ImpactKind.TECHNIQUE : com.cnethuka.kegare.impact.ImpactKind.MELEE, parts, contact, direction,
                 color, attacker, victim, 0f));
         say(source, "commands.kegare.debug.impact", tier.serializedName(), player.getDisplayName(), role);

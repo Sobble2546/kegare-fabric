@@ -106,9 +106,9 @@ class BurnoutTest {
         });
     }
 
-    private static boolean copiedOnDeath(net.neoforged.neoforge.attachment.AttachmentType<?> type) {
+    private static boolean copiedOnDeath(com.cnethuka.kegare.platform.attachment.AttachmentType<?> type) {
         try {
-            java.lang.reflect.Field field = net.neoforged.neoforge.attachment.AttachmentType.class.getDeclaredField("copyOnDeath");
+            java.lang.reflect.Field field = com.cnethuka.kegare.platform.attachment.AttachmentType.class.getDeclaredField("copyOnDeath");
             field.setAccessible(true);
             return field.getBoolean(type);
         } catch (ReflectiveOperationException e) {

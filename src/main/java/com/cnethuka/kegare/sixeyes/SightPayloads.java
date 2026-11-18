@@ -8,7 +8,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import com.cnethuka.kegare.platform.net.IPayloadContext;
 
 /** What the eyes see, server to the bearer only (DESIGN §3.32). Nothing here is ever sent to anyone else. */
 public final class SightPayloads {

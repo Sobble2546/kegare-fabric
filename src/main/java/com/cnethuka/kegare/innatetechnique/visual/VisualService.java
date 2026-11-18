@@ -9,7 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
 
 /**
  * Server side of cosmetics. Every call sends one packet to the entity's own player (if any) and everyone tracking

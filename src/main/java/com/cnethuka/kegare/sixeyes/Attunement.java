@@ -12,7 +12,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import com.cnethuka.kegare.platform.net.IPayloadContext;
 
 /**
  * Attunement (DESIGN §3.32): how well a bearer has grown into the eyes. It grows by using them: fighting while holding them

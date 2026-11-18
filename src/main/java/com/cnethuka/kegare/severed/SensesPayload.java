@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import com.cnethuka.kegare.platform.net.IPayloadContext;
 
 /** Server to client, only to a Severed player: the entities they sense right now (DESIGN §3.27). Empty: none. */
 public record SensesPayload(List<Integer> ids) implements CustomPacketPayload {

@@ -8,8 +8,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
+import com.cnethuka.kegare.platform.net.IPayloadContext;
 
 /**
  * Effects drawn along a line between two points (cosmetic only). The client plays the effect at points spaced along

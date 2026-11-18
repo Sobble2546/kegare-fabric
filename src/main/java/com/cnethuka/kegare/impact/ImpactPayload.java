@@ -6,7 +6,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import com.cnethuka.kegare.platform.net.IPayloadContext;
 
 /**
  * Server to the clients near a hit (DESIGN §3.23): what landed, where and how hard. Each client works out its own part from the two

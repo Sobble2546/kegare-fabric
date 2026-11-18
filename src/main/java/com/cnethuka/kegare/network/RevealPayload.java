@@ -14,8 +14,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.common.util.FakePlayer;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
+import com.cnethuka.kegare.platform.net.IPayloadContext;
 
 /**
  * Server to ONE client: show the reveal for a roll that has ALREADY been decided and saved. Purely cosmetic: the

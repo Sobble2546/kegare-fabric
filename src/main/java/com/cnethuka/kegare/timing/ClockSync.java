@@ -2,7 +2,7 @@ package com.cnethuka.kegare.timing;
 
 import java.util.UUID;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.PacketDistributor;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
 
 /**
  * Keeps each player's clock estimate fresh (DESIGN §3.29): a ping every {@code clockSyncSeconds}, and a few quickly after they join so

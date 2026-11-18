@@ -25,8 +25,8 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import com.cnethuka.kegare.platform.NeoForge;
 import com.cnethuka.kegare.platform.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
+import com.cnethuka.kegare.platform.net.IPayloadContext;
 
 /**
  * Strain, the eyes' fatigue (DESIGN §3.32), private to the bearer. It builds in a fight: fastest uncovered, slower with glasses, slowest with

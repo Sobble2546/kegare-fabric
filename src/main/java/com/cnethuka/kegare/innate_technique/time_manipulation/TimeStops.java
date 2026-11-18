@@ -35,7 +35,7 @@ import com.cnethuka.kegare.platform.event.entity.ProjectileImpactEvent;
 import com.cnethuka.kegare.platform.event.entity.living.LivingIncomingDamageEvent;
 import com.cnethuka.kegare.platform.event.entity.living.LivingKnockBackEvent;
 import com.cnethuka.kegare.platform.event.tick.EntityTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
 
 /**
  * Standstill's stops (DESIGN §3.26): at most one per level, runtime only (never saved). Not vanilla's /tick freeze: everything inside

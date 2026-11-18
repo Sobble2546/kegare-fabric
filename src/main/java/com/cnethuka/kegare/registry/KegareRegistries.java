@@ -6,8 +6,8 @@ import com.cnethuka.kegare.trait.Trait;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import com.cnethuka.kegare.platform.bus.IEventBus;
-import net.neoforged.neoforge.registries.NewRegistryEvent;
-import net.neoforged.neoforge.registries.RegistryBuilder;
+import com.cnethuka.kegare.platform.registry.NewRegistryEvent;
+import com.cnethuka.kegare.platform.registry.RegistryBuilder;
 
 /**
  * Custom registries. Innate techniques and traits are registry entries, so addons (or later Kegare

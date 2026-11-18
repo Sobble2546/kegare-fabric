@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 import net.minecraft.server.level.ServerPlayer;
 import com.cnethuka.kegare.platform.event.entity.living.LivingIncomingDamageEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
 
 /**
  * The zone (DESIGN §3.28): after a Black Spark the sorcerer is at 120% of their potential for {@code zoneSeconds}, where the next one comes

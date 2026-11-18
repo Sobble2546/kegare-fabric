@@ -28,7 +28,7 @@ import com.cnethuka.kegare.platform.event.entity.living.LivingDamageEvent;
 import com.cnethuka.kegare.platform.event.entity.living.LivingKnockBackEvent;
 import com.cnethuka.kegare.platform.event.server.ServerStoppedEvent;
 import com.cnethuka.kegare.platform.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
 
 /**
  * The Impact System's server side (DESIGN §3.23). Every hit on a living thing that has an attacker or a weapon behind it (techniques,

@@ -6,9 +6,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.Item;
 import com.cnethuka.kegare.platform.bus.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import com.cnethuka.kegare.platform.registry.DeferredHolder;
+import com.cnethuka.kegare.platform.registry.DeferredItem;
+import com.cnethuka.kegare.platform.registry.DeferredRegister;
 
 /** Swap's registry entries: the anchor entity and the item it renders as. */
 public final class SwapRegistry {

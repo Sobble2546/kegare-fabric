@@ -16,7 +16,7 @@ import java.util.function.Predicate;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerPlayerConnection;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.network.PacketDistributor;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
 
 /**
  * What flows round a player's body, sent to each client as that client should see it: Reinforcement's aura (DESIGN §3.16) is open,

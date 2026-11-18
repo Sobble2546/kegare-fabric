@@ -23,7 +23,7 @@ import net.minecraft.world.entity.player.Player;
 import com.cnethuka.kegare.platform.NeoForge;
 import com.cnethuka.kegare.platform.event.server.ServerStoppedEvent;
 import com.cnethuka.kegare.platform.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
 
 /**
  * Six Eyes' perception, on the server (DESIGN §3.32). The eyes see the whole of their dimension, with no number, no growth and no cap:

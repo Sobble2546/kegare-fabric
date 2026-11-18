@@ -6,7 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ConfigurationTask;
 import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
-import net.neoforged.neoforge.network.event.RegisterConfigurationTasksEvent;
+import com.cnethuka.kegare.platform.net.RegisterConfigurationTasksEvent;
 
 /**
  * Holds a player in the configuration phase while their data loads (DESIGN §3.33), without holding up the server thread: the load runs on the

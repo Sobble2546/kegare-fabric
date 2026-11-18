@@ -45,7 +45,7 @@ import com.cnethuka.kegare.platform.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
 import com.cnethuka.kegare.platform.event.entity.EntityJoinLevelEvent;
 import com.cnethuka.kegare.platform.event.level.BlockEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
 
 /**
  * Battle damage (DESIGN §3.24): big hits break the world round where they land. Strength comes from the Impact System (§3.23), so a

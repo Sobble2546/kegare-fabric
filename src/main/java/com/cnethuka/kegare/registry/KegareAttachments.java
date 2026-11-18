@@ -10,9 +10,9 @@ import com.cnethuka.kegare.innatetechnique.InnateTechniqueData;
 import com.cnethuka.kegare.trait.TraitData;
 import java.util.function.Supplier;
 import com.cnethuka.kegare.innatetechnique.visual.VisualState;
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import com.cnethuka.kegare.platform.attachment.AttachmentType;
+import com.cnethuka.kegare.platform.registry.DeferredRegister;
+import com.cnethuka.kegare.platform.registry.NeoForgeRegistries;
 
 /**
  * All per-entity state lives in NeoForge data attachments. The main ones:

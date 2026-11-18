@@ -16,7 +16,7 @@ import com.cnethuka.kegare.platform.event.entity.living.LivingIncomingDamageEven
 import com.cnethuka.kegare.platform.event.entity.player.AttackEntityEvent;
 import com.cnethuka.kegare.platform.event.entity.player.PlayerEvent;
 import com.cnethuka.kegare.platform.event.tick.PlayerTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
 
 /** Where the layer meets the game's damage. Cancelling happens first, so a parried hit never reaches a Strike or a guard. */
 @EventBusSubscriber(modid = Kegare.MODID)

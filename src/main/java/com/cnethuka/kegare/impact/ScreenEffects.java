@@ -8,8 +8,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
+import com.cnethuka.kegare.platform.net.IPayloadContext;
 
 /**
  * The screen shader hook (DESIGN §3.23): a whole-screen effect on one player's screen for a set time, from the server. The effect is

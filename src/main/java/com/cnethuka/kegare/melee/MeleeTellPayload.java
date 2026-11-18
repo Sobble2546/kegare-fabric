@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import com.cnethuka.kegare.platform.net.IPayloadContext;
 
 /** Server to client: what a player's ready Reinforced Strike looks like to whoever this is sent to ({@link MeleeTell}), or that it's over. */
 public record MeleeTellPayload(int entityId, MeleeTell.Look look) implements CustomPacketPayload {

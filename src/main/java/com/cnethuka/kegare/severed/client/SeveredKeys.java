@@ -4,7 +4,7 @@ import com.cnethuka.kegare.client.ClientData;
 import com.cnethuka.kegare.client.TechniqueMode;
 import com.cnethuka.kegare.melee.MeleeIntentPayload;
 import com.cnethuka.kegare.network.SyncPayload;
-import net.neoforged.neoforge.network.PacketDistributor;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
 
 /** G (DESIGN §3.5, §3.27): Blur for a Severed player, Technique Mode for everyone else, unchanged. */
 public final class SeveredKeys {

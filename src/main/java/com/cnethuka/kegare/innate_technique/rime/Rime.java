@@ -10,8 +10,8 @@ import com.cnethuka.kegare.registry.KegareRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Items;
 import com.cnethuka.kegare.platform.bus.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import com.cnethuka.kegare.platform.registry.DeferredHolder;
+import com.cnethuka.kegare.platform.registry.DeferredRegister;
 
 /**
  * Rime (RARE): Frost Shard, Glacial Lance, Frost Field, Rime Shell, with the specials Splinter, Glacial Spire, Ice Path

@@ -14,7 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.EntityHitResult;
 import com.cnethuka.kegare.platform.client.event.InputEvent;
 import com.cnethuka.kegare.platform.NeoForge;
-import net.neoforged.neoforge.network.PacketDistributor;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 /**

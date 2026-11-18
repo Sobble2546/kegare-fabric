@@ -4,8 +4,8 @@ import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.item.PurificationTalismanItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import com.cnethuka.kegare.platform.registry.DeferredItem;
+import com.cnethuka.kegare.platform.registry.DeferredRegister;
 
 public final class KegareItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Kegare.MODID);

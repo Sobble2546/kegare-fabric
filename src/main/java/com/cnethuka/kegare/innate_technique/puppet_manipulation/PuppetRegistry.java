@@ -6,11 +6,11 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import com.cnethuka.kegare.platform.bus.IEventBus;
-import net.neoforged.neoforge.attachment.AttachmentType;
+import com.cnethuka.kegare.platform.attachment.AttachmentType;
 import com.cnethuka.kegare.platform.event.entity.EntityAttributeCreationEvent;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import com.cnethuka.kegare.platform.registry.DeferredHolder;
+import com.cnethuka.kegare.platform.registry.DeferredRegister;
+import com.cnethuka.kegare.platform.registry.NeoForgeRegistries;
 
 /** Puppet Manipulation's registry entries: the puppet and shell entities, and the attachments. */
 public final class PuppetRegistry {

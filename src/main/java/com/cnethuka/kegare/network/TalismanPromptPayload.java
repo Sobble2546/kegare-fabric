@@ -8,7 +8,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import com.cnethuka.kegare.platform.net.IPayloadContext;
 
 /** Server to client: open the Purification Talisman confirmation (nothing has been consumed or rolled). */
 public record TalismanPromptPayload(InteractionHand hand, Optional<Identifier> current, int rollsSinceLegendary, int hardPity)

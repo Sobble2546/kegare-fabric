@@ -23,8 +23,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import com.cnethuka.kegare.platform.NeoForge;
 import com.cnethuka.kegare.platform.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
+import com.cnethuka.kegare.platform.net.IPayloadContext;
 
 /**
  * The uncovered edge (DESIGN §3.32): uncovered and against a top-tier opponent, the bearer sees the spark before a cast. The cast key's

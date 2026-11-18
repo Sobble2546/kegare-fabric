@@ -9,8 +9,8 @@ import com.cnethuka.kegare.registry.KegareRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Items;
 import com.cnethuka.kegare.platform.bus.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import com.cnethuka.kegare.platform.registry.DeferredHolder;
+import com.cnethuka.kegare.platform.registry.DeferredRegister;
 
 /**
  * Swap (COMMON): trade with other players. Positions, Awareness, Anchor and Exchange, with Switchback, Mimic, Send

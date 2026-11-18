@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import com.cnethuka.kegare.platform.net.IPayloadContext;
 
 /** Server to client, to its owner: in the zone until {@code until} (game time) of {@code ticks} in all, or out of it (0), for the HUD cue. */
 public record ZonePayload(long until, int ticks) implements CustomPacketPayload {

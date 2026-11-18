@@ -25,9 +25,9 @@ import net.minecraft.nbt.LongTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.attachment.AttachmentHolder;
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import com.cnethuka.kegare.platform.attachment.AttachmentHolder;
+import com.cnethuka.kegare.platform.attachment.AttachmentType;
+import com.cnethuka.kegare.platform.registry.NeoForgeRegistries;
 import net.neoforged.testframework.junit.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,7 +56,7 @@ class PlayerDataCodecTest {
                 for (var entry : NeoForgeRegistries.ATTACHMENT_TYPES.entrySet()) {
                     Identifier id = entry.getKey().location();
                     if (!id.getNamespace().equals(Kegare.MODID)) continue;
-                    var serializer = (net.neoforged.neoforge.attachment.IAttachmentSerializer<?, Object>) ((AttachmentTypeAccessor) (Object) entry.getValue()).kegare$serializer();
+                    var serializer = (com.cnethuka.kegare.platform.attachment.IAttachmentSerializer<?, Object>) ((AttachmentTypeAccessor) (Object) entry.getValue()).kegare$serializer();
                     if (serializer == null) continue;
                     serialized++;
                     // (A serializer may write nothing for an empty value, as Possession's does when nobody's possessing: then there's nothing to store.)

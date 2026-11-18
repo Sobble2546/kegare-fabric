@@ -5,7 +5,7 @@ import com.cnethuka.kegare.client.gui.ClientGuiHooks;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import com.cnethuka.kegare.platform.net.IPayloadContext;
 
 /**
  * Server to one client: a small private toast. Promotions and unlocks are nobody else's business, so this never goes to

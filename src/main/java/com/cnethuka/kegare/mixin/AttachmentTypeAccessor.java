@@ -1,7 +1,7 @@
 package com.cnethuka.kegare.mixin;
 
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.attachment.IAttachmentSerializer;
+import com.cnethuka.kegare.platform.attachment.AttachmentType;
+import com.cnethuka.kegare.platform.attachment.IAttachmentSerializer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 

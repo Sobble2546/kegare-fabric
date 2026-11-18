@@ -17,10 +17,10 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import com.cnethuka.kegare.platform.bus.IEventBus;
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import com.cnethuka.kegare.platform.attachment.AttachmentType;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
+import com.cnethuka.kegare.platform.registry.DeferredRegister;
+import com.cnethuka.kegare.platform.registry.NeoForgeRegistries;
 
 /**
  * The green orb: how Reverse Malice Technique is found (server side; DESIGN §3.18).

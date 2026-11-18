@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.PacketDistributor;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
 
 /** Keeps each player's own client up to date on their Background Tasks: sent to them alone, when it changes. */
 public final class BackgroundTaskSync {

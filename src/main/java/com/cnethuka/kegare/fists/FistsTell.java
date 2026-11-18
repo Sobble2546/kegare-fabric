@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.network.PacketDistributor;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
 
 /**
  * What's round a player's fists, sent to each client as that client should see it (DESIGN §3.28): the wearer their own Malice color,

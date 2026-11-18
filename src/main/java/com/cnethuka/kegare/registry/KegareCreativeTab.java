@@ -6,8 +6,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import com.cnethuka.kegare.platform.registry.DeferredHolder;
+import com.cnethuka.kegare.platform.registry.DeferredRegister;
 
 /** Kegare's own creative tab (DESIGN §3.10), after the vanilla tabs, filled from {@link KegareItems#ITEMS}, so a new item appears here by itself. */
 public final class KegareCreativeTab {

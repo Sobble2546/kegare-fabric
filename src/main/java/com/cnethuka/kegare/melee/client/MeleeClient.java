@@ -22,7 +22,7 @@ import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
 import com.cnethuka.kegare.platform.client.event.ClientTickEvent;
 import com.cnethuka.kegare.platform.client.event.InputEvent;
 import com.cnethuka.kegare.platform.NeoForge;
-import net.neoforged.neoforge.network.PacketDistributor;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 /** The melee layer's keys and HUD. Input only asks: the server times and decides everything. */

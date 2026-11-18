@@ -8,10 +8,10 @@ import com.cnethuka.kegare.innate_technique.puppet_manipulation.Possession;
 import java.util.function.Supplier;
 import net.minecraft.server.level.ServerPlayer;
 import com.cnethuka.kegare.platform.bus.IEventBus;
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import com.cnethuka.kegare.platform.attachment.AttachmentType;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
+import com.cnethuka.kegare.platform.registry.DeferredRegister;
+import com.cnethuka.kegare.platform.registry.NeoForgeRegistries;
 
 /** The shared melee layer: Dash, Parry and Reinforced Strike. Not techniques: they take no slots and don't go through casting. See DESIGN §3.22. */
 public final class MeleeLayer {

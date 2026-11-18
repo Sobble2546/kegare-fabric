@@ -26,10 +26,10 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.attachment.AttachmentHolder;
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.attachment.IAttachmentSerializer;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import com.cnethuka.kegare.platform.attachment.AttachmentHolder;
+import com.cnethuka.kegare.platform.attachment.AttachmentType;
+import com.cnethuka.kegare.platform.attachment.IAttachmentSerializer;
+import com.cnethuka.kegare.platform.registry.NeoForgeRegistries;
 
 /**
  * Kegare's per-player data as JSON, one document per attachment (DESIGN §3.33). Driven from the attachment registry: any Kegare attachment with a

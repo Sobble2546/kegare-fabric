@@ -6,15 +6,15 @@ import java.util.function.Supplier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import com.cnethuka.kegare.platform.bus.IEventBus;
-import net.neoforged.neoforge.attachment.AttachmentType;
+import com.cnethuka.kegare.platform.attachment.AttachmentType;
 import com.cnethuka.kegare.platform.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import com.cnethuka.kegare.platform.event.entity.player.PlayerEvent;
 import com.cnethuka.kegare.platform.event.server.ServerStoppedEvent;
 import com.cnethuka.kegare.platform.event.tick.PlayerTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
+import com.cnethuka.kegare.platform.registry.DeferredRegister;
+import com.cnethuka.kegare.platform.registry.NeoForgeRegistries;
 
 /**
  * Severed players' physical identity (DESIGN §3.27): they trade all their Malice for a superhuman body. No Malice, no glow, no Innate

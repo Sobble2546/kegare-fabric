@@ -11,8 +11,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.attachment.IAttachmentHolder;
-import net.neoforged.neoforge.attachment.IAttachmentSerializer;
+import com.cnethuka.kegare.platform.attachment.IAttachmentHolder;
+import com.cnethuka.kegare.platform.attachment.IAttachmentSerializer;
 
 /**
  * On a player while they possess a puppet ({@code kegare:possession}, saved): which puppet and shell, and everything

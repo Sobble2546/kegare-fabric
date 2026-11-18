@@ -5,7 +5,7 @@ import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.network.ProgressionToastPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.PacketDistributor;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
 
 /** Small private toasts. Only their owner ever gets one: Grade and unlocks are nobody else's business. */
 public final class ProgressionToasts {

@@ -3,7 +3,7 @@ package com.cnethuka.kegare.rmt;
 import com.cnethuka.kegare.combat.CombatHelper;
 import com.cnethuka.kegare.progression.FightTracker;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.PacketDistributor;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
 
 /**
  * Injury fatigue (DESIGN §3.17): the more damage you take in a fight, the weaker your Reverse Malice Technique heals, as injuries

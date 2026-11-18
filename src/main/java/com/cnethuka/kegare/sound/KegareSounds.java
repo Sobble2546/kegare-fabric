@@ -6,8 +6,8 @@ import java.util.Collections;
 import java.util.List;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvent;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import com.cnethuka.kegare.platform.registry.DeferredHolder;
+import com.cnethuka.kegare.platform.registry.DeferredRegister;
 
 /**
  * Kegare's own sounds (DESIGN §3.10). Each ships as a mono OGG Vorbis at {@code assets/kegare/sounds/<file>.ogg} (mono, so

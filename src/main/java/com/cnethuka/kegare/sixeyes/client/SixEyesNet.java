@@ -5,6 +5,6 @@ final class SixEyesNet {
     private SixEyesNet() {}
 
     static void pinned(int entityId) {
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(new com.cnethuka.kegare.sixeyes.Attunement.PinPayload(entityId));
+        com.cnethuka.kegare.platform.net.PacketDistributor.sendToServer(new com.cnethuka.kegare.sixeyes.Attunement.PinPayload(entityId));
     }
 }

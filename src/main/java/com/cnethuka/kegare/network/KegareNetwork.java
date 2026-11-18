@@ -1,7 +1,7 @@
 package com.cnethuka.kegare.network;
 
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import com.cnethuka.kegare.platform.net.RegisterPayloadHandlersEvent;
+import com.cnethuka.kegare.platform.net.PayloadRegistrar;
 
 /**
  * Payload registration. Bump the version when payload formats change: mismatched clients are refused.
@@ -19,7 +19,7 @@ public final class KegareNetwork {
     public static void register(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(VERSION);
         // Sub-tick timing (DESIGN §3.29): handled on the network thread on arrival, so waiting for a tick never skews a timestamp.
-        PayloadRegistrar timing = event.registrar(VERSION).executesOn(net.neoforged.neoforge.network.registration.HandlerThread.NETWORK);
+        PayloadRegistrar timing = event.registrar(VERSION).executesOn(com.cnethuka.kegare.platform.net.HandlerThread.NETWORK);
         timing.playToServer(com.cnethuka.kegare.timing.TimingNet.Stamp.TYPE, com.cnethuka.kegare.timing.TimingNet.Stamp.STREAM_CODEC,
                 com.cnethuka.kegare.timing.TimingNet.Stamp::handle);
         timing.playToClient(com.cnethuka.kegare.timing.TimingNet.Ping.TYPE, com.cnethuka.kegare.timing.TimingNet.Ping.STREAM_CODEC,

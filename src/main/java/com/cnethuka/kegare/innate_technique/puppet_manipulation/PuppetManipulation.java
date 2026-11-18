@@ -9,8 +9,8 @@ import com.cnethuka.kegare.registry.KegareRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Items;
 import com.cnethuka.kegare.platform.bus.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import com.cnethuka.kegare.platform.registry.DeferredHolder;
+import com.cnethuka.kegare.platform.registry.DeferredRegister;
 
 /**
  * Puppet Manipulation (EPIC): half-size puppets of yourself, charged with Malice. Puppet Creation makes them; the

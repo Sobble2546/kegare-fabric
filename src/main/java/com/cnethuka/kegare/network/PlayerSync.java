@@ -3,7 +3,7 @@ package com.cnethuka.kegare.network;
 import com.cnethuka.kegare.registry.KegareAttachments;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.common.util.FakePlayer;
-import net.neoforged.neoforge.network.PacketDistributor;
+import com.cnethuka.kegare.platform.net.PacketDistributor;
 
 /**
  * Server-to-owner sync. Anything that changes client-visible state calls {@link #markDirty};

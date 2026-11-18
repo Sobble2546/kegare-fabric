@@ -2,8 +2,8 @@ package com.cnethuka.kegare.trait;
 
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.registry.KegareRegistries;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import com.cnethuka.kegare.platform.registry.DeferredHolder;
+import com.cnethuka.kegare.platform.registry.DeferredRegister;
 
 public final class KegareTraits {
     public static final DeferredRegister<Trait> TRAITS = DeferredRegister.create(KegareRegistries.TRAIT_KEY, Kegare.MODID);

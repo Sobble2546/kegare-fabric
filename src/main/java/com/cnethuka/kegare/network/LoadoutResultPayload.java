@@ -6,7 +6,7 @@ import com.cnethuka.kegare.loadout.LoadoutResult;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import com.cnethuka.kegare.platform.net.IPayloadContext;
 
 /** Server to client: a loadout edit was refused (shown on the Loadout page; the action bar is hidden behind it). */
 public record LoadoutResultPayload(LoadoutResult result) implements CustomPacketPayload {

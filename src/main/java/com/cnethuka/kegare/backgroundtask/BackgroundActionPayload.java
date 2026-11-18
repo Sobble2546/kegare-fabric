@@ -8,7 +8,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import com.cnethuka.kegare.platform.net.IPayloadContext;
 
 /** Client to server: a request from the Background view (DESIGN §3.31). The server checks everything ({@link BackgroundTaskService}). */
 public record BackgroundActionPayload(int action, int slot, Optional<Identifier> task) implements CustomPacketPayload {

@@ -4,7 +4,7 @@ import com.cnethuka.kegare.Kegare;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import com.cnethuka.kegare.platform.net.IPayloadContext;
 
 /**
  * Sub-tick timing's packets (DESIGN §3.29). All of them are handled on the network thread, as they arrive, so a tick's wait never gets
