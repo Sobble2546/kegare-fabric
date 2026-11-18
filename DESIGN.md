@@ -375,7 +375,15 @@ All timestamps use **level game time**. They persist across restarts and are ide
     `Kegare id-codec hooks: registry=… holder=…`; a miss is logged as an error, stops the game when ViaFabric is loaded, and a client
     whose hello needs the remap while the registry hook is missing is disconnected with `kegare.network.hello_failed`.
     Tested only in the lab with the spike (see the port notes), not yet with the real jar.
-- Network version `28` (the Fabric port: the hello above, `SightPayloads.Mobs.Dot` and `BattleDamagePayload` carry names instead of raw ids);
+- **Kegare entities are announced as a vanilla type.** A protocol translator between a newer server and an older client (ViaBackwards) must
+  know an entity's type to translate its data, and knows no modded type: a 1.21.11 client on a 26.3 server was dropped the moment a Frost Shard
+  spawned. So `ServerEntityPairingMixin` sends `EntityKindPayload` (entity id, real type name) and then the spawn packet with a stand-in type of
+  the same base class (armor stand for living entities, snowball for thrown-item projectiles, marker for the rest); the client
+  (`EntityKindClientMixin`) puts the real type back before it creates the entity. Same on every server, translated or not.
+- **Kegare item stacks travel as marked paper** (`platform.net.ItemWire`, `ItemStackWireMixin` on the item stack network codec, both sides and
+  both directions): paper with every component of the real stack and a `kegare:item` entry in its custom data, turned back into the real
+  item on arrival. The same translator rewrites every item stack and knows no modded item id. Saving to disk is unaffected.
+- Network version `29` (`28` plus `EntityKindPayload`, below; `28` was the Fabric port: the hello above, `SightPayloads.Mobs.Dot` and `BattleDamagePayload` carry names instead of raw ids);
   `27` (since a disguise wears the face's eyewear, §3.19 and §3.32: `Disguises.StatePayload` carries it); `26` was Six Eyes'
   Reads reading a body's whole state, §3.32 (`ReadsPayload` gained mob health and the focus's body); `25`
   was Six Eyes, §3.32, and RMT's repair, §3.17: `Repair.Payload`, the brain meter in `ProgressionSnapshot`, and

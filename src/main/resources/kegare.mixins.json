@@ -4,6 +4,8 @@
   "package": "com.cnethuka.kegare.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "AddEntityPacketAccessor",
+    "ItemStackWireMixin",
     "ChunkMapAccessor",
     "ServerEntityAccessor",
     "TrackedEntityAccessor",
@@ -37,7 +39,8 @@
     "client.DeathPoofMixin",
     "client.LevelRendererMixin",
     "client.SixEyesGlowMixin",
-    "client.SixEyesOutlineColorMixin"
+    "client.SixEyesOutlineColorMixin",
+    "client.EntityKindClientMixin"
   ],
   "injectors": {
     "defaultRequire": 1

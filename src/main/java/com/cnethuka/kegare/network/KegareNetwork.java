@@ -13,7 +13,7 @@ import com.cnethuka.kegare.platform.net.PayloadRegistrar;
  * decided and saved; screens are cosmetic.
  */
 public final class KegareNetwork {
-    public static final String VERSION = "28";
+    public static final String VERSION = "29";
 
     private KegareNetwork() {}
 
@@ -40,6 +40,7 @@ public final class KegareNetwork {
         registrar.playToServer(com.cnethuka.kegare.melee.MeleeIntentPayload.TYPE, com.cnethuka.kegare.melee.MeleeIntentPayload.STREAM_CODEC,
                 com.cnethuka.kegare.melee.MeleeIntentPayload::handle);
         // server -> client (state and decided results)
+        timing.playToClient(EntityKindPayload.TYPE, EntityKindPayload.STREAM_CODEC, EntityKindPayload::handle); // read at once: the spawn packet is next
         registrar.playToClient(com.cnethuka.kegare.melee.MeleeDashPayload.TYPE, com.cnethuka.kegare.melee.MeleeDashPayload.STREAM_CODEC,
                 com.cnethuka.kegare.melee.MeleeDashPayload::handle);
         registrar.playToClient(com.cnethuka.kegare.melee.MeleeTellPayload.TYPE, com.cnethuka.kegare.melee.MeleeTellPayload.STREAM_CODEC,

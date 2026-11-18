@@ -32,6 +32,7 @@ public final class ClientNet {
             } catch (RuntimeException | Error e) {
                 owner = null;
                 IdRemap.clear();
+                com.cnethuka.kegare.network.EntityKindPayload.clear();
                 throw e;
             }
             owner = connection;
@@ -43,6 +44,7 @@ public final class ClientNet {
         synchronized (LOCK) {
             owner = null;
             IdRemap.clear();
+                com.cnethuka.kegare.network.EntityKindPayload.clear();
         }
     }
 
@@ -52,6 +54,7 @@ public final class ClientNet {
             if (connection != null && owner == connection) {
                 owner = null;
                 IdRemap.clear();
+                com.cnethuka.kegare.network.EntityKindPayload.clear();
             }
         }
     }
