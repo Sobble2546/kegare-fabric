@@ -4,7 +4,8 @@ import com.cnethuka.kegare.Kegare;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import org.joml.Vector3f;
@@ -69,7 +70,7 @@ final class FistFire {
     private FistFire() {}
 
     static RenderType renderType() {
-        return RenderType.entityCutoutNoCull(TEXTURE);
+        return RenderTypes.entityCutoutNoCull(TEXTURE);
     }
 
     /**

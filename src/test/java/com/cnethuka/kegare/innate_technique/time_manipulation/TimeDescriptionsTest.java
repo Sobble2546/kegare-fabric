@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.minecraft.server.MinecraftServer;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 

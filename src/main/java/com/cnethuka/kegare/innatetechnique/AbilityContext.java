@@ -11,6 +11,6 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public record AbilityContext(ServerPlayer player, InnateTechnique innateTechnique, Ability ability, CastSlot slot, float charge, int activeTicks) {
     public ServerLevel level() {
-        return player.serverLevel();
+        return player.level();
     }
 }

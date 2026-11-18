@@ -58,7 +58,7 @@ public final class AreTheyHigh {
             // Read at the end of the next server tick, not here: the message is broadcast first (its broadcast is itself queued after
             // this event), so the announcement follows the line that earned it, 50 ms later at most.
             synchronized (PENDING) {
-                PENDING.add(new Pending(player, text, player.server.getTickCount() + 1));
+                PENDING.add(new Pending(player, text, player.level().getServer().getTickCount() + 1));
             }
         });
         NeoForge.EVENT_BUS.addListener((com.cnethuka.kegare.platform.event.tick.ServerTickEvent.Post e) -> {
@@ -154,7 +154,7 @@ public final class AreTheyHigh {
     /** A living player within 16 blocks they've traded a hit with (either way) in the last 10 s. */
     static boolean inAFight(ServerPlayer player) {
         long now = player.level().getGameTime();
-        for (ServerPlayer other : player.serverLevel().players()) {
+        for (ServerPlayer other : player.level().players()) {
             if (other == player || !other.isAlive() || other.isSpectator() || other.distanceTo(player) > RANGE) continue;
             if (recent(player, other, now) || recent(other, player, now)) return true;
         }
@@ -182,7 +182,7 @@ public final class AreTheyHigh {
 
     /** "Requires It's been a while": only those who have it can earn this. */
     private static boolean hasItsBeenAWhile(ServerPlayer player) {
-        var holder = player.server.getAdvancements().get(KegareAdvancements.ITS_BEEN_A_WHILE);
+        var holder = player.level().getServer().getAdvancements().get(KegareAdvancements.ITS_BEEN_A_WHILE);
         return holder != null && player.getAdvancements().getOrStartProgress(holder).isDone();
     }
 }

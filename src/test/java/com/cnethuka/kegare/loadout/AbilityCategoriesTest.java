@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 

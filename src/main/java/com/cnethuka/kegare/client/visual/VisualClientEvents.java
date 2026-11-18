@@ -7,7 +7,7 @@ import com.cnethuka.kegare.platform.Dist;
 import com.cnethuka.kegare.platform.bus.IEventBus;
 import com.cnethuka.kegare.platform.bus.SubscribeEvent;
 import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import com.cnethuka.kegare.platform.client.event.FMLClientSetupEvent;
 import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
 import com.cnethuka.kegare.platform.client.event.ClientTickEvent;
 
@@ -25,7 +25,7 @@ public final class VisualClientEvents {
 
     private static void clientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
-            PlayerAnimations.registerLayer(); // PAL: must be enqueued work on NeoForge
+            PlayerAnimations.registerLayer(); // PAL: registered once the client has started
             PhotonEffects.preload(VisualHooks.allEffects().stream().filter(e -> !ClientVisuals.isDrawnByMove(e)).toList());
         });
     }

@@ -15,7 +15,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -34,7 +35,9 @@ import org.joml.Matrix4f;
  */
 public final class DeathBurst {
     private static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
-    private static final RenderType TYPE = RenderType.entityTranslucentEmissive(WHITE);
+    private static RenderType type() {
+        return RenderTypes.entityTranslucentEmissive(WHITE);
+    }
     /** How long after a hit its victim's death still counts as the hit's (vanilla's smoke comes 20 ticks after death). */
     private static final int REMEMBER_TICKS = 60;
     private static final int LIFE = 9;
@@ -79,16 +82,16 @@ public final class DeathBurst {
         if (level == null) return;
         float now = level.getGameTime() + event.getPartialTick().getGameTimeDeltaPartialTick(false);
         Camera camera = event.getCamera();
-        Vec3 cam = camera.getPosition(), left = new Vec3(camera.getLeftVector()), up = new Vec3(camera.getUpVector());
+        Vec3 cam = camera.position(), left = new Vec3(camera.leftVector()), up = new Vec3(camera.upVector());
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
-        VertexConsumer out = buffers.getBuffer(TYPE);
+        VertexConsumer out = buffers.getBuffer(type());
         Matrix4f m = event.getPoseStack().last().pose();
         for (Burst b : BURSTS) {
             float t = (now - b.born) / LIFE;
             if (t < 0 || t >= 1) continue;
             draw(out, m, b, t, cam, left, up);
         }
-        buffers.endBatch(TYPE);
+        buffers.endBatch(type());
     }
 
     private static void draw(VertexConsumer out, Matrix4f m, Burst b, float t, Vec3 cam, Vec3 left, Vec3 up) {

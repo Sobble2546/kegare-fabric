@@ -22,7 +22,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.resources.Identifier;
@@ -56,8 +57,8 @@ public final class PuppetFx {
     /** Lavender (#C4B5FD), its white highlight, and a lighter and deeper step (the braid's ramp for Strings). */
     static final int LAVENDER = 0xC4B5FD, PALE = 0xF5F3FF, LIGHT = 0xDDD6FE, DEEP = 0xA78BFA;
     /** The Vanilla-quality stand-in: a small lavender speck (small dust also dies fast, as its life scales with its size). */
-    static final DustParticleOptions SPECK = new DustParticleOptions(new Vector3f(0.77f, 0.71f, 0.99f), 0.5f);
-    static final DustParticleOptions PALE_SPECK = new DustParticleOptions(new Vector3f(0.96f, 0.95f, 1f), 0.45f);
+    static final DustParticleOptions SPECK = new DustParticleOptions(LAVENDER, 0.5f);
+    static final DustParticleOptions PALE_SPECK = new DustParticleOptions(PALE, 0.45f);
 
     private static final float THREAD = 0.026f, HAIR = 0.012f;
     /** Strings' frayed fibers: a quarter of the cord's thickness (the model's cord is 0.0875 across). */
@@ -748,7 +749,7 @@ public final class PuppetFx {
     private static boolean nearCamera(Vec3 at, double within) {
         Minecraft mc = Minecraft.getInstance();
         if (!mc.options.getCameraType().isFirstPerson()) return false;
-        return at.distanceTo(mc.gameRenderer.getMainCamera().getPosition()) < within;
+        return at.distanceTo(mc.gameRenderer.getMainCamera().position()) < within;
     }
 
     // ---------------------------------------------------------------- Vanilla specks
@@ -777,19 +778,19 @@ public final class PuppetFx {
         final Vec3 cam;
         final float now;
         private final MultiBufferSource.BufferSource buffers;
-        private final RenderType type = RenderType.entityTranslucentEmissive(WHITE);
+        private final RenderType type = RenderTypes.entityTranslucentEmissive(WHITE);
         private final VertexConsumer out;
         private final Matrix4f m;
         private final Vec3 left, up;
 
         Draw(MultiBufferSource.BufferSource buffers, PoseStack pose, Camera camera, float now) {
             this.buffers = buffers;
-            this.cam = camera.getPosition();
+            this.cam = camera.position();
             this.now = now;
             this.out = buffers.getBuffer(type);
             this.m = pose.last().pose();
-            this.left = new Vec3(camera.getLeftVector());
-            this.up = new Vec3(camera.getUpVector());
+            this.left = new Vec3(camera.leftVector());
+            this.up = new Vec3(camera.upVector());
         }
 
         void end() {

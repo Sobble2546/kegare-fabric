@@ -24,14 +24,13 @@ import com.cnethuka.kegare.platform.client.event.ClientTickEvent;
 import com.cnethuka.kegare.platform.client.event.EntityRenderersEvent;
 import com.cnethuka.kegare.platform.client.event.RegisterClientReloadListenersEvent;
 import com.cnethuka.kegare.platform.NeoForge;
-import org.joml.Vector3f;
 
 /**
  * Rime's client side: projectile renderers, the vanilla-particle stand-ins for its Photon effects, and Glacial Spire's
  * aiming ring (only the caster sees it, while charging).
  */
 public final class RimeClient {
-    private static final DustParticleOptions AIM_DUST = new DustParticleOptions(new Vector3f(0.55f, 0.85f, 1f), 0.9f);
+    private static final DustParticleOptions AIM_DUST = new DustParticleOptions(0x8CD9FF, 0.9f);
     private static final int AIM_POINTS = 18;
 
     private RimeClient() {}

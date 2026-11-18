@@ -95,7 +95,7 @@ public final class KegareAdvancements {
     }
 
     private static void awardInternal(ServerPlayer player, Identifier id, boolean warnIfMissing) {
-        AdvancementHolder holder = player.server.getAdvancements().get(id);
+        AdvancementHolder holder = player.level().getServer().getAdvancements().get(id);
         if (holder == null) {
             if (warnIfMissing) Kegare.LOGGER.warn("Missing advancement {}", id);
             return;

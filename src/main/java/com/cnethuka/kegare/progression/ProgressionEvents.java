@@ -93,7 +93,7 @@ public final class ProgressionEvents {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     static void onDeath(LivingDeathEvent event) {
         if (event.isCanceled() || !(event.getEntity() instanceof ServerPlayer dead) || dead.level().isClientSide()) return;
-        Attribution.Hit blow = Attribution.of(event.getSource(), dead.server);
+        Attribution.Hit blow = Attribution.of(event.getSource(), dead.level().getServer());
         BushCamper.died(dead, blow == null ? null : blow.attacker(), dead.level().getGameTime());
         FightTracker.onDeath(dead);
     }

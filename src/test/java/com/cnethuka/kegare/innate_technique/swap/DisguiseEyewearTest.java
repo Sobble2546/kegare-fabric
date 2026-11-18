@@ -8,6 +8,7 @@ import com.cnethuka.kegare.TestServer;
 import com.cnethuka.kegare.player.BirthService;
 import com.cnethuka.kegare.registry.KegareItems;
 import com.cnethuka.kegare.sixeyes.Eyewear;
+import com.cnethuka.kegare.sixeyes.TestEyewear;
 import io.netty.buffer.Unpooled;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +18,9 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import top.theillusivec4.curios.api.CuriosApi;
 
 /** Eyewear never gives a disguise away (DESIGN §3.19, §3.32): a disguise wears the face's eyewear, never the wearer's own. */
 @ExtendWith(EphemeralTestServerProvider.class)
@@ -34,7 +34,7 @@ class DisguiseEyewearTest {
     }
 
     private static void wear(ServerPlayer p, ItemStack stack) {
-        CuriosApi.getCuriosInventory(p).orElseThrow().setEquippedCurio(Eyewear.SLOT, 0, stack);
+        TestEyewear.wear(p, stack);
     }
 
     private static Eyewear sentFor(Disguises.StatePayload state, ServerPlayer wearer) {

@@ -45,7 +45,7 @@ public final class AwarenessAbility extends SwapAbility {
         Disguises.apply(target, caster, ticks, kind, caster);
         for (ServerPlayer p : new ServerPlayer[] {caster, target}) {
             SwapSounds.CARD_FLIP.at(p);
-            VisualService.playAt(p.serverLevel(), Swapper.bodyPos(p), SwapIds.AWARENESS_FLIP, p.getId());
+            VisualService.playAt(p.level(), Swapper.bodyPos(p), SwapIds.AWARENESS_FLIP, p.getId());
         }
     }
 }

@@ -54,7 +54,7 @@ public final class GradeService {
     public static void onFightEnded(FightReport report) {
         ServerPlayer player = report.player();
         GradeData data = get(player);
-        long now = player.server.overworld().getGameTime();
+        long now = player.level().getServer().overworld().getGameTime();
         long window = ProgressionConfig.ticks(ProgressionConfig.ROLLING_WINDOW);
         // A fight nothing happened in (a landing that never led to damage) isn't a meeting.
         if (report.dealt() <= 0 && report.taken() <= 0) return;
@@ -68,7 +68,7 @@ public final class GradeService {
     /** Damage to a mob: a small amount, so solo players progress slowly, and capped per hour so a farm can't replace fighting. */
     public static void onMobDamage(ServerPlayer player, double damage) {
         GradeData data = get(player);
-        long now = player.server.overworld().getGameTime();
+        long now = player.level().getServer().overworld().getGameTime();
         if (now - data.mobWindowStart >= ProgressionConfig.ticks(ProgressionConfig.ROLLING_WINDOW)) {
             data.mobWindowStart = now;
             data.mobWindowXp = 0.0;

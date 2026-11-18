@@ -10,7 +10,7 @@ import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -27,7 +27,7 @@ class KegareCreativeTabTest {
         TestServer.onServerThread(server, () -> {
             TestServer.ensureOverworld(server);
             CreativeModeTab tab = built(server, KegareCreativeTab.KEGARE.get());
-            CreativeModeTab tools = built(server, BuiltInRegistries.CREATIVE_MODE_TAB.getOrThrow(CreativeModeTabs.TOOLS_AND_UTILITIES));
+            CreativeModeTab tools = built(server, BuiltInRegistries.CREATIVE_MODE_TAB.getOrThrow(CreativeModeTabs.TOOLS_AND_UTILITIES).value());
             assertFalse(KegareItems.ITEMS.getEntries().isEmpty(), "setup: there are items");
             for (var item : KegareItems.ITEMS.getEntries()) {
                 ItemStack stack = new ItemStack(item.get());

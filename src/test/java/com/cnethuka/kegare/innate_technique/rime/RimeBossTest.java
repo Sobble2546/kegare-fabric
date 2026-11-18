@@ -17,11 +17,11 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.Cow;
+import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -42,22 +42,22 @@ class RimeBossTest {
             ServerPlayer p = TestServer.player(server, "rime_boss_caster");
             BirthService.rebirth(p, OptionalInt.of(1000));
             InnateTechniqueService.setInnateTechnique(p, Rime.RIME.get());
-            p.moveTo(0.5, ground, 0.5, 0f, 0f);
-            WitherBoss wither = EntityType.WITHER.create(level);
+            p.snapTo(0.5, ground, 0.5, 0f, 0f);
+            WitherBoss wither = EntityType.WITHER.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             Cow cow = new Cow(EntityType.COW, level);
             try {
                 assertTrue(CombatHelper.isBoss(wither), "setup: the wither is a boss (c:bosses)");
-                assertTrue(CombatHelper.isBoss(EntityType.ENDER_DRAGON.create(level)), "the ender dragon too");
+                assertTrue(CombatHelper.isBoss(EntityType.ENDER_DRAGON.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND)), "the ender dragon too");
                 assertFalse(CombatHelper.isBoss(cow), "a cow is not");
                 wither.setNoAi(true);
-                wither.moveTo(3.5, ground, 0.5, 0f, 0f);
+                wither.snapTo(3.5, ground, 0.5, 0f, 0f);
                 level.addFreshEntity(wither);
-                cow.moveTo(0.5, ground, 3.5, 0f, 0f);
+                cow.snapTo(0.5, ground, 3.5, 0f, 0f);
                 level.addFreshEntity(cow);
 
                 // Rime damage lands on a boss...
                 float health = wither.getHealth();
-                assertTrue(wither.hurt(RimeDamage.source(level, p, p), 5f), "Rime damage hurts a boss");
+                assertTrue(wither.hurtServer((net.minecraft.server.level.ServerLevel) wither.level(), RimeDamage.source(level, p, p), 5f), "Rime damage hurts a boss");
                 assertTrue(wither.getHealth() < health, "it lost health");
                 // ...but Freeze stacks never stick and it never freezes solid.
                 FreezeService.addStacks(wither, RimeConfig.FREEZE_MAX_STACKS.get(), p);
@@ -68,7 +68,7 @@ class RimeBossTest {
                 // Glacial Spire: the boss takes the damage, the cow on the same spike is launched, the boss is not.
                 GlacialSpireEntity spire = new GlacialSpireEntity(level, p, new Vec3(3.5, ground, 0.5), 1f);
                 level.addFreshEntity(spire);
-                cow.moveTo(3.8, ground, 0.5, 0f, 0f);
+                cow.snapTo(3.8, ground, 0.5, 0f, 0f);
                 wither.setDeltaMovement(Vec3.ZERO);
                 cow.setDeltaMovement(Vec3.ZERO);
                 wither.invulnerableTime = 0;
@@ -87,8 +87,8 @@ class RimeBossTest {
                 MaliceService.refill(p);
                 CastManager.handleIntent(p, CastIntent.CAST_PRESS);
                 assertTrue(Rime.RIME_SHELL.isActive(p), "setup: shell on");
-                wither.moveTo(2.5, ground, 0.5, 0f, 0f);
-                cow.moveTo(0.5, ground, 2.5, 0f, 0f);
+                wither.snapTo(2.5, ground, 0.5, 0f, 0f);
+                cow.snapTo(0.5, ground, 2.5, 0f, 0f);
                 wither.setDeltaMovement(Vec3.ZERO);
                 cow.setDeltaMovement(Vec3.ZERO);
                 CastManager.handleIntent(p, CastIntent.SPECIAL_PRESS);

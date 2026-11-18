@@ -19,8 +19,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.IronGolem;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import net.minecraft.world.entity.animal.golem.IronGolem;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -38,7 +38,7 @@ class FistsAdvancementsTest {
             com.cnethuka.kegare.innatetechnique.InnateTechniqueService.setInnateTechnique(p, com.cnethuka.kegare.innate_technique.rime.Rime.RIME.get());
             com.cnethuka.kegare.malice.MaliceService.refill(p);
         }
-        p.moveTo(2.5, 120, 8.5, -90f, 0f);
+        p.snapTo(2.5, 120, 8.5, -90f, 0f);
         p.setHealth(p.getMaxHealth());
         return p;
     }
@@ -87,12 +87,12 @@ class FistsAdvancementsTest {
         TestServer.onServerThread(server, () -> {
             TestServer.ensureOverworld(server);
             ServerLevel level = server.overworld();
-            server.setPvpAllowed(true);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
             IronGolem golem = BlackSparkTest.place(level, new IronGolem(EntityType.IRON_GOLEM, level), 4.5, 6.5);
             try {
                 ServerPlayer p = player(server, "locked_p", 1000);
                 ServerPlayer q = player(server, "locked_q", 1000);
-                q.moveTo(4.5, 120, 8.5, 90f, 0f);
+                q.snapTo(4.5, 120, 8.5, 90f, 0f);
 
                 for (int i = 0; i < 3; i++) strike(p, golem);
                 assertFalse(has(server, p, FistsAdvancements.LOCKED_IN), "mobs never count");
@@ -127,12 +127,12 @@ class FistsAdvancementsTest {
         TestServer.onServerThread(server, () -> {
             TestServer.ensureOverworld(server);
             ServerLevel level = server.overworld();
-            server.setPvpAllowed(true);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
             IronGolem golem = BlackSparkTest.place(level, new IronGolem(EntityType.IRON_GOLEM, level), 4.5, 6.5);
             try {
                 ServerPlayer p = player(server, "chain_p", 1000);
                 ServerPlayer q = player(server, "chain_q", 1000);
-                q.moveTo(4.5, 120, 8.5, 90f, 0f);
+                q.snapTo(4.5, 120, 8.5, 90f, 0f);
 
                 // Mobs never count, however long the chain.
                 ServerPlayer m = player(server, "chain_m", 1000);

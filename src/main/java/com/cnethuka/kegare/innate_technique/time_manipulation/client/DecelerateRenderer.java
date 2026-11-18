@@ -5,12 +5,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 
@@ -20,27 +21,46 @@ import org.joml.Matrix4f;
  * its balance point. Fully lit, so it reads by day and by night. It turns with its speed ({@link DecelerateEntity#spin}), so it crawls
  * through a Stasis Field and hangs in a Standstill.
  */
-public final class DecelerateRenderer extends EntityRenderer<DecelerateEntity> {
+public final class DecelerateRenderer extends EntityRenderer<DecelerateEntity, DecelerateRenderer.State> {
     /** Half the blade's thickness: two faces this far apart, so edge-on it's still a line. */
     private static final float THICK = 0.006f;
     private static final int RING = 16;
+
+    /** How the blade is turned this frame, read off the entity when its state is extracted. */
+    public static final class State extends EntityRenderState {
+        float yRot, xRot, spin;
+    }
 
     public DecelerateRenderer(EntityRendererProvider.Context context) {
         super(context);
     }
 
     @Override
-    public void render(DecelerateEntity entity, float yaw, float partialTick, PoseStack pose, MultiBufferSource buffers, int light) {
+    public State createRenderState() {
+        return new State();
+    }
+
+    @Override
+    public void extractRenderState(DecelerateEntity entity, State state, float partialTick) {
+        super.extractRenderState(entity, state, partialTick);
+        state.yRot = Mth.lerp(partialTick, entity.yRotO, entity.getYRot());
+        state.xRot = Mth.lerp(partialTick, entity.xRotO, entity.getXRot());
+        state.spin = Mth.lerp(partialTick, entity.spinO, entity.spin);
+    }
+
+    @Override
+    public void submit(State state, PoseStack pose, SubmitNodeCollector collector, CameraRenderState camera) {
         pose.pushPose();
-        pose.mulPose(Axis.YP.rotationDegrees(Mth.lerp(partialTick, entity.yRotO, entity.getYRot()) - 90f));
-        pose.mulPose(Axis.ZP.rotationDegrees(Mth.lerp(partialTick, entity.xRotO, entity.getXRot())));
+        pose.mulPose(Axis.YP.rotationDegrees(state.yRot - 90f));
+        pose.mulPose(Axis.ZP.rotationDegrees(state.xRot));
         // Local +X is now the way it flies; it turns about local Z, tip over forward.
-        pose.mulPose(Axis.ZP.rotationDegrees(-Mth.lerp(partialTick, entity.spinO, entity.spin)));
-        VertexConsumer out = buffers.getBuffer(RenderType.entityCutoutNoCull(TimeFx.WHITE));
-        Matrix4f m = pose.last().pose();
-        for (float z : new float[] {-THICK, THICK}) draw(out, m, z);
+        pose.mulPose(Axis.ZP.rotationDegrees(-state.spin));
+        collector.submitCustomGeometry(pose, RenderTypes.entityCutoutNoCull(TimeFx.WHITE), (p, out) -> {
+            Matrix4f m = p.pose();
+            for (float z : new float[] {-THICK, THICK}) draw(out, m, z);
+        });
         pose.popPose();
-        super.render(entity, yaw, partialTick, pose, buffers, light);
+        super.submit(state, pose, collector, camera);
     }
 
     private static void draw(VertexConsumer out, Matrix4f m, float z) {
@@ -72,10 +92,5 @@ public final class DecelerateRenderer extends EntityRenderer<DecelerateEntity> {
     private static void vertex(VertexConsumer out, Matrix4f m, float x, float y, float z, int rgb) {
         out.addVertex(m, x, y, z).setColor(rgb >> 16 & 0xFF, rgb >> 8 & 0xFF, rgb & 0xFF, 255).setUv(0.5f, 0.5f)
                 .setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(0f, 1f, 0f);
-    }
-
-    @Override
-    public Identifier getTextureLocation(DecelerateEntity entity) {
-        return TimeFx.WHITE;
     }
 }

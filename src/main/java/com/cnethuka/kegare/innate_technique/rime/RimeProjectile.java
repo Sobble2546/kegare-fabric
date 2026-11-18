@@ -6,7 +6,6 @@ import com.cnethuka.kegare.innatetechnique.visual.VisualHooks;
 import com.cnethuka.kegare.innatetechnique.visual.VisualPhase;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import javax.annotation.Nullable;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,8 +14,12 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -36,8 +39,9 @@ public abstract class RimeProjectile extends ThrowableItemProjectile {
         super(type, level);
     }
 
-    protected RimeProjectile(EntityType<? extends RimeProjectile> type, LivingEntity caster, Level level) {
-        super(type, caster, level);
+    /** {@code item} is what the projectile shows as (its {@code getDefaultItem()}, which 1.21.11 wants handed over up front). */
+    protected RimeProjectile(EntityType<? extends RimeProjectile> type, LivingEntity caster, Level level, Item item) {
+        super(type, caster, level, new ItemStack(item));
     }
 
     protected abstract Ability ability();
@@ -74,7 +78,7 @@ public abstract class RimeProjectile extends ThrowableItemProjectile {
         if (level().isClientSide() || !(hit.getEntity() instanceof LivingEntity target)) return;
         ServerPlayer caster = getOwner() instanceof ServerPlayer p ? p : null;
         beforeHurt(target, caster);
-        if (target.hurt(RimeDamage.source(level(), this, getOwner()), damage)) onLivingHit(target, caster);
+        if (target.hurtOrSimulate(RimeDamage.source(level(), this, getOwner()), damage)) onLivingHit(target, caster);
     }
 
     /** Just before the hit's damage (e.g. Splinter clearing a sibling shard's hurt cooldown). */
@@ -108,16 +112,16 @@ public abstract class RimeProjectile extends ThrowableItemProjectile {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("Lifetime", lifetime);
         tag.putFloat("Damage", damage);
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        lifetime = tag.getInt("Lifetime");
-        damage = tag.getFloat("Damage");
+        lifetime = tag.getIntOr("Lifetime", 0);
+        damage = tag.getFloatOr("Damage", 0f);
     }
 }

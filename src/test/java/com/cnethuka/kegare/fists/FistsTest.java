@@ -28,11 +28,11 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -48,7 +48,7 @@ class FistsTest {
         BirthService.rebirth(p, OptionalInt.of(1000));
         InnateTechniqueService.setInnateTechnique(p, Rime.RIME.get());
         MaliceService.refill(p);
-        p.moveTo(2.5, level.getHeight(Heightmap.Types.MOTION_BLOCKING, 8, 8), 8.5, -90f, 0f);
+        p.snapTo(2.5, level.getHeight(Heightmap.Types.MOTION_BLOCKING, 8, 8), 8.5, -90f, 0f);
         p.setHealth(p.getMaxHealth());
         return p;
     }
@@ -66,7 +66,7 @@ class FistsTest {
 
     static IronGolem golem(ServerLevel level, double x, double z) {
         IronGolem golem = new IronGolem(EntityType.IRON_GOLEM, level);
-        golem.moveTo(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING, 8, 8), z, 0f, 0f);
+        golem.snapTo(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING, 8, 8), z, 0f, 0f);
         golem.setNoGravity(true);
         golem.setNoAi(true);
         level.addFreshEntity(golem);

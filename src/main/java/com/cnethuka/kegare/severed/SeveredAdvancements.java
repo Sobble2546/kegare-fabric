@@ -78,7 +78,7 @@ public final class SeveredAdvancements {
         for (Fight fight : FightTracker.of(p)) {
             UUID opponent = fight.opponentOf(p.getUUID()).player;
             net.minecraft.world.entity.player.Player other = p.level().getPlayerByUUID(opponent);
-            if (other == null) other = Attribution.player(p.server, opponent);
+            if (other == null) other = Attribution.player(p.level().getServer(), opponent);
             if (other instanceof ServerPlayer o && maliceUser(o)) LOW.add(new FightKey(p.getUUID(), opponent, fight.startTick()));
         }
     }
@@ -92,7 +92,7 @@ public final class SeveredAdvancements {
     static void onDeath(LivingDeathEvent event) {
         if (event.isCanceled() || !maliceUser(event.getEntity())) return;
         ServerPlayer victim = (ServerPlayer) event.getEntity();
-        Attribution.Hit hit = Attribution.of(event.getSource(), victim.server);
+        Attribution.Hit hit = Attribution.of(event.getSource(), victim.level().getServer());
         ServerPlayer killer = hit != null ? hit.attacker() : event.getSource().getEntity() instanceof ServerPlayer p ? p : null;
         if (killer == null || killer == victim || !Severed.is(killer)) return;
         long now = killer.level().getGameTime();

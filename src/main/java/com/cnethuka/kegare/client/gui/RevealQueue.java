@@ -42,7 +42,7 @@ public final class RevealQueue {
             flushRequested = false;
             List<Toast> toasts = new ArrayList<>(HELD_TOASTS);
             HELD_TOASTS.clear();
-            toasts.forEach(mc.getToasts()::addToast);
+            toasts.forEach(mc.getToastManager()::addToast);
         }
     }
 

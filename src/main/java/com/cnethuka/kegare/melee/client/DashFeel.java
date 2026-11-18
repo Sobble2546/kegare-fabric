@@ -4,20 +4,18 @@ import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.config.KegareClientConfig;
 import com.cnethuka.kegare.config.KegareClientConfig.VfxQuality;
 import com.cnethuka.kegare.melee.MeleeDashPayload;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import com.cnethuka.kegare.platform.bus.IEventBus;
 import com.cnethuka.kegare.platform.client.event.RegisterGuiLayersEvent;
 import com.cnethuka.kegare.platform.client.event.ViewportEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import com.cnethuka.kegare.platform.client.gui.VanillaGuiLayers;
 import com.cnethuka.kegare.platform.NeoForge;
-import org.joml.Matrix4f;
+import com.cnethuka.kegare.platform.net.ClientNet;
 
 /**
  * A dash from inside it, where the trail everyone else sees can't be drawn: a brief kick of the field of view and streaks round the
@@ -80,7 +78,7 @@ public final class DashFeel {
 
     private static void render(GuiGraphics g, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
-        if (!showing(mc) || mc.options.hideGui) return;
+        if (!ClientNet.isActive() || !showing(mc) || mc.options.hideGui) return;
         float quality = qualityScale();
         if (quality <= 0f) return;
         float partial = delta.getGameTimeDeltaPartialTick(false);
@@ -98,8 +96,6 @@ public final class DashFeel {
         float flow = forward < -0.3f ? -1f : 1f; // backwards: it all rushes in towards the middle instead
         float travel = height * 0.16f * age / DashKick.DURATION;
 
-        Matrix4f pose = g.pose().last().pose();
-        VertexConsumer out = g.bufferSource().getBuffer(RenderType.gui());
         RandomSource random = RandomSource.create(seed);
         int streaks = quality >= 1f ? STREAKS_FULL : STREAKS_REDUCED;
         for (int i = 0; i < streaks; i++) {
@@ -117,25 +113,37 @@ public final class DashFeel {
             float shift = flow > 0f ? travel : height * 0.16f - travel;
             float x0 = x + dx * shift, y0 = y + dy * shift;
             float x1 = x0 + dx * length, y1 = y0 + dy * length;
-            float px = -dy * thick, py = dx * thick;
             int inner = alpha(strength * quality, x0, y0, cx, cy);
             int outer = alpha(strength * quality, x1, y1, cx, cy);
             if (inner == 0 && outer == 0) continue;
-            // A needle: nothing at the inner tip, its full width at the outer end.
-            vertex(out, pose, x0, y0, inner);
-            vertex(out, pose, x1 + px, y1 + py, outer);
-            vertex(out, pose, x1 - px, y1 - py, outer);
-            vertex(out, pose, x0, y0, inner);
+            needle(g, x0, y0, (float) Math.atan2(dy, dx), length, thick, inner, outer);
         }
-        g.flush();
+    }
+
+    /**
+     * A needle: nothing at the inner tip, its full width at the outer end, fading from {@code inner} to {@code outer} alpha along its length.
+     * The GUI has no free-form triangles, so it is a few rotated strips that widen (a staircase of fills in quarter pixels) with a gradient.
+     */
+    private static void needle(GuiGraphics g, float x0, float y0, float angle, float length, float halfWidth, int inner, int outer) {
+        final int segments = 5;
+        float unit = 0.25f; // local units are quarter GUI pixels, so a 0.5px-wide needle can still be drawn
+        int lengthU = Math.max(segments, Math.round(length / unit));
+        int widthU = Math.max(1, Math.round(halfWidth / unit));
+        g.pose().pushMatrix();
+        g.pose().translate(x0, y0);
+        g.pose().rotate(angle - Mth.HALF_PI); // local +y runs along the needle
+        g.pose().scale(unit, unit);
+        for (int k = 0; k < segments; k++) {
+            int top = lengthU * k / segments, bottom = lengthU * (k + 1) / segments;
+            int half = Math.max(1, Math.round(widthU * (k + 1f) / segments));
+            int from = Mth.lerpInt(k / (float) segments, inner, outer), to = Mth.lerpInt((k + 1f) / segments, inner, outer);
+            g.fillGradient(-half, top, half, bottom, from << 24 | COLOR, to << 24 | COLOR);
+        }
+        g.pose().popMatrix();
     }
 
     private static int alpha(float strength, float x, float y, float cx, float cy) {
         float ex = (x - cx) / cx, ey = (y - cy) / cy;
         return Mth.floor(255f * PEAK_ALPHA * strength * DashKick.edgeFade(Mth.sqrt(ex * ex + ey * ey)));
-    }
-
-    private static void vertex(VertexConsumer out, Matrix4f pose, float x, float y, int alpha) {
-        out.addVertex(pose, x, y, 0f).setColor(COLOR >> 16 & 0xFF, COLOR >> 8 & 0xFF, COLOR & 0xFF, alpha);
     }
 }

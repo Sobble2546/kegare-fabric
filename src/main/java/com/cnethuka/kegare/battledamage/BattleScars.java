@@ -1,18 +1,19 @@
 package com.cnethuka.kegare.battledamage;
 
+import com.cnethuka.kegare.platform.saved.SavedDataCompat;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
@@ -20,10 +21,13 @@ import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
+import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import com.cnethuka.kegare.platform.NeoForge;
@@ -42,7 +46,13 @@ public final class BattleScars extends SavedData {
     private static final String NAME = "kegare_battle_scars";
 
     /** One block to bring back: what it was, and its block entity's data (a container's contents) if it had one. */
-    public record Piece(BlockPos pos, BlockState state, @Nullable CompoundTag blockEntity) {}
+    public record Piece(BlockPos pos, BlockState state, @Nullable CompoundTag blockEntity) {
+        static final Codec<Piece> CODEC = RecordCodecBuilder.create(i -> i.group(
+                BlockPos.CODEC.fieldOf("pos").forGetter(Piece::pos),
+                BlockState.CODEC.fieldOf("state").forGetter(Piece::state),
+                CompoundTag.CODEC.optionalFieldOf("blockEntity").forGetter(p -> Optional.ofNullable(p.blockEntity())))
+                .apply(i, (pos, state, entity) -> new Piece(pos, state, entity.orElse(null))));
+    }
 
     static final class Scar {
         final Vec3 centre;
@@ -55,7 +65,26 @@ public final class BattleScars extends SavedData {
             this.pieces = pieces;
             this.quietSince = quietSince;
         }
+
+        /** The file layout is the one this saved before 1.21.11: x, y, z, quietSince and the pieces (pos as an int array, state as Name/Properties). */
+        static final Codec<Scar> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.DOUBLE.fieldOf("x").forGetter(s -> s.centre.x),
+                Codec.DOUBLE.fieldOf("y").forGetter(s -> s.centre.y),
+                Codec.DOUBLE.fieldOf("z").forGetter(s -> s.centre.z),
+                Codec.LONG.fieldOf("quietSince").forGetter(s -> s.quietSince),
+                Piece.CODEC.listOf().fieldOf("pieces").forGetter(s -> s.pieces))
+                .apply(i, (x, y, z, quietSince, pieces) -> new Scar(new Vec3(x, y, z), new ArrayList<>(pieces), quietSince)));
     }
+
+    private static final Codec<BattleScars> CODEC = RecordCodecBuilder.create(i -> i.group(
+            Scar.CODEC.listOf().optionalFieldOf("scars", List.of()).forGetter(d -> d.scars))
+            .apply(i, scars -> {
+                BattleScars data = new BattleScars();
+                for (Scar scar : scars) if (!scar.pieces.isEmpty()) data.scars.add(scar);
+                return data;
+            }));
+
+    private static final SavedDataType<BattleScars> TYPE = SavedDataCompat.type(NAME, BattleScars::new, CODEC);
 
     private final List<Scar> scars = new ArrayList<>();
 
@@ -66,7 +95,7 @@ public final class BattleScars extends SavedData {
     }
 
     public static BattleScars get(ServerLevel level) {
-        return level.getDataStorage().computeIfAbsent(new SavedData.Factory<>(BattleScars::new, BattleScars::load, null), NAME);
+        return level.getDataStorage().computeIfAbsent(TYPE);
     }
 
     /** How many blocks are still waiting to come back. */
@@ -159,7 +188,7 @@ public final class BattleScars extends SavedData {
         if (piece.blockEntity != null) {
             BlockEntity entity = level.getBlockEntity(piece.pos);
             if (entity != null) {
-                entity.loadWithComponents(piece.blockEntity, level.registryAccess());
+                entity.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), piece.blockEntity));
                 entity.setChanged();
                 level.sendBlockUpdated(piece.pos, piece.state, piece.state, Block.UPDATE_CLIENTS);
             }
@@ -170,54 +199,22 @@ public final class BattleScars extends SavedData {
 
     /** A container that can't come back drops what it held where it stood, so nothing is ever lost. */
     private static void dropContents(ServerLevel level, Piece piece) {
-        if (piece.blockEntity == null || !piece.blockEntity.contains("Items", Tag.TAG_LIST)) return;
+        if (piece.blockEntity == null || !piece.blockEntity.contains("Items")) return;
         NonNullList<ItemStack> items = NonNullList.withSize(256, ItemStack.EMPTY);
-        ContainerHelper.loadAllItems(piece.blockEntity, items, level.registryAccess());
+        ContainerHelper.loadAllItems(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), piece.blockEntity), items);
         Containers.dropContents(level, piece.pos, items);
     }
 
-    // ---------------------------------------------------------------- saving
+    // ---------------------------------------------------------------- the file's tag (the codec's view, for a restart round trip)
 
-    @Override
-    public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
-        ListTag list = new ListTag();
-        for (Scar s : scars) {
-            CompoundTag st = new CompoundTag();
-            st.putDouble("x", s.centre.x);
-            st.putDouble("y", s.centre.y);
-            st.putDouble("z", s.centre.z);
-            st.putLong("quietSince", s.quietSince);
-            ListTag pieces = new ListTag();
-            for (Piece p : s.pieces) {
-                CompoundTag pt = new CompoundTag();
-                pt.put("pos", NbtUtils.writeBlockPos(p.pos));
-                pt.put("state", NbtUtils.writeBlockState(p.state));
-                if (p.blockEntity != null) pt.put("blockEntity", p.blockEntity);
-                pieces.add(pt);
-            }
-            st.put("pieces", pieces);
-            list.add(st);
-        }
-        tag.put("scars", list);
+    /** What the world file holds, as a tag: {@code scars} is a list of {x, y, z, quietSince, pieces}. */
+    CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
+        Tag written = CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), this).getOrThrow();
+        tag.merge((CompoundTag) written);
         return tag;
     }
 
     static BattleScars load(CompoundTag tag, HolderLookup.Provider registries) {
-        BattleScars data = new BattleScars();
-        HolderGetter<Block> blocks = registries.lookupOrThrow(Registries.BLOCK);
-        for (Tag t : tag.getList("scars", Tag.TAG_COMPOUND)) {
-            CompoundTag st = (CompoundTag) t;
-            List<Piece> pieces = new ArrayList<>();
-            for (Tag p : st.getList("pieces", Tag.TAG_COMPOUND)) {
-                CompoundTag pt = (CompoundTag) p;
-                BlockPos pos = NbtUtils.readBlockPos(pt, "pos").orElse(null);
-                if (pos == null) continue;
-                pieces.add(new Piece(pos, NbtUtils.readBlockState(blocks, pt.getCompound("state")),
-                        pt.contains("blockEntity", Tag.TAG_COMPOUND) ? pt.getCompound("blockEntity") : null));
-            }
-            Scar scar = new Scar(new Vec3(st.getDouble("x"), st.getDouble("y"), st.getDouble("z")), pieces, st.getLong("quietSince"));
-            if (!pieces.isEmpty()) data.scars.add(scar);
-        }
-        return data;
+        return CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag).getOrThrow();
     }
 }

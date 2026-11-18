@@ -18,7 +18,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
@@ -28,7 +29,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -53,7 +54,10 @@ import org.joml.Vector3f;
  */
 public final class BattleDamageClient {
     private static final Identifier CRACK = Kegare.id("battle_crack");
-    private static final RenderType TYPE = RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS);
+    private static RenderType type() {
+        return RenderTypes.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS);
+    }
+
     /** Ticks cracks wait, so the broken blocks are gone from this client first. */
     private static final int CRACK_DELAY = 3;
     private static final int MAX_CHUNKS = 400;
@@ -201,10 +205,10 @@ public final class BattleDamageClient {
         if (level == null) return;
         float partial = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         Camera camera = event.getCamera();
-        Vec3 cam = camera.getPosition();
+        Vec3 cam = camera.position();
         boolean firstPerson = !camera.isDetached();
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
-        VertexConsumer out = buffers.getBuffer(TYPE);
+        VertexConsumer out = buffers.getBuffer(type());
         PoseStack pose = event.getPoseStack();
         for (Chunk c : CHUNKS) {
             Vec3 at = c.prev.lerp(c.pos, partial);
@@ -220,7 +224,7 @@ public final class BattleDamageClient {
             cube(out, pose.last(), c, light);
             pose.popPose();
         }
-        buffers.endBatch(TYPE);
+        buffers.endBatch(type());
     }
 
     /** A unit cube centred on the origin, every face the same piece of texture. */
@@ -263,7 +267,7 @@ public final class BattleDamageClient {
         List<Face> faces = new ArrayList<>();
         Vec3 c = hit.contact();
         for (Direction d : Direction.values()) {
-            Vec3 to = c.add(Vec3.atLowerCornerOf(d.getNormal()).scale(reachRadius));
+            Vec3 to = c.add(Vec3.atLowerCornerOf(d.getUnitVec3i()).scale(reachRadius));
             BlockHitResult r = level.clip(new ClipContext(c, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, CollisionContext.empty()));
             if (r.getType() != HitResult.Type.BLOCK) continue;
             Face f = face(level, hit, r.getBlockPos(), r.getLocation(), r.getDirection(), reachRadius);
@@ -279,7 +283,7 @@ public final class BattleDamageClient {
                     BlockState state = level.getBlockState(wall);
                     if (state.getCollisionShape(level, wall).isEmpty()) continue;
                     Direction facing = d.getOpposite();
-                    Vec3 at = Vec3.atCenterOf(wall).add(Vec3.atLowerCornerOf(facing.getNormal()).scale(0.5));
+                    Vec3 at = Vec3.atCenterOf(wall).add(Vec3.atLowerCornerOf(facing.getUnitVec3i()).scale(0.5));
                     Face f = face(level, hit, wall, at, facing, reachRadius);
                     if (f != null) rim.add(new Face(f.at, f.face, f.distance, Math.min(f.reach, 0.6f)));
                 }

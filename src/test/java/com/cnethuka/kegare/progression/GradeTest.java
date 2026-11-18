@@ -11,8 +11,8 @@ import java.util.OptionalInt;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.Pig;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import net.minecraft.world.entity.animal.pig.Pig;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,7 +40,7 @@ class GradeTest {
 
     private static void hit(ServerPlayer attacker, ServerPlayer victim, float amount) {
         victim.invulnerableTime = 0;
-        assertTrue(victim.hurt(attacker.damageSources().playerAttack(attacker), amount), "setup: the hit lands");
+        assertTrue(victim.hurtServer((net.minecraft.server.level.ServerLevel) victim.level(), attacker.damageSources().playerAttack(attacker), amount), "setup: the hit lands");
     }
 
     @Test
@@ -99,9 +99,9 @@ class GradeTest {
         TestServer.onServerThread(server, () -> {
             TestServer.ensureOverworld(server);
             ServerPlayer p = born(server, "mob_xp");
-            Pig pig = EntityType.PIG.create(server.overworld());
+            Pig pig = EntityType.PIG.create(server.overworld(), net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             server.overworld().addFreshEntity(pig);
-            assertTrue(pig.hurt(p.damageSources().playerAttack(p), 5f), "setup");
+            assertTrue(pig.hurtServer((net.minecraft.server.level.ServerLevel) pig.level(), p.damageSources().playerAttack(p), 5f), "setup");
             assertEquals(5 * 0.1, GradeService.get(p).xp(), EPS, "a small amount per damage");
             for (int i = 0; i < 1000; i++) GradeService.onMobDamage(p, 10);
             assertEquals(40.0, GradeService.get(p).xp(), EPS, "capped per hour, so a farm can't replace fighting");

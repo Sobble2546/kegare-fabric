@@ -1,16 +1,18 @@
 package com.cnethuka.kegare.innate_technique.swap;
 
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -31,7 +33,7 @@ public class AnchorEntity extends ThrowableItemProjectile {
     }
 
     public AnchorEntity(LivingEntity caster, Level level, int lifetime) {
-        super(SwapRegistry.ANCHOR.get(), caster, level);
+        super(SwapRegistry.ANCHOR.get(), caster, level, new ItemStack(SwapRegistry.ANCHOR_ITEM.get()));
         this.lifetime = lifetime;
     }
 
@@ -73,7 +75,7 @@ public class AnchorEntity extends ThrowableItemProjectile {
     protected void onHit(HitResult result) {
         if (level().isClientSide() || isStuck() || !(result instanceof BlockHitResult block)) return;
         face = block.getDirection();
-        Vec3 at = block.getLocation().add(Vec3.atLowerCornerOf(face.getNormal()).scale(0.08));
+        Vec3 at = block.getLocation().add(Vec3.atLowerCornerOf(face.getUnitVec3i()).scale(0.08));
         setPos(at.x, at.y, at.z);
         setDeltaMovement(Vec3.ZERO);
         setNoGravity(true);
@@ -96,14 +98,14 @@ public class AnchorEntity extends ThrowableItemProjectile {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("Lifetime", lifetime);
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        lifetime = tag.getInt("Lifetime");
+        lifetime = tag.getIntOr("Lifetime", 0);
     }
 }

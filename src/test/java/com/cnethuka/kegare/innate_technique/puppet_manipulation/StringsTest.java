@@ -22,13 +22,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.Cow;
+import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import com.cnethuka.kegare.platform.NeoForge;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -67,7 +67,7 @@ class StringsTest {
             assertFreeFizzle(caster, CastIntent.CAST_PRESS);
             far.discard();
             ArmorStand stand = new ArmorStand(EntityType.ARMOR_STAND, level);
-            stand.moveTo(6.5, Y, 0.5, 0f, 0f);
+            stand.snapTo(6.5, Y, 0.5, 0f, 0f);
             level.addFreshEntity(stand);
             PossessionTest.aimAt(caster, stand);
             assertFreeFizzle(caster, CastIntent.CAST_PRESS);
@@ -103,7 +103,7 @@ class StringsTest {
 
             // Aiming at the attached target is Reel In too.
             InnateTechniqueService.clearCooldowns(caster);
-            cow.moveTo(10.5, Y, 0.5, 0f, 0f);
+            cow.snapTo(10.5, Y, 0.5, 0f, 0f);
             press(caster, cow, CastIntent.CAST_PRESS);
             InnateTechniqueService.clearCooldowns(caster);
             press(caster, cow, CastIntent.CAST_PRESS);
@@ -152,14 +152,14 @@ class StringsTest {
 
             // One is carried off: the tether drags them back within 3 blocks of each other, both ways.
             Vec3 before = b.position();
-            a.moveTo(a.getX() + 9, Y, a.getZ(), 0f, 0f);
+            a.snapTo(a.getX() + 9, Y, a.getZ(), 0f, 0f);
             assertTrue(a.distanceTo(b) > 8);
             run(server, 12, a, b);
             assertTrue(b.position().distanceTo(before) > 0.5, "the other is dragged too");
             assertTrue(a.distanceTo(b) <= PuppetConfig.STRINGS_TETHER_DISTANCE.get() + 0.5, "back within the tether: " + a.distanceTo(b));
 
             // The caster walking away doesn't matter (the string runs between the two); 4 seconds end it.
-            caster.moveTo(0.5, Y + 50, 0.5, 0f, 0f);
+            caster.snapTo(0.5, Y + 50, 0.5, 0f, 0f);
             run(server, PuppetConfig.ticks(PuppetConfig.STRINGS_TETHER_DURATION) - 14, a, b); // 12 of its ticks have gone
             assertEquals(Strings.Phase.TETHER, Strings.phase(caster), "not snapped by the caster's distance");
             run(server, 3, a, b);
@@ -189,7 +189,7 @@ class StringsTest {
             assertNull(Strings.phase(caster));
             assertTrue(caster.distanceTo(cow) <= PuppetConfig.STRINGS_ARRIVE.get() + PuppetConfig.STRINGS_PULL_SPEED.get(), "zipped: " + caster.distanceTo(cow));
             assertEquals(0.0, cow.position().distanceTo(at), EPS, "the target stays put");
-            caster.moveTo(0.5, Y, 0.5, 0f, 0f);
+            caster.snapTo(0.5, Y, 0.5, 0f, 0f);
 
             // Zip to your own puppet.
             PuppetEntity puppet = puppet(server, caster, 10.5, 6.5);
@@ -198,13 +198,13 @@ class StringsTest {
             press(caster, puppet, CastIntent.SPECIAL_PRESS);
             run(server, 20);
             assertTrue(caster.distanceTo(puppet) <= PuppetConfig.STRINGS_ARRIVE.get() + PuppetConfig.STRINGS_PULL_SPEED.get(), "zipped to the puppet");
-            caster.moveTo(0.5, Y, 0.5, 0f, 0f);
+            caster.snapTo(0.5, Y, 0.5, 0f, 0f);
 
             // Leash: a mob and a puppet. Both held within 6 blocks; the caster slowed, until it ends.
             InnateTechniqueService.clearCooldowns(caster);
             double speed = caster.getAttributeValue(Attributes.MOVEMENT_SPEED);
-            puppet.moveTo(12.5, Y, 0.5, 0f, 0f);
-            cow.moveTo(0.5, Y, 13.5, 0f, 0f);
+            puppet.snapTo(12.5, Y, 0.5, 0f, 0f);
+            cow.snapTo(0.5, Y, 13.5, 0f, 0f);
             press(caster, puppet, CastIntent.CAST_PRESS);
             InnateTechniqueService.clearCooldowns(caster);
             PossessionTest.aimAt(caster, cow);
@@ -229,7 +229,7 @@ class StringsTest {
     @Test
     void worksOnPlayers(MinecraftServer server) throws Exception {
         arena(server, "strings_players", (level, caster) -> {
-            server.setPvpAllowed(true);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
             ServerPlayer a = player(server, level, "strings_player_a", 12.5, Y, 0.5);
             ServerPlayer b = player(server, level, "strings_player_b", 0.5, Y, 12.5);
             try {
@@ -244,7 +244,7 @@ class StringsTest {
 
                 // Tie: collision damage to both, and the tether.
                 InnateTechniqueService.clearCooldowns(caster);
-                a.moveTo(12.5, Y, 0.5, 0f, 0f);
+                a.snapTo(12.5, Y, 0.5, 0f, 0f);
                 float health = a.getHealth();
                 press(caster, a, CastIntent.CAST_PRESS);
                 InnateTechniqueService.clearCooldowns(caster);
@@ -253,15 +253,15 @@ class StringsTest {
                 assertEquals(Strings.Phase.TETHER, Strings.phase(caster), "two players met");
                 assertEquals(health - PuppetConfig.STRINGS_TIE_DAMAGE.get(), a.getHealth(), 0.5, "collision damage");
                 assertEquals(health - PuppetConfig.STRINGS_TIE_DAMAGE.get(), b.getHealth(), 0.5, "to both");
-                b.moveTo(b.getX() + 8, Y, b.getZ(), 0f, 0f);
+                b.snapTo(b.getX() + 8, Y, b.getZ(), 0f, 0f);
                 run(server, 12);
                 assertTrue(a.distanceTo(b) <= PuppetConfig.STRINGS_TETHER_DISTANCE.get() + 0.5, "tethered: " + a.distanceTo(b));
                 Strings.cut(caster);
 
                 // Leash: both held; a leashed player can still cast.
                 InnateTechniqueService.clearCooldowns(caster);
-                a.moveTo(12.5, Y, 0.5, 0f, 0f);
-                b.moveTo(0.5, Y, 13.5, 0f, 0f);
+                a.snapTo(12.5, Y, 0.5, 0f, 0f);
+                b.snapTo(0.5, Y, 13.5, 0f, 0f);
                 press(caster, a, CastIntent.CAST_PRESS);
                 InnateTechniqueService.clearCooldowns(caster);
                 press(caster, b, CastIntent.SPECIAL_PRESS);
@@ -270,7 +270,7 @@ class StringsTest {
                 double limit = PuppetConfig.STRINGS_LEASH_DISTANCE.get() + 0.5;
                 assertTrue(a.distanceTo(caster) <= limit && b.distanceTo(caster) <= limit, "both held: " + a.distanceTo(caster) + ", " + b.distanceTo(caster));
                 PossessionTest.prepare(a);
-                a.moveTo(4.5, Y, 0.5, 0f, 0f);
+                a.snapTo(4.5, Y, 0.5, 0f, 0f);
                 InnateTechniqueService.select(a, 1); // Directive
                 CastManager.handleIntent(a, CastIntent.CAST_PRESS);
                 assertTrue(InnateTechniqueService.cooldownRemaining(a, PuppetManipulation.DIRECTIVE) > 0, "a leashed target can still cast");
@@ -279,7 +279,7 @@ class StringsTest {
 
                 // Zip to a player.
                 InnateTechniqueService.clearCooldowns(caster);
-                a.moveTo(12.5, Y, 0.5, 0f, 0f);
+                a.snapTo(12.5, Y, 0.5, 0f, 0f);
                 press(caster, a, CastIntent.CAST_PRESS);
                 InnateTechniqueService.clearCooldowns(caster);
                 press(caster, a, CastIntent.SPECIAL_PRESS);
@@ -311,10 +311,10 @@ class StringsTest {
             InnateTechniqueService.clearCooldowns(caster);
             press(caster, cow, CastIntent.CAST_PRESS);
             InnateTechniqueService.clearCooldowns(caster);
-            cow.moveTo(0.5, Y + PuppetConfig.STRINGS_SNAP_RANGE.get() - 1, 0.5, 0f, 0f);
+            cow.snapTo(0.5, Y + PuppetConfig.STRINGS_SNAP_RANGE.get() - 1, 0.5, 0f, 0f);
             run(server, 1);
             assertTrue(Strings.isAttached(caster), "31 blocks: holds (further than it could be fired)");
-            cow.moveTo(0.5, Y + PuppetConfig.STRINGS_SNAP_RANGE.get() + 1, 0.5, 0f, 0f);
+            cow.snapTo(0.5, Y + PuppetConfig.STRINGS_SNAP_RANGE.get() + 1, 0.5, 0f, 0f);
             run(server, 1);
             assertFalse(Strings.isAttached(caster), "33 blocks: snapped");
             assertEquals(PuppetConfig.ticks(PuppetConfig.STRINGS_COOLDOWN), InnateTechniqueService.cooldownRemaining(caster, PuppetManipulation.STRINGS), "the cooldown started");
@@ -327,7 +327,7 @@ class StringsTest {
         arena(server, "strings_boss", (level, caster) -> {
             WitherBoss boss = new WitherBoss(EntityType.WITHER, level);
             boss.setNoAi(true);
-            boss.moveTo(12.5, Y, 0.5, 0f, 0f);
+            boss.snapTo(12.5, Y, 0.5, 0f, 0f);
             level.addFreshEntity(boss);
             Vec3 at = boss.position();
             press(caster, boss, CastIntent.CAST_PRESS);
@@ -351,7 +351,7 @@ class StringsTest {
             assertTrue(caster.distanceTo(boss) <= PuppetConfig.STRINGS_ARRIVE.get() + PuppetConfig.STRINGS_PULL_SPEED.get(), "zipped to the boss");
             assertUnmoved(boss, at);
             assertNotPulled(boss);
-            caster.moveTo(0.5, Y, 0.5, 0f, 0f);
+            caster.snapTo(0.5, Y, 0.5, 0f, 0f);
 
             // Tie a mob to it: the mob goes to the boss. Both take the collision.
             InnateTechniqueService.clearCooldowns(caster);
@@ -373,7 +373,7 @@ class StringsTest {
 
             // Leash a boss and a mob: only the mob is held.
             InnateTechniqueService.clearCooldowns(caster);
-            cow.moveTo(0.5, Y, 13.5, 0f, 0f);
+            cow.snapTo(0.5, Y, 13.5, 0f, 0f);
             boss.setDeltaMovement(Vec3.ZERO);
             press(caster, boss, CastIntent.CAST_PRESS);
             InnateTechniqueService.clearCooldowns(caster);
@@ -390,7 +390,7 @@ class StringsTest {
             cow.discard();
             WitherBoss other = new WitherBoss(EntityType.WITHER, level);
             other.setNoAi(true);
-            other.moveTo(0.5, Y, 12.5, 0f, 0f);
+            other.snapTo(0.5, Y, 12.5, 0f, 0f);
             level.addFreshEntity(other);
             press(caster, boss, CastIntent.CAST_PRESS);
             InnateTechniqueService.clearCooldowns(caster);
@@ -461,8 +461,8 @@ class StringsTest {
                 // Leash, one refused: only the other is held.
                 SEEN.clear();
                 InnateTechniqueService.clearCooldowns(caster);
-                free.moveTo(0.5, Y, 13.5, 0f, 0f);
-                cow.moveTo(12.5, Y, 0.5, 0f, 0f);
+                free.snapTo(0.5, Y, 13.5, 0f, 0f);
+                cow.snapTo(12.5, Y, 0.5, 0f, 0f);
                 at = cow.position();
                 press(caster, cow, CastIntent.CAST_PRESS);
                 InnateTechniqueService.clearCooldowns(caster);
@@ -487,7 +487,7 @@ class StringsTest {
             // The target dies.
             Cow cow = cow(level, 8.5, Y, 0.5);
             press(caster, cow, CastIntent.CAST_PRESS);
-            cow.kill();
+            cow.kill((net.minecraft.server.level.ServerLevel) cow.level());
             run(server, 1);
             assertNull(Strings.phase(caster), "target died");
             assertTrue(InnateTechniqueService.cooldownRemaining(caster, PuppetManipulation.STRINGS) > 0, "the cooldown starts");
@@ -572,7 +572,7 @@ class StringsTest {
     @Test
     void advancements(MinecraftServer server) throws Exception {
         arena(server, "strings_advancements", (level, caster) -> {
-            server.setPvpAllowed(true);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
             ServerPlayer a = player(server, level, "strings_adv_a", 12.5, Y, 0.5);
             ServerPlayer b = player(server, level, "strings_adv_b", 0.5, Y, 12.5);
             Cow cow = cow(level, 12.5, Y, 8.5);
@@ -588,44 +588,44 @@ class StringsTest {
                 CastManager.handleIntent(caster, CastIntent.CAST_PRESS);
                 run(server, 20, cow);
                 assertTrue(has(server, caster, PuppetAdvancements.GET_OVER_HERE), "Get Over Here");
-                cow.moveTo(12.5, Y, 8.5, 0f, 0f);
+                cow.snapTo(12.5, Y, 8.5, 0f, 0f);
 
                 // Tied Up: two players. Two mobs, or a player and a mob, don't count.
                 tie(server, caster, cow, other, CastIntent.CAST_PRESS);
                 assertFalse(has(server, caster, PuppetAdvancements.TIED_UP), "two mobs don't count");
                 Strings.cut(caster);
-                other.moveTo(8.5, Y, 12.5, 0f, 0f);
-                cow.moveTo(12.5, Y, 8.5, 0f, 0f);
+                other.snapTo(8.5, Y, 12.5, 0f, 0f);
+                cow.snapTo(12.5, Y, 8.5, 0f, 0f);
                 tie(server, caster, a, cow, CastIntent.CAST_PRESS);
                 assertFalse(has(server, caster, PuppetAdvancements.TIED_UP), "a player and a mob don't count");
                 Strings.cut(caster);
-                a.moveTo(12.5, Y, 0.5, 0f, 0f);
-                cow.moveTo(12.5, Y, 8.5, 0f, 0f);
+                a.snapTo(12.5, Y, 0.5, 0f, 0f);
+                cow.snapTo(12.5, Y, 8.5, 0f, 0f);
                 tie(server, caster, a, b, CastIntent.CAST_PRESS);
                 assertTrue(has(server, caster, PuppetAdvancements.TIED_UP), "Tied Up");
                 Strings.cut(caster);
 
                 // Walkies: two players, leashed at once.
-                a.moveTo(12.5, Y, 0.5, 0f, 0f);
-                b.moveTo(0.5, Y, 12.5, 0f, 0f);
+                a.snapTo(12.5, Y, 0.5, 0f, 0f);
+                b.snapTo(0.5, Y, 12.5, 0f, 0f);
                 tie(server, caster, cow, other, CastIntent.SPECIAL_PRESS);
                 assertFalse(has(server, caster, PuppetAdvancements.WALKIES), "two mobs don't count");
                 Strings.cut(caster);
-                other.moveTo(8.5, Y, 12.5, 0f, 0f);
-                cow.moveTo(12.5, Y, 8.5, 0f, 0f);
+                other.snapTo(8.5, Y, 12.5, 0f, 0f);
+                cow.snapTo(12.5, Y, 8.5, 0f, 0f);
                 tie(server, caster, a, cow, CastIntent.SPECIAL_PRESS);
                 assertFalse(has(server, caster, PuppetAdvancements.WALKIES), "a player and a mob don't count");
                 Strings.cut(caster);
-                a.moveTo(12.5, Y, 0.5, 0f, 0f);
-                cow.moveTo(12.5, Y, 8.5, 0f, 0f);
+                a.snapTo(12.5, Y, 0.5, 0f, 0f);
+                cow.snapTo(12.5, Y, 8.5, 0f, 0f);
                 tie(server, caster, a, b, CastIntent.SPECIAL_PRESS);
                 assertTrue(has(server, caster, PuppetAdvancements.WALKIES), "Walkies");
                 Strings.cut(caster);
 
                 // Strings Attached: your puppet tied to a player, then Curio Burst on it. A mob on the other end doesn't count, and neither does
                 // a puppet that isn't tied.
-                a.moveTo(12.5, Y, 0.5, 0f, 0f);
-                b.moveTo(0.5, Y, 12.5, 0f, 0f);
+                a.snapTo(12.5, Y, 0.5, 0f, 0f);
+                b.snapTo(0.5, Y, 12.5, 0f, 0f);
                 detonate(caster, puppet);
                 assertFalse(has(server, caster, PuppetAdvancements.STRINGS_ATTACHED), "not tied to anything");
 
@@ -655,7 +655,7 @@ class StringsTest {
     @Test
     void chainBurstEarnsStringsAttachedToo(MinecraftServer server) throws Exception {
         arena(server, "strings_chain", (level, caster) -> {
-            server.setPvpAllowed(true);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
             ServerPlayer a = player(server, level, "strings_chain_a", 12.5, Y, 0.5);
             try {
                 PuppetEntity tied = puppet(server, caster, 9.5, 2.5);
@@ -808,14 +808,14 @@ class StringsTest {
         InnateTechniqueService.clearCooldowns(caster);
         InnateTechniqueService.select(caster, 4);
         puppet.setNoGravity(true);
-        puppet.moveTo(x, Y, z, 0f, 0f);
+        puppet.snapTo(x, Y, z, 0f, 0f);
         return puppet;
     }
 
     private static Cow cow(ServerLevel level, double x, double y, double z) {
         Cow cow = new Cow(EntityType.COW, level);
         cow.setNoGravity(true);
-        cow.moveTo(x, y, z, 0f, 0f);
+        cow.snapTo(x, y, z, 0f, 0f);
         level.addFreshEntity(cow);
         return cow;
     }
@@ -823,7 +823,7 @@ class StringsTest {
     private static ServerPlayer player(MinecraftServer server, ServerLevel level, String name, double x, double y, double z) {
         ServerPlayer p = PossessionTest.damageable(server, name);
         level.addNewPlayer(p);
-        p.moveTo(x, y, z, 0f, 0f);
+        p.snapTo(x, y, z, 0f, 0f);
         return p;
     }
 

@@ -6,6 +6,7 @@ import com.cnethuka.kegare.network.TalismanPromptPayload;
 import com.cnethuka.kegare.registry.KegareRegistries;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 import com.cnethuka.kegare.platform.net.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
@@ -75,12 +76,12 @@ public final class TalismanConfirmScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+    public boolean keyPressed(KeyEvent event) {
+        if (event.key() == GLFW.GLFW_KEY_ENTER || event.key() == GLFW.GLFW_KEY_KP_ENTER) {
             confirm();
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers); // Esc = cancel
+        return super.keyPressed(event); // Esc = cancel
     }
 
     @Override

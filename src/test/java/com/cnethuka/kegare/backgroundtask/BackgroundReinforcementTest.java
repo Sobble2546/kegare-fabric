@@ -28,7 +28,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -43,7 +43,7 @@ class BackgroundReinforcementTest {
         BirthService.rebirth(p, OptionalInt.of(1000));
         InnateTechniqueService.setInnateTechnique(p, Rime.RIME.get());
         MaliceService.refill(p);
-        p.moveTo(0.5, 120, 0.5, -90f, 0f);
+        p.snapTo(0.5, 120, 0.5, -90f, 0f);
         p.setHealth(p.getMaxHealth());
         return p;
     }

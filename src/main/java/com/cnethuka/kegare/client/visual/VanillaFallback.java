@@ -25,7 +25,7 @@ public final class VanillaFallback {
         /** The same in a color: dust is the one vanilla particle that takes any. {@code argb} 0 leaves it alone. */
         Spec tinted(int argb) {
             if (argb == 0) return this;
-            return new Spec(new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f((argb >> 16 & 0xFF) / 255f, (argb >> 8 & 0xFF) / 255f, (argb & 0xFF) / 255f), 1f),
+            return new Spec(new net.minecraft.core.particles.DustParticleOptions(argb & 0xFFFFFF, 1f),
                     perTick, burst, spread, speed, directional);
         }
 

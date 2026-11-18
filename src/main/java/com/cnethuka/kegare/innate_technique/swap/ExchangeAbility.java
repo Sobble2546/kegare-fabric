@@ -60,12 +60,12 @@ public final class ExchangeAbility extends SwapAbility {
         give.ifPresent(effect -> {
             caster.removeEffect(effect.getEffect());
             target.addEffect(new MobEffectInstance(effect), caster);
-            SwapLink.travel(caster.serverLevel(), SwapIds.FX_EXCHANGE_TRANSFER, Swapper.bodyPos(caster), Swapper.bodyPos(target), TRAVEL_TICKS);
+            SwapLink.travel(caster.level(), SwapIds.FX_EXCHANGE_TRANSFER, Swapper.bodyPos(caster), Swapper.bodyPos(target), TRAVEL_TICKS);
         });
         take.ifPresent(effect -> {
             target.removeEffect(effect.getEffect());
             caster.addEffect(new MobEffectInstance(effect), caster);
-            SwapLink.travel(caster.serverLevel(), SwapIds.FX_EXCHANGE_TRANSFER, Swapper.bodyPos(target), Swapper.bodyPos(caster), TRAVEL_TICKS);
+            SwapLink.travel(caster.level(), SwapIds.FX_EXCHANGE_TRANSFER, Swapper.bodyPos(target), Swapper.bodyPos(caster), TRAVEL_TICKS);
         });
         SwapSounds.EXCHANGE.at(caster);
         SwapSounds.EXCHANGE.at(target);

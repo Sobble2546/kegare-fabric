@@ -20,12 +20,12 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.Pig;
+import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -43,7 +43,7 @@ class ClosingLineTest {
         Vec3 d = target.position().add(0, target.getBbHeight() * 0.6, 0).subtract(p.getEyePosition());
         float yaw = (float) Math.toDegrees(Math.atan2(-d.x, d.z));
         float pitch = (float) -Math.toDegrees(Math.atan2(d.y, Math.sqrt(d.x * d.x + d.z * d.z)));
-        p.moveTo(p.getX(), p.getY(), p.getZ(), yaw, pitch);
+        p.snapTo(p.getX(), p.getY(), p.getZ(), yaw, pitch);
         p.setYHeadRot(yaw);
     }
 
@@ -73,7 +73,7 @@ class ClosingLineTest {
 
     private static ServerPlayer blurring(MinecraftServer server, ServerLevel level, String name) {
         ServerPlayer s = SeveredBodyTest.severed(server, level, name);
-        s.moveTo(0.5, Y, 0.5, -90f, 0f);
+        s.snapTo(0.5, Y, 0.5, -90f, 0f);
         Severed.toggleBlur(s);
         Blur.tick(s, Severed.state(s)); // where they are
         TestServer.advanceGameTime(server, 1);
@@ -89,7 +89,7 @@ class ClosingLineTest {
             try {
                 ServerPlayer s = blurring(server, level, "cl_rush");
                 ServerPlayer target = SeveredBodyTest.maliceUser(server, level, "cl_rush_target");
-                target.moveTo(12.5, Y, 0.5);
+                target.snapTo(12.5, Y, 0.5);
                 face(s, target);
                 CastManager.handleIntent(s, CastIntent.SPECIAL_PRESS); // R, while Blurring
                 SeveredState state = Severed.state(s);
@@ -151,8 +151,8 @@ class ClosingLineTest {
                 Severed.toggleBlur(s);
                 TestServer.advanceGameTime(server, SeveredConfig.ticks(SeveredConfig.CLOSING_COOLDOWN.get()) + 2);
                 state.recoveryUntil = 0;
-                s.moveTo(0.5, Y, 0.5);
-                target.moveTo(12.5, Y, 0.5);
+                s.snapTo(0.5, Y, 0.5);
+                target.snapTo(12.5, Y, 0.5);
                 face(s, target);
                 Blur.tick(s, state);
                 TestServer.advanceGameTime(server, 1);
@@ -173,11 +173,11 @@ class ClosingLineTest {
             TestServer.ensureOverworld(server);
             ServerLevel level = server.overworld();
             level.getHeight(Heightmap.Types.MOTION_BLOCKING, 0, 0);
-            Pig pig = EntityType.PIG.create(level);
+            Pig pig = EntityType.PIG.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             BlockPos wall = new BlockPos(7, 120, 0);
             try {
                 ServerPlayer target = SeveredBodyTest.maliceUser(server, level, "cl_wall_target");
-                target.moveTo(13.5, Y + 4, 0.5); // seen over the wall, and the line rises toward them
+                target.snapTo(13.5, Y + 4, 0.5); // seen over the wall, and the line rises toward them
                 ServerPlayer s = blurring(server, level, "cl_wall");
                 face(s, target);
                 for (int i = 0; i < 3; i++) level.setBlock(wall.above(i), Blocks.STONE.defaultBlockState(), 3);
@@ -199,15 +199,15 @@ class ClosingLineTest {
                 assertTrue(s.getHealth() < s.getMaxHealth(), "and hurt");
                 assertFalse(ClosingLine.momentumReady(s), "no momentum hit");
                 for (int i = 0; i < 3; i++) level.setBlock(wall.above(i), Blocks.AIR.defaultBlockState(), 3);
-                s.moveTo(0.5, Y, -30.5); // out of everyone's sight
+                s.snapTo(0.5, Y, -30.5); // out of everyone's sight
 
                 // Something living in the path: it stops short of it.
                 ServerPlayer s2 = blurring(server, level, "cl_path");
-                target.moveTo(14.5, Y, 0.5);
-                pig.moveTo(6.5, Y, 0.5, 0f, 0f);
+                target.snapTo(14.5, Y, 0.5);
+                pig.snapTo(6.5, Y, 0.5, 0f, 0f);
                 pig.setNoGravity(true);
                 level.addFreshEntity(pig);
-                s2.moveTo(0.5, Y, 0.5);
+                s2.snapTo(0.5, Y, 0.5);
                 face(s2, target);
                 Vec3 look = s2.getViewVector(1f);
                 // Look over the pig at the target.
@@ -220,9 +220,9 @@ class ClosingLineTest {
                 pig.discard();
 
                 // A swap mid-rush: moved off the line by something else, it's over.
-                s2.moveTo(0.5, Y, 30.5);
+                s2.snapTo(0.5, Y, 30.5);
                 ServerPlayer s3 = blurring(server, level, "cl_swap");
-                target.moveTo(14.5, Y, 0.5);
+                target.snapTo(14.5, Y, 0.5);
                 face(s3, target);
                 ClosingLine.request(s3);
                 SeveredState state3 = Severed.state(s3);
@@ -249,7 +249,7 @@ class ClosingLineTest {
             try {
                 for (int i = 0; i < 5; i++) level.setBlock(base.above(i), Blocks.STONE.defaultBlockState(), 3);
                 ServerPlayer target = SeveredBodyTest.maliceUser(server, level, "cl_pillar_target");
-                target.moveTo(10.5, Y + 5, 0.5); // on top of the pillar
+                target.snapTo(10.5, Y + 5, 0.5); // on top of the pillar
                 ServerPlayer s = blurring(server, level, "cl_pillar");
                 face(s, target);
                 ClosingLine.request(s);
@@ -292,15 +292,15 @@ class ClosingLineTest {
             TestServer.ensureOverworld(server);
             ServerLevel level = server.overworld();
             level.getHeight(Heightmap.Types.MOTION_BLOCKING, 0, 0);
-            server.setPvpAllowed(true);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
             java.util.List<com.cnethuka.kegare.impact.Impact> impacts = new java.util.ArrayList<>();
             java.util.function.Consumer<com.cnethuka.kegare.impact.Impact> listener = impacts::add;
             com.cnethuka.kegare.impact.Impacts.listen(listener);
             try {
                 ServerPlayer s = SeveredBodyTest.severed(server, level, "cl_strengths");
                 ServerPlayer target = SeveredBodyTest.maliceUser(server, level, "cl_strengths_target");
-                s.moveTo(0.5, Y, 0.5);
-                target.moveTo(2.0, Y, 0.5);
+                s.snapTo(0.5, Y, 0.5);
+                target.snapTo(2.0, Y, 0.5);
                 double[] strengths = new double[3];
                 float[] weapons = {1f, 6f, 8f}; // a fist, an iron sword, a netherite sword: their full-charge damage
                 for (int i = 0; i < 3; i++) {
@@ -334,17 +334,17 @@ class ClosingLineTest {
             TestServer.ensureOverworld(server);
             ServerLevel level = server.overworld();
             level.getHeight(Heightmap.Types.MOTION_BLOCKING, 0, 0);
-            server.setPvpAllowed(true);
-            WitherBoss wither = EntityType.WITHER.create(level);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
+            WitherBoss wither = EntityType.WITHER.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             try {
                 ServerPlayer s = SeveredBodyTest.severed(server, level, "cl_parried");
                 ServerPlayer defender = SeveredBodyTest.maliceUser(server, level, "cl_defender");
-                s.moveTo(0.5, Y, 0.5);
-                defender.moveTo(2.0, Y, 0.5);
+                s.snapTo(0.5, Y, 0.5);
+                defender.snapTo(2.0, Y, 0.5);
                 arrived(s, level);
                 MeleeIntentPayload.apply(defender, new MeleeIntentPayload(MeleeIntentPayload.Action.PARRY_PRESS, (byte) 0, (byte) 0));
-                assertFalse(defender.hurt(s.damageSources().playerAttack(s), 4f), "parried");
-                MobEffectInstance slow = s.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
+                assertFalse(defender.hurtServer((net.minecraft.server.level.ServerLevel) defender.level(), s.damageSources().playerAttack(s), 4f), "parried");
+                MobEffectInstance slow = s.getEffect(MobEffects.SLOWNESS);
                 assertNotNull(slow, "staggered");
                 assertEquals(SeveredConfig.ticks(SeveredConfig.PARRY_STAGGER_SECONDS.get()), slow.getDuration(), "longer than a normal stagger");
                 assertTrue(slow.getDuration() > Math.round(MeleeConfig.PARRY_STAGGER_SECONDS.get() * 20));
@@ -353,7 +353,7 @@ class ClosingLineTest {
 
                 // A boss: struck, never moved.
                 s.removeAllEffects();
-                wither.moveTo(3.5, Y, 4.5, 0f, 0f);
+                wither.snapTo(3.5, Y, 4.5, 0f, 0f);
                 wither.setNoGravity(true);
                 level.addFreshEntity(wither);
                 arrived(s, level);

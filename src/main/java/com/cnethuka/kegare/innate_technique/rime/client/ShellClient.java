@@ -2,6 +2,7 @@ package com.cnethuka.kegare.innate_technique.rime.client;
 
 import com.cnethuka.kegare.client.visual.ClientVisuals;
 import com.cnethuka.kegare.client.visual.PlayerAnimations;
+import com.cnethuka.kegare.client.visual.PlayerLayers;
 import com.cnethuka.kegare.innate_technique.rime.Rime;
 import com.cnethuka.kegare.innatetechnique.visual.VisualPhase;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
@@ -14,16 +15,17 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -144,9 +146,7 @@ public final class ShellClient {
     }
 
     static void addLayers(EntityRenderersEvent.AddLayers event) {
-        for (PlayerSkin.Model model : event.getSkins()) {
-            if (event.getSkin(model) instanceof PlayerRenderer renderer) renderer.addLayer(new Layer(renderer));
-        }
+        PlayerLayers.add(event, Layer::new);
     }
 
     // ---------------------------------------------------------------------------------------------- forming
@@ -201,30 +201,31 @@ public final class ShellClient {
 
     // ---------------------------------------------------------------------------------------------- on a body
 
-    static final class Layer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
-        Layer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) {
+    static final class Layer extends RenderLayer<AvatarRenderState, PlayerModel> {
+        Layer(RenderLayerParent<AvatarRenderState, PlayerModel> parent) {
             super(parent);
         }
 
         @Override
-        public void render(PoseStack pose, MultiBufferSource buffers, int light, AbstractClientPlayer player, float limbSwing,
-                           float limbSwingAmount, float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
-            if (PlayerAnimations.firstPersonPass()) return; // your own arms in first person: the plates would be round the camera
+        public void submit(PoseStack pose, SubmitNodeCollector collector, int light, AvatarRenderState state, float yRot, float xRot) {
+            if (PlayerAnimations.firstPersonPass(state)) return; // your own arms in first person: the plates would be round the camera
+            if (!(PlayerLayers.entity(state) instanceof AbstractClientPlayer player)) return;
+            float partialTick = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
             ClientVisuals.LoopTime time = ClientVisuals.loopTime(player, LOOP, partialTick);
             long now = player.level().getGameTime();
             if (time == null) {
                 DRAWN.remove(player.getId());
                 // A Shatter Shell with no shell up: a whole set bursts off the body as it's drawn, nothing is left on it.
                 if (inWorld && PENDING.remove(player.getId()) != null) {
-                    Map<String, Drawn> whole = place(pose, player, -1f, new ArrayList<>(), new ArrayList<>());
+                    Map<String, Drawn> whole = place(pose, player, state, -1f, new ArrayList<>(), new ArrayList<>());
                     fling(player, whole);
                 }
                 return;
             }
             List<PoseStack.Pose> poses = new ArrayList<>();
             List<String> names = new ArrayList<>();
-            Map<String, Drawn> drawn = place(pose, player, time.ticks(), poses, names);
-            LanceMesh.SHELL.draw(buffers, poses, names, light);
+            Map<String, Drawn> drawn = place(pose, player, state, time.ticks(), poses, names);
+            LanceMesh.SHELL.draw(collector, poses, names, light);
             // Only where it's drawn in the world: the inventory's little figure is drawn with the same layer, in the screen's space.
             if (inWorld) DRAWN.put(player.getId(), new Body(now, drawn));
         }
@@ -233,14 +234,14 @@ public final class ShellClient {
          * Every plate formed by {@code ticks} after the shell went up (all of them, full size, if negative), posed on this body:
          * their poses and names for drawing, and where each sits in the world.
          */
-        private Map<String, Drawn> place(PoseStack pose, AbstractClientPlayer player, float ticks, List<PoseStack.Pose> poses,
-                                         List<String> names) {
-            PlayerModel<AbstractClientPlayer> model = getParentModel();
+        private Map<String, Drawn> place(PoseStack pose, AbstractClientPlayer player, AvatarRenderState state, float ticks,
+                                         List<PoseStack.Pose> poses, List<String> names) {
+            PlayerModel model = getParentModel();
             ModelPart[] parts = {model.body, model.rightArm, model.leftArm, model.rightLeg, model.leftLeg};
-            boolean slim = player.getSkin().model() == PlayerSkin.Model.SLIM;
+            boolean slim = state.skin.model() == PlayerModelType.SLIM;
             float[] armour = ArmourReach.of(player);
             Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
-            Vec3 cam = camera.getPosition();
+            Vec3 cam = camera.position();
             Map<String, Drawn> drawn = new HashMap<>();
             int order = 0;
             for (int p = 0; p < PARTS.length; p++) {
@@ -376,7 +377,7 @@ public final class ShellClient {
         if (DEBRIS.isEmpty()) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
-        Vec3 cam = event.getCamera().getPosition();
+        Vec3 cam = event.getCamera().position();
         float partial = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
         for (Debris d : DEBRIS) {

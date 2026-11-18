@@ -21,10 +21,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.Cow;
+import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -169,7 +169,7 @@ class PuppetTest {
 
                 // Owner gone (offline): the puppet stands idle and never attacks.
                 Cow cow = new Cow(EntityType.COW, level);
-                cow.moveTo(puppet.getX() + 2, Y, puppet.getZ(), 0f, 0f);
+                cow.snapTo(puppet.getX() + 2, Y, puppet.getZ(), 0f, 0f);
                 level.addFreshEntity(cow);
                 level.removePlayerImmediately(owner, Entity.RemovalReason.UNLOADED_WITH_PLAYER);
                 assertNull(puppet.owner(), "setup: the owner is gone");
@@ -253,7 +253,7 @@ class PuppetTest {
         BirthService.rebirth(owner, OptionalInt.of(1000));
         InnateTechniqueService.setInnateTechnique(owner, PuppetManipulation.PUPPET_MANIPULATION.get());
         InnateTechniqueService.select(owner, 0);
-        owner.moveTo(0.5, Y, 0.5, -90f, 0f);
+        owner.snapTo(0.5, Y, 0.5, -90f, 0f);
         owner.setYHeadRot(-90f);
         MaliceService.refill(owner);
         return owner;
@@ -261,11 +261,11 @@ class PuppetTest {
 
     /** Charges Puppet Creation for {@code ticks} and releases it; returns the new puppet. */
     static PuppetEntity create(MinecraftServer server, ServerPlayer owner, int ticks) {
-        List<PuppetEntity> before = puppetsOf(owner.serverLevel(), owner);
+        List<PuppetEntity> before = puppetsOf(owner.level(), owner);
         CastManager.handleIntent(owner, CastIntent.CAST_PRESS);
         TestServer.advanceGameTime(server, ticks);
         CastManager.handleIntent(owner, CastIntent.CAST_RELEASE);
-        List<PuppetEntity> after = puppetsOf(owner.serverLevel(), owner);
+        List<PuppetEntity> after = puppetsOf(owner.level(), owner);
         after.removeAll(before);
         assertEquals(1, after.size(), "one new puppet");
         return after.get(0);

@@ -23,20 +23,20 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.animal.Cow;
-import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.animal.cow.Cow;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.monster.warden.AngerLevel;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
-import net.minecraft.world.entity.projectile.windcharge.BreezeWindCharge;
-import net.minecraft.world.entity.projectile.ThrownPotion;
-import net.minecraft.world.entity.projectile.ThrownTrident;
-import net.minecraft.world.entity.projectile.WitherSkull;
+import net.minecraft.world.entity.projectile.hurtingprojectile.windcharge.BreezeWindCharge;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.AbstractThrownPotion;
+import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
+import net.minecraft.world.entity.projectile.hurtingprojectile.WitherSkull;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -67,7 +67,7 @@ class MobIntentTest {
             ServerPlayer target = SightTest.player(server, "intent_target", 1000, 0.5, 0.5);
             try {
                 SightTest.eyes(server, bearer, true);
-                target.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 100_000, 4, false, false));
+                target.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 100_000, 4, false, false));
                 target.setDeltaMovement(0, 0, 0);
                 c.run(server, level, target);
             } finally {
@@ -85,8 +85,8 @@ class MobIntentTest {
     }
 
     private static <T extends Mob> T spawn(ServerLevel level, EntityType<T> type, double x, double z) {
-        T mob = type.create(level);
-        mob.moveTo(x, FLOOR_Y + 1, z, 0, 0);
+        T mob = type.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        mob.snapTo(x, FLOOR_Y + 1, z, 0, 0);
         mob.setPersistenceRequired();
         level.addFreshEntity(mob);
         return mob;
@@ -159,7 +159,7 @@ class MobIntentTest {
         scene(server, (s, level, target) -> {
             Mob witch = spawn(level, EntityType.WITCH, 6.5, 0.5);
             witch.setTarget(target);
-            int lead = pulsedBefore(s, level, witch, SightPayloads.Pulse.THROW, () -> any(level, ThrownPotion.class), 200);
+            int lead = pulsedBefore(s, level, witch, SightPayloads.Pulse.THROW, () -> any(level, AbstractThrownPotion.class), 200);
             assertEquals(MobIntent.SHOT_LEAD, lead, "the timer's read exactly");
         });
     }
@@ -240,7 +240,7 @@ class MobIntentTest {
             custom.stopUsingItem();
             sent.clear();
 
-            custom.moveTo(1.5, FLOOR_Y + 1, 0.5, 0, 0);
+            custom.snapTo(1.5, FLOOR_Y + 1, 0.5, 0, 0);
             MobIntent.check(level, custom);
             assertEquals(List.of(SightPayloads.Pulse.SWING), pulses(sent, custom), "its target in reach");
             sent.clear();

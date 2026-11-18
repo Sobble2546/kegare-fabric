@@ -6,6 +6,7 @@ import com.cnethuka.kegare.config.KegareClientConfig;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import com.cnethuka.kegare.platform.net.ClientNet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -13,7 +14,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import com.cnethuka.kegare.platform.bus.IEventBus;
 import com.cnethuka.kegare.platform.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import com.cnethuka.kegare.platform.client.gui.VanillaGuiLayers;
 
 /**
  * Six Eyes on the HUD (DESIGN §3.32), only for a bearer: an arrow round the crosshair pointing to each pin, with its name and how far
@@ -36,7 +37,7 @@ public final class SightHud {
 
     private static void render(GuiGraphics g, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
-        if (!SightClient.isBearer() || mc.player == null || mc.options.hideGui || mc.screen instanceof SixEyesMapScreen) return;
+        if (!ClientNet.isActive() || !SightClient.isBearer() || mc.player == null || mc.options.hideGui || mc.screen instanceof SixEyesMapScreen) return;
         pins(g, mc);
         if (KegareClientConfig.SIX_EYES_MINIMAP.get()) minimap(g, mc);
     }
@@ -50,11 +51,11 @@ public final class SightHud {
             double a = Math.toRadians(turn);
             float x = cx + (float) Math.sin(a) * ARROW_RADIUS, y = cy - (float) Math.cos(a) * ARROW_RADIUS;
             int rgb = pin.severed() ? 0x9090A0 : SightClient.bright(pin.color());
-            g.pose().pushPose();
-            g.pose().translate(x, y, 0);
-            g.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(turn));
+            g.pose().pushMatrix();
+            g.pose().translate(x, y);
+            g.pose().rotate((float) Math.toRadians(turn));
             GuiDraw.tinted(g, ARROW, -4, -4, 9, 9, rgb, 0.95f);
-            g.pose().popPose();
+            g.pose().popMatrix();
             Component name = pin.name() != null ? (pin.severed() ? Component.translatable("gui.kegare.six_eyes.void") : Component.literal(pin.name()))
                     : BuiltInRegistries.ENTITY_TYPE.byId(pin.type()).getDescription();
             Component label = Component.translatable("gui.kegare.six_eyes.pin_label", name, SixEyesMapScreen.distance(to.length()));
@@ -82,10 +83,10 @@ public final class SightHud {
             if (s.severed) GuiDraw.sprite(g, SixEyesMapScreen.VOID, x - 3, y - 3, 7, 7);
             else GuiDraw.tinted(g, SixEyesMapScreen.DOT, x - 2, y - 2, 5, 5, SightClient.bright(s.color), 1f);
         }
-        g.pose().pushPose();
-        g.pose().translate(cx, cy, 0);
-        g.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(mc.player.getYRot() + 180f));
+        g.pose().pushMatrix();
+        g.pose().translate(cx, cy);
+        g.pose().rotate((float) Math.toRadians(mc.player.getYRot() + 180f));
         GuiDraw.sprite(g, SixEyesMapScreen.SELF, -3, -3, 7, 7);
-        g.pose().popPose();
+        g.pose().popMatrix();
     }
 }

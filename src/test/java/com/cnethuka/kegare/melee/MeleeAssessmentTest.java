@@ -25,9 +25,9 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -49,7 +49,7 @@ class MeleeAssessmentTest {
         BirthService.rebirth(p, OptionalInt.of(1000));
         InnateTechniqueService.setInnateTechnique(p, Rime.RIME.get());
         MaliceService.refill(p);
-        p.moveTo(2.5, ground(level), 8.5, -90f, 0f);
+        p.snapTo(2.5, ground(level), 8.5, -90f, 0f);
         p.setHealth(p.getMaxHealth());
         return p;
     }
@@ -147,7 +147,7 @@ class MeleeAssessmentTest {
             ServerLevel level = world(server);
             ServerPlayer defender = player(server, "parry_mob");
             Zombie zombie = new Zombie(EntityType.ZOMBIE, level);
-            zombie.moveTo(4.5, ground(level), 8.5, 0f, 0f);
+            zombie.snapTo(4.5, ground(level), 8.5, 0f, 0f);
             zombie.setNoAi(true);
             level.addFreshEntity(zombie);
             try {
@@ -165,7 +165,7 @@ class MeleeAssessmentTest {
     private static void dashAside(ServerPlayer p, ServerLevel level) {
         MeleeIntentPayload.apply(p, new MeleeIntentPayload(Action.DASH, (byte) 0, (byte) 0));
         MeleeLayer.state(p).dashDirection = null;
-        p.moveTo(p.getX(), ground(level), p.getZ() + 4, p.getYRot(), 0f);
+        p.snapTo(p.getX(), ground(level), p.getZ() + 4, p.getYRot(), 0f);
     }
 
     @Test
@@ -174,9 +174,9 @@ class MeleeAssessmentTest {
             FightTracker.clear();
             ServerLevel level = world(server);
             ServerPlayer p = player(server, "dodge_counts");
-            p.moveTo(8.5, ground(level), 2.5, 0f, 0f);
+            p.snapTo(8.5, ground(level), 2.5, 0f, 0f);
             ServerPlayer attacker = player(server, "dodge_counts_attacker");
-            attacker.moveTo(11.0, ground(level), 2.5, 90f, 0f);
+            attacker.snapTo(11.0, ground(level), 2.5, 90f, 0f);
             attacker.lookAt(EntityAnchorArgument.Anchor.EYES, p.getEyePosition());
             level.addNewPlayer(attacker);
             try {

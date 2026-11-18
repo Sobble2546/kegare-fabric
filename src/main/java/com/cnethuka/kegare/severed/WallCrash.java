@@ -3,6 +3,7 @@ package com.cnethuka.kegare.severed;
 import com.cnethuka.kegare.combat.CombatHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import com.cnethuka.kegare.platform.EntityCompat;
 
 /**
  * Hitting a wall at Blur or Closing Line speed (DESIGN §3.27): like vanilla's flying into a wall, damage and a stun from the speed it
@@ -31,7 +32,7 @@ public final class WallCrash {
         int stun = stunTicks(lost);
         if (damage <= 0f && stun <= 0) return false;
         if (damage > 0f) {
-            player.invulnerableTime = 0;
+            EntityCompat.setInvulnerableTime(player, 0);
             player.hurt(player.damageSources().flyIntoWall(), damage);
         }
         if (stun > 0) CombatHelper.stun(player, stun); // the stun ends Blur and a Closing Line

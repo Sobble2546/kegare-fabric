@@ -86,7 +86,7 @@ public final class Blur {
     static void windedOff(ServerPlayer player, SeveredState state) {
         int ticks = SeveredConfig.ticks(SeveredConfig.WINDED_SECONDS.get());
         state.windedUntil = player.level().getGameTime() + ticks;
-        if (ticks > 0) player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, ticks, SeveredConfig.WINDED_SLOWNESS.get(), false, false, true));
+        if (ticks > 0) player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, ticks, SeveredConfig.WINDED_SLOWNESS.get(), false, false, true));
         stop(player, state);
         SeveredFx.winded(player);
         sync(player, state);

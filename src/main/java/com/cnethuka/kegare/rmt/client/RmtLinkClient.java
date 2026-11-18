@@ -11,17 +11,19 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
+import com.cnethuka.kegare.platform.net.ClientNet;
 import com.cnethuka.kegare.platform.client.event.RenderLevelStageEvent;
 import com.cnethuka.kegare.platform.NeoForge;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 /**
  * What heal-others looks like (DESIGN §3.17), drawn here as our own mesh (it shows at every effects setting: the link is the tell, and the
@@ -63,13 +65,13 @@ final class RmtLinkClient {
     private static void render(Camera camera, float partial) {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
-        if (level == null || (LINKS.isEmpty() && moment.target() < 0)) return;
+        if (level == null || !ClientNet.isActive() || (LINKS.isEmpty() && moment.target() < 0)) return;
         long clock = level.getGameTime();
         float time = clock + partial;
-        Vec3 cam = camera.getPosition();
+        Vec3 cam = camera.position();
         Matrix4f m = new PoseStack().last().pose();
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
-        RenderType type = RenderType.entityTranslucentEmissive(WHITE);
+        RenderType type = RenderTypes.entityTranslucentEmissive(WHITE);
         VertexConsumer out = buffers.getBuffer(type);
         for (Iterator<Map.Entry<Integer, Heard>> it = LINKS.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<Integer, Heard> link = it.next();
@@ -93,8 +95,8 @@ final class RmtLinkClient {
     /** Where the link leaves the healer: their right hand; in your own first person, low and to the right, in front of you. */
     private static Vec3 hand(Minecraft mc, Entity caster, Camera camera, float partial) {
         if (caster == mc.getCameraEntity() && mc.options.getCameraType().isFirstPerson()) {
-            Vector3f look = camera.getLookVector(), left = camera.getLeftVector(), up = camera.getUpVector();
-            return camera.getPosition().add(look.x() * 0.75 - left.x() * 0.32 - up.x() * 0.38, look.y() * 0.75 - left.y() * 0.32 - up.y() * 0.38,
+            Vector3fc look = camera.forwardVector(), left = camera.leftVector(), up = camera.upVector();
+            return camera.position().add(look.x() * 0.75 - left.x() * 0.32 - up.x() * 0.38, look.y() * 0.75 - left.y() * 0.32 - up.y() * 0.38,
                     look.z() * 0.75 - left.z() * 0.32 - up.z() * 0.38);
         }
         float yaw = Mth.lerp(partial, caster instanceof net.minecraft.world.entity.LivingEntity l ? l.yBodyRotO : caster.yRotO,
@@ -135,8 +137,8 @@ final class RmtLinkClient {
      * middle, so its own body hides the centre and the glow shows round it.
      */
     private static void glow(VertexConsumer out, Matrix4f m, Camera camera, Entity e, float partial, float time, long ticksLeft) {
-        Vec3 centre = e.getPosition(partial).add(0, e.getBbHeight() * 0.5, 0).subtract(camera.getPosition());
-        Vector3f l = camera.getLeftVector(), u = camera.getUpVector();
+        Vec3 centre = e.getPosition(partial).add(0, e.getBbHeight() * 0.5, 0).subtract(camera.position());
+        Vector3fc l = camera.leftVector(), u = camera.upVector();
         Vec3 left = new Vec3(l.x(), l.y(), l.z()), up = new Vec3(u.x(), u.y(), u.z());
         double rx = e.getBbWidth() * 0.5 + 0.55, ry = e.getBbHeight() * 0.5 + 0.45;
         float breath = 0.75f + 0.25f * Mth.sin(time * 0.25f);

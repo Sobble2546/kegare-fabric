@@ -1,13 +1,17 @@
 package com.cnethuka.kegare.innate_technique.puppet_manipulation;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -31,7 +35,8 @@ public final class PossessionData {
     float bodyPitch;
     @Nullable
     ResourceKey<Level> dimension;
-    ListTag inventory = new ListTag();
+    /** Everything the body carried (hotbar, backpack, armor, offhand), by container slot; the player holds the puppet's empty hands meanwhile. */
+    List<ItemStackWithSlot> inventory = new ArrayList<>();
     int selectedSlot;
     PuppetTier tier = PuppetTier.TAP;
 
@@ -56,7 +61,7 @@ public final class PossessionData {
     void clear() {
         puppet = null;
         shell = null;
-        inventory = new ListTag();
+        inventory = new ArrayList<>();
         dimension = null;
     }
 
@@ -64,19 +69,21 @@ public final class PossessionData {
         @Override
         public PossessionData read(IAttachmentHolder holder, CompoundTag tag, HolderLookup.Provider provider) {
             PossessionData d = new PossessionData();
-            if (!tag.hasUUID("Puppet")) return d;
-            d.puppet = tag.getUUID("Puppet");
-            d.shell = tag.hasUUID("Shell") ? tag.getUUID("Shell") : null;
-            d.realHealth = tag.getFloat("RealHealth");
-            d.realMaxHealth = tag.contains("RealMaxHealth") ? tag.getFloat("RealMaxHealth") : 20f;
-            d.bodyPos = new Vec3(tag.getDouble("X"), tag.getDouble("Y"), tag.getDouble("Z"));
-            d.bodyYaw = tag.getFloat("Yaw");
-            d.bodyPitch = tag.getFloat("Pitch");
-            Identifier dim = Identifier.tryParse(tag.getString("Dimension"));
+            Optional<UUID> puppet = tag.read("Puppet", UUIDUtil.CODEC);
+            if (puppet.isEmpty()) return d;
+            d.puppet = puppet.get();
+            d.shell = tag.read("Shell", UUIDUtil.CODEC).orElse(null);
+            d.realHealth = tag.getFloatOr("RealHealth", 0f);
+            d.realMaxHealth = tag.getFloatOr("RealMaxHealth", 20f);
+            d.bodyPos = new Vec3(tag.getDoubleOr("X", 0), tag.getDoubleOr("Y", 0), tag.getDoubleOr("Z", 0));
+            d.bodyYaw = tag.getFloatOr("Yaw", 0f);
+            d.bodyPitch = tag.getFloatOr("Pitch", 0f);
+            Identifier dim = Identifier.tryParse(tag.getStringOr("Dimension", ""));
             d.dimension = dim == null ? null : ResourceKey.create(Registries.DIMENSION, dim);
-            d.inventory = tag.getList("Inventory", Tag.TAG_COMPOUND);
-            d.selectedSlot = tag.getInt("Selected");
-            d.tier = PuppetTier.byId(tag.getInt("Tier"));
+            d.inventory = new ArrayList<>(tag.read("Inventory", ItemStackWithSlot.CODEC.listOf(), provider.createSerializationContext(NbtOps.INSTANCE))
+                    .orElse(List.of()));
+            d.selectedSlot = tag.getIntOr("Selected", 0);
+            d.tier = PuppetTier.byId(tag.getIntOr("Tier", 0));
             return d;
         }
 
@@ -85,8 +92,8 @@ public final class PossessionData {
         public CompoundTag write(PossessionData d, HolderLookup.Provider provider) {
             if (!d.active()) return null;
             CompoundTag tag = new CompoundTag();
-            tag.putUUID("Puppet", d.puppet);
-            if (d.shell != null) tag.putUUID("Shell", d.shell);
+            tag.store("Puppet", UUIDUtil.CODEC, d.puppet);
+            if (d.shell != null) tag.store("Shell", UUIDUtil.CODEC, d.shell);
             tag.putFloat("RealHealth", d.realHealth);
             tag.putFloat("RealMaxHealth", d.realMaxHealth);
             tag.putDouble("X", d.bodyPos.x);
@@ -94,8 +101,8 @@ public final class PossessionData {
             tag.putDouble("Z", d.bodyPos.z);
             tag.putFloat("Yaw", d.bodyYaw);
             tag.putFloat("Pitch", d.bodyPitch);
-            if (d.dimension != null) tag.putString("Dimension", d.dimension.location().toString());
-            tag.put("Inventory", d.inventory);
+            if (d.dimension != null) tag.putString("Dimension", d.dimension.identifier().toString());
+            tag.store("Inventory", ItemStackWithSlot.CODEC.listOf(), provider.createSerializationContext(NbtOps.INSTANCE), d.inventory);
             tag.putInt("Selected", d.selectedSlot);
             tag.putInt("Tier", d.tier.ordinal());
             return tag;

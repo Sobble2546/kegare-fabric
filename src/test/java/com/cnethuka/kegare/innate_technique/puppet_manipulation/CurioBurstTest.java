@@ -15,11 +15,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -36,10 +36,10 @@ class CurioBurstTest {
             ServerPlayer owner = PossessionTest.damageable(server, "curio_owner");
             level.addNewPlayer(owner);
             PossessionTest.prepare(owner);
-            owner.moveTo(0.5, ground, 0.5, -90f, 0f);
+            owner.snapTo(0.5, ground, 0.5, -90f, 0f);
             try {
-                assertTrue(level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE)
-                        .getHolderOrThrow(CurioBursts.CURIO_BURST).is(DamageTypeTags.IS_EXPLOSION), "an explosion (Blast Protection helps)");
+                assertTrue(level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE)
+                        .getOrThrow(CurioBursts.CURIO_BURST).is(DamageTypeTags.IS_EXPLOSION), "an explosion (Blast Protection helps)");
 
                 float[] lost = new float[PuppetTier.values().length];
                 for (PuppetTier tier : PuppetTier.values()) {
@@ -50,8 +50,8 @@ class CurioBurstTest {
                     IronGolem golem = golemAt(level, puppet.position().add(1.0, 0, 0));
                     PuppetEntity bystander = PuppetTest.create(server, owner, 0); // the owner's other puppet, right beside
                     InnateTechniqueService.clearCooldowns(owner);
-                    bystander.moveTo(puppet.getX(), ground, puppet.getZ() + 0.6, 0f, 0f);
-                    owner.moveTo(puppet.getX() - 1.0, ground, puppet.getZ(), -90f, 0f); // the owner too
+                    bystander.snapTo(puppet.getX(), ground, puppet.getZ() + 0.6, 0f, 0f);
+                    owner.snapTo(puppet.getX() - 1.0, ground, puppet.getZ(), -90f, 0f); // the owner too
                     owner.setHealth(20f);
                     PossessionTest.aimAt(owner, puppet);
                     InnateTechniqueService.select(owner, 2);
@@ -78,16 +78,16 @@ class CurioBurstTest {
                     bystander.discard();
                     InnateTechniqueService.clearCooldowns(owner);
                     InnateTechniqueService.select(owner, 0);
-                    owner.moveTo(0.5, ground, 0.5, -90f, 0f);
+                    owner.snapTo(0.5, ground, 0.5, -90f, 0f);
                 }
                 assertTrue(lost[0] < lost[1] && lost[1] < lost[2], "bigger tiers hit harder");
 
                 // Out of the radius: nothing. Bosses: damaged but never pushed.
                 PuppetEntity puppet = PossessionTest.puppetInFront(server, owner, PuppetConfig.ticks(PuppetConfig.CREATION_FULL_CHARGE));
                 IronGolem farGolem = golemAt(level, puppet.position().add(PuppetConfig.CURIO_RADIUS[2].get() + 2, 0, 0));
-                WitherBoss wither = EntityType.WITHER.create(level);
+                WitherBoss wither = EntityType.WITHER.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
                 wither.setNoAi(true);
-                wither.moveTo(puppet.getX(), ground, puppet.getZ() + 1.5, 0f, 0f);
+                wither.snapTo(puppet.getX(), ground, puppet.getZ() + 1.5, 0f, 0f);
                 level.addFreshEntity(wither);
                 wither.setDeltaMovement(Vec3.ZERO);
                 float witherBefore = wither.getHealth();
@@ -121,7 +121,7 @@ class CurioBurstTest {
             ServerPlayer owner = PossessionTest.damageable(server, "chain_owner");
             level.addNewPlayer(owner);
             PossessionTest.prepare(owner);
-            owner.moveTo(0.5, ground, 0.5, -90f, 0f);
+            owner.snapTo(0.5, ground, 0.5, -90f, 0f);
             try {
                 // Everything inside the loaded test chunk (0..15, 0..15): entities elsewhere aren't visible to lookups here.
                 IronGolem golem = golemAt(level, new Vec3(10.5, ground, 4.5));
@@ -132,10 +132,10 @@ class CurioBurstTest {
                 PuppetEntity edge = PuppetTest.create(server, owner, 0);
                 InnateTechniqueService.clearCooldowns(owner);
                 PuppetEntity outside = PuppetTest.create(server, owner, 0);
-                near.moveTo(11.5, ground, 4.5, 0f, 0f);
-                mid.moveTo(10.5, ground, 7.5, 0f, 0f);
-                edge.moveTo(10.5, ground, 11.0, 0f, 0f);
-                outside.moveTo(10.5, ground, 4.5 + PuppetConfig.CHAIN_RADIUS.get() + 3, 0f, 0f);
+                near.snapTo(11.5, ground, 4.5, 0f, 0f);
+                mid.snapTo(10.5, ground, 7.5, 0f, 0f);
+                edge.snapTo(10.5, ground, 11.0, 0f, 0f);
+                outside.snapTo(10.5, ground, 4.5 + PuppetConfig.CHAIN_RADIUS.get() + 3, 0f, 0f);
                 PossessionTest.aimAt(owner, golem);
                 InnateTechniqueService.select(owner, 2);
                 MaliceService.refill(owner);
@@ -165,9 +165,9 @@ class CurioBurstTest {
     }
 
     private static IronGolem golemAt(ServerLevel level, Vec3 at) {
-        IronGolem golem = EntityType.IRON_GOLEM.create(level);
+        IronGolem golem = EntityType.IRON_GOLEM.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
         golem.setNoAi(true);
-        golem.moveTo(at.x, at.y, at.z, 0f, 0f);
+        golem.snapTo(at.x, at.y, at.z, 0f, 0f);
         level.addFreshEntity(golem);
         return golem;
     }

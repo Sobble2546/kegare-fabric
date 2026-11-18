@@ -9,18 +9,18 @@ import com.cnethuka.kegare.innatetechnique.CostEnvironment;
 import com.cnethuka.kegare.innatetechnique.InnateTechnique;
 import com.cnethuka.kegare.loadout.AbilityLookup;
 import com.cnethuka.kegare.network.SyncPayload;
-import com.mojang.blaze3d.systems.RenderSystem;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.LayeredDraw;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -42,8 +42,10 @@ import net.minecraft.util.Mth;
  * </ul>
  * Display only: reads {@link ClientData}.
  */
-public final class CombatPanelLayer implements LayeredDraw.Layer {
+public final class CombatPanelLayer implements HudElement {
     public static final Identifier ID = Kegare.id("combat_panel");
+    /** A layer with no drawing that carries the panel's height in Fabric's status bar height registry (see KegareClient). */
+    public static final Identifier STACK_ID = Kegare.id("combat_stack");
 
     public static final int W = 250;
     public static final int H = 50;
@@ -118,7 +120,10 @@ public final class CombatPanelLayer implements LayeredDraw.Layer {
                 && TechniqueMode.panelShown();
     }
 
-    /** How far the vanilla stack (hearts, food, armour, air, action bar) moves up while the panel is up. */
+    /**
+     * How far the vanilla stack (hearts, food, armour, air, action bar) moves up while the panel is up. The bars are moved by Fabric's
+     * status bar height registry, which asks {@link com.cnethuka.kegare.client.KegareClient} for this number as a height provider.
+     */
     public static int extraHeight() {
         return shown() ? STACK_BASE - 39 : 0;
     }
@@ -131,10 +136,6 @@ public final class CombatPanelLayer implements LayeredDraw.Layer {
         InnateTechnique technique = TechniqueMode.current();
         if (data == null || technique == null) return;
         List<Ability> abilities = ClientLoadout.abilities();
-
-        // Hearts, food, armour and air stack on top of the panel.
-        mc.gui.leftHeight = Math.max(mc.gui.leftHeight, STACK_BASE);
-        mc.gui.rightHeight = Math.max(mc.gui.rightHeight, STACK_BASE);
 
         // Bottom centre, at the GUI's own scale: icons are the size of the hotbar's items.
         int x0 = (g.guiWidth() - W) / 2;
@@ -157,11 +158,8 @@ public final class CombatPanelLayer implements LayeredDraw.Layer {
     public static List<SlotRect> drawPanel(GuiGraphics g, Font font, SyncPayload data, InnateTechnique technique, List<Ability> abilities,
                                            long now, int x0, int y0, int dropTarget) {
         int color = technique.maliceColor();
-        RenderSystem.enableBlend();
-        g.blit(PANEL, x0, y0, 0f, 0f, W, H, W, H);
-        tint(g, GuiDraw.mix(color, 0xFFFFFF, 0.45f), 1f);
-        g.blit(ACCENT, x0, y0, 0f, 0f, W, H, W, H);
-        g.setColor(1f, 1f, 1f, 1f);
+        GuiDraw.blit(g, PANEL, x0, y0, 0f, 0f, W, H, W, H);
+        GuiDraw.blit(g, ACCENT, x0, y0, 0f, 0f, W, H, W, H, GuiDraw.argb(GuiDraw.mix(color, 0xFFFFFF, 0.45f), 1f));
 
         drawMeter(g, font, data, color, x0, y0);
         drawFreeze(g, data, now, x0, y0);
@@ -181,23 +179,20 @@ public final class CombatPanelLayer implements LayeredDraw.Layer {
         for (int i = 0; i < CELL_X.length; i++) {
             int cx = x0 + CELL_X[i];
             int cy = y0 + CELL_Y;
-            g.blit(CELLS, cx, cy, 0f, 0f, CELL_W, CELL_H, 33, CELL_H);
+            GuiDraw.blit(g, CELLS, cx, cy, 0f, 0f, CELL_W, CELL_H, 33, CELL_H);
             float full = Mth.clamp(fraction * cells - i, 0f, 1f);
             float ghostFull = Mth.clamp(ghostFraction * cells - i, 0f, 1f);
             if (ghostFull > full) { // Malice just spent: a paler ghost that drains away
                 int from = Math.round(full * 10), to = Math.round(ghostFull * 10);
                 if (to > from) {
-                    tint(g, GuiDraw.mix(color, 0xFFFFFF, 0.55f), 0.5f);
-                    g.blit(CELLS, cx + from, cy, 11f + from, 0f, to - from, CELL_H, 33, CELL_H);
-                    g.setColor(1f, 1f, 1f, 1f);
+                    GuiDraw.blit(g, CELLS, cx + from, cy, 11f + from, 0f, to - from, CELL_H, 33, CELL_H,
+                            GuiDraw.argb(GuiDraw.mix(color, 0xFFFFFF, 0.55f), 0.5f));
                 }
             }
             int w = Math.round(full * 10);
             if (w > 0) {
-                tint(g, fillColor, 1f);
-                g.blit(CELLS, cx, cy, 11f, 0f, w, CELL_H, 33, CELL_H);
-                g.setColor(1f, 1f, 1f, 1f);
-                g.blit(CELLS, cx, cy, 22f, 0f, w, CELL_H, 33, CELL_H);
+                GuiDraw.blit(g, CELLS, cx, cy, 11f, 0f, w, CELL_H, 33, CELL_H, GuiDraw.argb(fillColor, 1f));
+                GuiDraw.blit(g, CELLS, cx, cy, 22f, 0f, w, CELL_H, 33, CELL_H);
             }
         }
         // The number, colored by the surroundings' cost multiplier, with its glyph in the plate's corner.
@@ -237,9 +232,7 @@ public final class CombatPanelLayer implements LayeredDraw.Layer {
         float pulse = frozen ? 0.6f + 0.4f * Mth.sin((now % 20) / 20f * Mth.TWO_PI) : 1f;
         for (int i = 0; i < max; i++) {
             boolean lit = frozen || i < data.freezeStacks();
-            if (lit && frozen) g.setColor(1f, 1f, 1f, pulse);
-            GuiDraw.sprite(g, lit ? GuiDraw.FREEZE_PIP : GuiDraw.FREEZE_PIP_EMPTY, startX + i * step, y0 - 1, 7, 7);
-            g.setColor(1f, 1f, 1f, 1f);
+            GuiDraw.tinted(g, lit ? GuiDraw.FREEZE_PIP : GuiDraw.FREEZE_PIP_EMPTY, startX + i * step, y0 - 1, 7, 7, 0xFFFFFF, lit && frozen ? pulse : 1f);
         }
     }
 
@@ -282,13 +275,13 @@ public final class CombatPanelLayer implements LayeredDraw.Layer {
         if (hasUlt) {
             int ux = sx + n * (SLOT_SIZE + gap) - gap + ultGap;
             int uy = y0 + SLOT_Y - 2;
-            RenderSystem.enableBlend();
-            g.blit(SLOT_ULTIMATE, ux, uy, 0f, 0f, ULT_SIZE, ULT_SIZE, ULT_SIZE, ULT_SIZE);
+            GuiDraw.blit(g, SLOT_ULTIMATE, ux, uy, 0f, 0f, ULT_SIZE, ULT_SIZE, ULT_SIZE, ULT_SIZE);
             Optional<Ability> ult = technique.ultimate();
             if (ult.isPresent() && !ClientLoadout.isLocked(data, ult.get())) {
                 GuiDraw.abilityIcon(g, ult.get(), ux + ULT_INSET, uy + ULT_INSET);
-                drawCooldown(g, font, data, ult.get(), ux + ULT_INSET, uy + ULT_INSET, 16, now);
+                int left = drawCooldown(g, data, ult.get(), ux + ULT_INSET, uy + ULT_INSET, 16, now);
                 burntOut(g, ult.get(), ux + ULT_INSET, uy + ULT_INSET, 16);
+                cooldownNumber(g, font, left, ux + ULT_INSET, uy + ULT_INSET, 16);
             } else {
                 GuiDraw.sprite(g, GuiDraw.LOCK, ux + (ULT_SIZE - 11) / 2, uy + (ULT_SIZE - 11) / 2, 11, 11);
             }
@@ -300,8 +293,7 @@ public final class CombatPanelLayer implements LayeredDraw.Layer {
 
     private static void drawSlot(GuiGraphics g, Font font, SyncPayload data, @Nullable Ability ability, int x, int y, boolean selected,
                                  Component key, @Nullable Identifier castingId, long now) {
-        RenderSystem.enableBlend();
-        g.blit(selected ? SLOT_SELECTED : SLOT, x, y, 0f, 0f, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
+        GuiDraw.blit(g, selected ? SLOT_SELECTED : SLOT, x, y, 0f, 0f, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
         if (ability == null) { // empty loadout slot
             label(g, font, key, x + SLOT_SIZE, y + SLOT_SIZE, selected ? GuiDraw.WHITE : 0xFF6B6276);
             return;
@@ -309,26 +301,29 @@ public final class CombatPanelLayer implements LayeredDraw.Layer {
         if (!GuiDraw.abilityIcon(g, ability, x + SLOT_INSET, y + SLOT_INSET)) {
             g.drawCenteredString(font, ability.displayName().getString().substring(0, 1), x + SLOT_SIZE / 2, y + 6, GuiDraw.WHITE);
         }
-        boolean cooling = drawCooldown(g, font, data, ability, x + SLOT_INSET, y + SLOT_INSET, 16, now);
+        int cooldownLeft = drawCooldown(g, data, ability, x + SLOT_INSET, y + SLOT_INSET, 16, now);
+        boolean cooling = cooldownLeft > 0;
         burntOut(g, ability, x + SLOT_INSET, y + SLOT_INSET, 16);
         if (ClientLoadout.toggledOn(data, ability)) g.renderOutline(x + 1, y + 1, SLOT_SIZE - 2, SLOT_SIZE - 2, 0xFF5CFF7A);
         if (ability.id().equals(castingId) || ability.special().map(s -> s.id().equals(castingId)).orElse(false)) {
             g.renderOutline(x + 1, y + 1, SLOT_SIZE - 2, SLOT_SIZE - 2, 0xFFFFD24A);
         }
+        cooldownNumber(g, font, cooldownLeft, x + SLOT_INSET, y + SLOT_INSET, 16);
         GuiDraw.specialBadge(g, x + SLOT_SIZE - 7, y - 3, ability.special().filter(special -> !ClientLoadout.isLocked(data, special)).isPresent());
         if (!DECORATORS.isEmpty()) {
-            g.pose().pushPose();
-            g.pose().translate(0, 0, 250);
             for (SlotDecorator decorator : DECORATORS) decorator.decorate(g, font, ability, x, y, SLOT_SIZE);
-            g.pose().popPose();
         }
         if (!cooling) label(g, font, key, x + SLOT_SIZE, y + SLOT_SIZE, selected ? GuiDraw.WHITE : 0xFFD8D2E0);
     }
 
     /** A bare 20x20 tray slot frame (selected = lit gold; the icon goes 2px in), for screens that show abilities the HUD's way. */
     public static void slotFrame(GuiGraphics g, int x, int y, boolean selected) {
-        RenderSystem.enableBlend();
-        g.blit(selected ? SLOT_SELECTED : SLOT, x, y, 0f, 0f, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
+        slotFrame(g, x, y, selected, 1f);
+    }
+
+    /** {@link #slotFrame(GuiGraphics, int, int, boolean)} faded to {@code alpha}. */
+    public static void slotFrame(GuiGraphics g, int x, int y, boolean selected, float alpha) {
+        GuiDraw.blit(g, selected ? SLOT_SELECTED : SLOT, x, y, 0f, 0f, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, GuiDraw.fade(alpha));
     }
 
     /** Burnout (DESIGN §3.25): an innate technique slot is greyed over while it lasts. Shared abilities stay lit: they still cast. */
@@ -338,7 +333,7 @@ public final class CombatPanelLayer implements LayeredDraw.Layer {
     }
 
     /** Cooldown sweep (and seconds) over a 16x16 icon area, plus the ready flash. Returns whether it is cooling. */
-    private static boolean drawCooldown(GuiGraphics g, Font font, SyncPayload data, Ability ability, int x, int y, int size, long now) {
+    private static int drawCooldown(GuiGraphics g, SyncPayload data, Ability ability, int x, int y, int size, long now) {
         int remaining = 0, duration = 0;
         for (SyncPayload.CooldownEntry c : data.cooldowns()) {
             if (c.ability().equals(ability.cooldownKey())) {
@@ -351,10 +346,6 @@ public final class CombatPanelLayer implements LayeredDraw.Layer {
             int sweep = Mth.ceil(size * Math.min(1f, remaining / (float) duration));
             g.fill(x, y, x + size, y + size, 0xA0000000);
             g.fill(x, y + size - sweep, x + size, y + size, 0x55000000 | (GuiDraw.MALICE & 0xFFFFFF));
-            g.pose().pushPose();
-            g.pose().translate(0, 0, 200);
-            g.drawCenteredString(font, Integer.toString(Mth.ceil(remaining / 20f)), x + size / 2, y + (size - 8) / 2, 0xFFFF6B6B);
-            g.pose().popPose();
         }
         Boolean was = WAS_COOLING.put(ability.id(), cooling);
         if (Boolean.TRUE.equals(was) && !cooling) READY_AT.put(ability.id(), now);
@@ -363,19 +354,20 @@ public final class CombatPanelLayer implements LayeredDraw.Layer {
             int alpha = (int) (190 * (1f - (now - readyAt) / (float) READY_FLASH_TICKS));
             g.fill(x - 1, y - 1, x + size + 1, y + size + 1, (alpha << 24) | 0xFFFFFF);
         }
-        return cooling;
+        return cooling ? remaining : 0;
+    }
+
+    /**
+     * The seconds left, over everything else on the icon (the burnout grey, the ready flash, the outlines): GUI draws stack in call order, so this
+     * is drawn after them rather than raised above them.
+     */
+    private static void cooldownNumber(GuiGraphics g, Font font, int ticksLeft, int x, int y, int size) {
+        if (ticksLeft > 0) g.drawCenteredString(font, Integer.toString(Mth.ceil(ticksLeft / 20f)), x + size / 2, y + (size - 8) / 2, 0xFFFF6B6B);
     }
 
     /** The key under a slot's bottom-right corner, big and white like the hotbar's numbers. */
     private static void label(GuiGraphics g, Font font, Component text, int right, int bottom, int color) {
-        g.pose().pushPose();
-        g.pose().translate(0, 0, 250);
         g.drawString(font, text, right - font.width(text) + 1, bottom - 8, color, true);
-        g.pose().popPose();
-    }
-
-    private static void tint(GuiGraphics g, int rgb, float alpha) {
-        g.setColor(((rgb >> 16) & 0xFF) / 255f, ((rgb >> 8) & 0xFF) / 255f, (rgb & 0xFF) / 255f, alpha);
     }
 
     private static float easeOut(float t) {

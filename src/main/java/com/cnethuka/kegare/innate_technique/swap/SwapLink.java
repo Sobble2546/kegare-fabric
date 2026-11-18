@@ -51,7 +51,7 @@ public final class SwapLink {
         }
 
         private void write(FriendlyByteBuf buf) {
-            buf.writeResourceLocation(effect);
+            buf.writeIdentifier(effect);
             buf.writeDouble(from.x);
             buf.writeDouble(from.y);
             buf.writeDouble(from.z);
@@ -62,7 +62,7 @@ public final class SwapLink {
         }
 
         private static Payload read(FriendlyByteBuf buf) {
-            return new Payload(buf.readResourceLocation(), new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble()),
+            return new Payload(buf.readIdentifier(), new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble()),
                     new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble()), buf.readVarInt());
         }
 

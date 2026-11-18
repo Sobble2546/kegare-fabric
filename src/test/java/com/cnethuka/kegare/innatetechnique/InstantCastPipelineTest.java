@@ -15,7 +15,7 @@ import com.cnethuka.kegare.player.BirthService;
 import java.util.OptionalInt;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -131,7 +131,7 @@ class InstantCastPipelineTest {
             ServerPlayer p = player(server, "ic_charged_special");
             // Glacial Spire rises from the ground it's aimed at.
             server.overworld().setBlockAndUpdate(net.minecraft.core.BlockPos.containing(p.getX(), 95, p.getZ()), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
-            p.moveTo(p.getX(), 96, p.getZ(), 0f, 90f);
+            p.snapTo(p.getX(), 96, p.getZ(), 0f, 90f);
             rNumber(p, LANCE);
             assertSame(Rime.GLACIAL_SPIRE, CastManager.state(p).casting().ability());
             TestServer.advanceGameTime(server, 20);

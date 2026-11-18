@@ -1,10 +1,10 @@
 package com.cnethuka.kegare.severed.client;
 
+import com.cnethuka.kegare.client.visual.FlatBodies;
+import com.cnethuka.kegare.client.visual.WorldTypes;
 import com.cnethuka.kegare.config.KegareClientConfig;
 import com.cnethuka.kegare.config.KegareClientConfig.VfxQuality;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,13 +16,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,8 +33,7 @@ import net.minecraft.world.phys.Vec3;
  * they blur past or through).
  */
 final class BlurFx {
-    static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
-    /** Dust-grey: the afterimage's one colour. */
+        /** Dust-grey: the afterimage's one colour. */
     private static final int GHOST_RGB = 0xA59E94;
     /** How many ticks back each afterimage is, at Full and at Reduced. */
     private static final int[] BACK_FULL = {2, 3, 5, 7, 9}, BACK_REDUCED = {3, 6, 9};
@@ -112,7 +108,7 @@ final class BlurFx {
         ClientLevel level = mc.level;
         if (level == null) return;
         boolean firstPerson = mc.options.getCameraType().isFirstPerson();
-        Vec3 cam = camera.getPosition();
+        Vec3 cam = camera.position();
         int[] back = quality() == VfxQuality.FULL ? BACK_FULL : BACK_REDUCED;
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
         for (Map.Entry<Integer, ArrayDeque<Vec3>> e : TRAILS.entrySet()) {
@@ -130,57 +126,16 @@ final class BlurFx {
                 last = at;
                 float alpha = 0.42f * (1f - k / (float) back.length);
                 int light = LevelRenderer.getLightColor(level, BlockPos.containing(at.x, at.y + 1.0, at.z));
-                ghost(pose, buffers, entity, at.subtract(cam), alpha, light, partial);
+                ghost(buffers, entity, at.subtract(cam), alpha, light, partial);
             }
         }
     }
 
     /** The body drawn again at {@code at} (from the camera), all of it in dust-grey, see-through, lit as the world is there. */
-    private static void ghost(PoseStack pose, MultiBufferSource.BufferSource buffers, Entity e, Vec3 at, float alpha, int light, float partial) {
-        EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
-        RenderType type = RenderType.itemEntityTranslucentCull(WHITE);
+    private static void ghost(MultiBufferSource.BufferSource buffers, Entity e, Vec3 at, float alpha, int light, float partial) {
+        RenderType type = WorldTypes.ghost();
         int a = Math.round(Mth.clamp(alpha, 0f, 1f) * 255);
-        MultiBufferSource tinted = t -> drawn(t) ? new Tint(buffers.getBuffer(type), a, light) : NOTHING;
-        dispatcher.setRenderShadow(false);
-        try {
-            com.cnethuka.kegare.client.visual.BodyCopies.draw(() -> dispatcher.render(e, at.x, at.y, at.z, e.getYRot(), partial, pose, tinted, light));
-        } catch (RuntimeException ignored) {
-            // An odd renderer: no afterimage of it, rather than a crash.
-        } finally {
-            dispatcher.setRenderShadow(true);
-        }
+        FlatBodies.draw(e, at, partial, buffers.getBuffer(type), new FlatBodies.Look(GHOST_RGB, a, light, true));
         buffers.endBatch(type);
-    }
-
-    private static boolean drawn(RenderType t) {
-        if (t.mode() != VertexFormat.Mode.QUADS) return false;
-        String s = t.toString();
-        String name = s.startsWith("RenderType[") ? s.substring(11, Math.max(11, s.indexOf(':'))) : s;
-        return !name.startsWith("text") && !name.contains("glint") && !name.contains("shadow") && !name.contains("outline");
-    }
-
-    private static final VertexConsumer NOTHING = new VertexConsumer() {
-        @Override public VertexConsumer addVertex(float x, float y, float z) { return this; }
-        @Override public VertexConsumer setColor(int r, int g, int b, int a) { return this; }
-        @Override public VertexConsumer setUv(float u, float v) { return this; }
-        @Override public VertexConsumer setUv1(int u, int v) { return this; }
-        @Override public VertexConsumer setUv2(int u, int v) { return this; }
-        @Override public VertexConsumer setNormal(float x, float y, float z) { return this; }
-    };
-
-    /** Each vertex written whole in the one colour, with the world's light; whatever the renderer sets after is ignored. */
-    private record Tint(VertexConsumer out, int alpha, int light) implements VertexConsumer {
-        @Override
-        public VertexConsumer addVertex(float x, float y, float z) {
-            out.addVertex(x, y, z).setColor(GHOST_RGB >> 16 & 0xFF, GHOST_RGB >> 8 & 0xFF, GHOST_RGB & 0xFF, alpha).setUv(0.5f, 0.5f)
-                    .setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(0f, 1f, 0f);
-            return this;
-        }
-
-        @Override public VertexConsumer setColor(int r, int g, int b, int a) { return this; }
-        @Override public VertexConsumer setUv(float u, float v) { return this; }
-        @Override public VertexConsumer setUv1(int u, int v) { return this; }
-        @Override public VertexConsumer setUv2(int u, int v) { return this; }
-        @Override public VertexConsumer setNormal(float x, float y, float z) { return this; }
     }
 }

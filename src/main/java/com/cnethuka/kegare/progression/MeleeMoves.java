@@ -2,11 +2,11 @@ package com.cnethuka.kegare.progression;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.MaceItem;
-import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.TridentItem;
 
 /**
@@ -29,7 +29,7 @@ public final class MeleeMoves {
 
     private static String weapon(ItemStack held) {
         if (held.isEmpty()) return "fist";
-        if (held.getItem() instanceof SwordItem) return "sword";
+        if (held.is(ItemTags.SWORDS)) return "sword";
         if (held.getItem() instanceof AxeItem) return "axe";
         if (held.getItem() instanceof MaceItem) return "mace";
         if (held.getItem() instanceof TridentItem) return "trident";

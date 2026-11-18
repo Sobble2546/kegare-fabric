@@ -6,14 +6,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.level.progress.ChunkProgressListener;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.storage.ServerLevelData;
 import com.cnethuka.kegare.platform.FakePlayerFactory;
+import com.cnethuka.kegare.platform.NeoForge;
+import com.cnethuka.kegare.platform.Players;
+import com.cnethuka.kegare.platform.event.entity.living.LivingDeathEvent;
 
 /** Helpers for tests on the testframework's throwaway server. */
 public final class TestServer {
@@ -25,28 +24,18 @@ public final class TestServer {
         return FakePlayerFactory.get(server.overworld(), new GameProfile(uuid, name));
     }
 
-    /** A fake player that keeps REAL advancements (NeoForge gives fake players throwaway ones). */
+    /** A fake player that keeps REAL advancements and counts as a real player to Kegare's code ({@link Players#treatAsReal}). */
     public static ServerPlayer playerWithAdvancements(MinecraftServer server, String name) {
         UUID uuid = UUID.nameUUIDFromBytes(("kegare-test:" + name).getBytes(StandardCharsets.UTF_8));
-        return new net.fabricmc.fabric.api.entity.FakePlayer(server.overworld(), new GameProfile(uuid, name)) {
-            @Override
-            public boolean isFakePlayer() {
-                return false;
-            }
-        };
+        return Players.treatAsReal(new net.fabricmc.fabric.api.entity.FakePlayer(server.overworld(), new GameProfile(uuid, name)) {});
     }
 
-    /** A test player that can be hurt and hurt others (NeoForge's fake players can't), with real advancements. */
+    /** A test player that can be hurt and hurt others (Fabric API's fake players can't), with real advancements. */
     public static ServerPlayer damageable(MinecraftServer server, String name) {
         UUID uuid = UUID.nameUUIDFromBytes(("kegare-test:" + name).getBytes(StandardCharsets.UTF_8));
-        ServerPlayer player = new net.fabricmc.fabric.api.entity.FakePlayer(server.overworld(), new GameProfile(uuid, name)) {
+        ServerPlayer player = Players.treatAsReal(new net.fabricmc.fabric.api.entity.FakePlayer(server.overworld(), new GameProfile(uuid, name)) {
             @Override
-            public boolean isFakePlayer() {
-                return false;
-            }
-
-            @Override
-            public boolean isInvulnerableTo(net.minecraft.world.damagesource.DamageSource source) {
+            public boolean isInvulnerableTo(net.minecraft.server.level.ServerLevel level, net.minecraft.world.damagesource.DamageSource source) {
                 return false;
             }
 
@@ -55,21 +44,49 @@ public final class TestServer {
                 return true;
             }
 
-            /** FakePlayer's death does nothing at all; a real player's first fires LivingDeathEvent (cancellable). */
+            /**
+             * This FakePlayer's death does nothing at all, and not calling super skips the death mixin; a real player's first fires
+             * LivingDeathEvent (cancellable).
+             */
             @Override
             public void die(net.minecraft.world.damagesource.DamageSource source) {
-                if (net.neoforged.neoforge.common.CommonHooks.onLivingDeath(this, source)) return;
+                if (NeoForge.EVENT_BUS.post(new LivingDeathEvent(this, source)).isCanceled()) return;
                 dead = true;
             }
-        };
+        });
         try {
             java.lang.reflect.Field spawnProtection = ServerPlayer.class.getDeclaredField("spawnInvulnerableTime");
             spawnProtection.setAccessible(true);
             spawnProtection.setInt(player, 0);
+        } catch (NoSuchFieldException e) {
+            // 1.21.11 has no spawn protection field on ServerPlayer any more: nothing to clear.
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException(e);
         }
         return player;
+    }
+
+    /** FoodData has no getter or setter for the exhaustion level on 1.21.11 (only addExhaustion), so the tests reach its field. */
+    public static float exhaustion(net.minecraft.world.food.FoodData food) {
+        try {
+            return exhaustionField().getFloat(food);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public static void setExhaustion(net.minecraft.world.food.FoodData food, float value) {
+        try {
+            exhaustionField().setFloat(food, value);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static java.lang.reflect.Field exhaustionField() throws NoSuchFieldException {
+        java.lang.reflect.Field field = net.minecraft.world.food.FoodData.class.getDeclaredField("exhaustionLevel");
+        field.setAccessible(true);
+        return field;
     }
 
     /** Takes every test player out of the overworld again, so one test's players never get in the way of the next. */
@@ -86,7 +103,7 @@ public final class TestServer {
         return player.getAdvancements().getOrStartProgress(holder).isDone();
     }
 
-    /** The testframework's server defines FLAT dimensions but never loads them; create them as startup does. */
+    /** The test server defines FLAT dimensions but never loads them; create them as startup does. */
     public static void ensureOverworld(MinecraftServer server) {
         // Tests of an ability's own behaviour start from a fresh player, who has every ability unlocked here. The tests
         // of the unlocks themselves turn this back on (see WithLocks).
@@ -99,14 +116,9 @@ public final class TestServer {
         com.cnethuka.kegare.battledamage.BattleDamageConfig.MODE.set(com.cnethuka.kegare.battledamage.BattleDamageConfig.Mode.COSMETIC);
         if (server.overworld() == null) {
             try {
-                Method createLevels = MinecraftServer.class.getDeclaredMethod("createLevels", ChunkProgressListener.class);
+                Method createLevels = MinecraftServer.class.getDeclaredMethod("createLevels");
                 createLevels.setAccessible(true);
-                createLevels.invoke(server, new ChunkProgressListener() {
-                    @Override public void updateSpawnPos(ChunkPos center) {}
-                    @Override public void onStatusChange(ChunkPos pos, @Nullable ChunkStatus status) {}
-                    @Override public void start() {}
-                    @Override public void stop() {}
-                });
+                createLevels.invoke(server);
             } catch (ReflectiveOperationException e) {
                 throw new IllegalStateException("couldn't create the test server's levels", e);
             }
@@ -143,8 +155,8 @@ public final class TestServer {
         }
         // Clear what generation put there (a flat world's cows and sheep), which only show up once the entities tick: no test expects
         // them, and with no player between tests nothing spawns again.
-        net.minecraft.world.phys.AABB area = new net.minecraft.world.phys.AABB(-AREA * 16, level.getMinBuildHeight(), -AREA * 16,
-                (AREA + 1) * 16, level.getMaxBuildHeight(), (AREA + 1) * 16);
+        net.minecraft.world.phys.AABB area = new net.minecraft.world.phys.AABB(-AREA * 16, level.getMinY(), -AREA * 16,
+                (AREA + 1) * 16, level.getMaxY(), (AREA + 1) * 16);
         for (net.minecraft.world.entity.Entity e : level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, area,
                 e -> !(e instanceof net.minecraft.world.entity.player.Player))) {
             e.discard();

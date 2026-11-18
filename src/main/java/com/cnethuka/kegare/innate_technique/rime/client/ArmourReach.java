@@ -2,7 +2,9 @@ package com.cnethuka.kegare.innate_technique.rime.client;
 
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ArmorItem;
+import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * How far out from each part of the body the armour a player wears stands (pixels: the armour model's own inflation over the part's
@@ -30,6 +32,8 @@ final class ArmourReach {
 
     /** Armour for that slot in it, which the armour layer draws (an elytra or a carried item in the chest slot isn't). */
     private static boolean worn(LivingEntity entity, EquipmentSlot slot) {
-        return entity.getItemBySlot(slot).getItem() instanceof ArmorItem armour && armour.getEquipmentSlot() == slot;
+        ItemStack stack = entity.getItemBySlot(slot);
+        // An elytra has an equipment asset too, but it's wings, not a layer of armour on the body.
+        return !stack.has(DataComponents.GLIDER) && HumanoidArmorLayer.shouldRender(stack, slot);
     }
 }

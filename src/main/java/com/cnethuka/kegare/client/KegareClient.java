@@ -12,6 +12,9 @@ import com.cnethuka.kegare.platform.client.event.RegisterClientReloadListenersEv
 import com.cnethuka.kegare.platform.client.event.RegisterGuiLayersEvent;
 import com.cnethuka.kegare.platform.client.gui.VanillaGuiLayers;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudStatusBarHeightRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 
 /**
@@ -73,9 +76,12 @@ public final class KegareClient implements ClientModInitializer {
         event.registerReloadListener((ResourceManagerReloadListener) manager -> GuiDraw.clearArtCache());
     }
 
+    /** A layer that draws nothing: it only gives the status bar height registry an id to hang a height on. */
+    private static final HudElement NOTHING = (graphics, deltaTracker) -> {};
+
     private static void registerGuiLayers(RegisterGuiLayersEvent event) {
         // Technique Mode: the combat panel takes the hotbar's place (HudClearance hides the vanilla hotbar and XP);
-        // it raises Gui.leftHeight/rightHeight so hearts and food sit on top of it.
+        // hearts, armour, food and air are raised above it (the height provider below).
         // Fabric draws a layer only when vanilla reaches the element it is attached to: the hotbar's layers are skipped in spectator mode.
         event.registerAbove(VanillaGuiLayers.HOTBAR, CombatPanelLayer.ID, new CombatPanelLayer());
         event.registerAbove(CombatPanelLayer.ID, CombatHotbarLayer.ID, new CombatHotbarLayer());
@@ -85,5 +91,17 @@ public final class KegareClient implements ClientModInitializer {
         event.registerAbove(VanillaGuiLayers.EXPERIENCE_BAR, CombatNameLayer.ID, new CombatNameLayer());
         // Without the panel: freeze stacks and casting progress under the crosshair.
         event.registerAbove(VanillaGuiLayers.CROSSHAIR, StatusLayer.ID, new StatusLayer());
+
+        // Vanilla's Gui.leftHeight/rightHeight are gone; Fabric's registry replaces them. "combat_stack" sits below the health bar on both
+        // sides and is as tall as the panel pushes the stack up, so hearts, armour, food and air (and the action bar and the held item's
+        // name, which Fabric lifts above the tallest bar) rise by that much. The two probes sit above everything, with no height of their
+        // own, so CombatNameLayer can ask where the top of the stack ended up (what mc.gui.leftHeight/rightHeight used to say).
+        event.registerBelow(VanillaHudElements.HEALTH_BAR, CombatPanelLayer.STACK_ID, NOTHING);
+        event.registerAbove(VanillaGuiLayers.EXPERIENCE_BAR, CombatNameLayer.PROBE_LEFT, NOTHING);
+        event.registerAbove(VanillaGuiLayers.EXPERIENCE_BAR, CombatNameLayer.PROBE_RIGHT, NOTHING);
+        HudStatusBarHeightRegistry.addLeft(CombatPanelLayer.STACK_ID, player -> CombatPanelLayer.extraHeight());
+        HudStatusBarHeightRegistry.addRight(CombatPanelLayer.STACK_ID, player -> CombatPanelLayer.extraHeight());
+        HudStatusBarHeightRegistry.addLeft(CombatNameLayer.PROBE_LEFT, player -> 0);
+        HudStatusBarHeightRegistry.addRight(CombatNameLayer.PROBE_RIGHT, player -> 0);
     }
 }

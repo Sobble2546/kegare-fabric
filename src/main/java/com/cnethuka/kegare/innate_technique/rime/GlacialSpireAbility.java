@@ -88,7 +88,7 @@ public final class GlacialSpireAbility extends RimeSpecial {
         BlockHitResult hit = level.clip(new ClipContext(eye, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
         if (hit.getType() == HitResult.Type.MISS) return Optional.empty();
         if (hit.getDirection() == Direction.UP) return Optional.of(hit.getLocation());
-        Vec3 inFront = hit.getLocation().add(Vec3.atLowerCornerOf(hit.getDirection().getNormal()).scale(0.3));
+        Vec3 inFront = hit.getLocation().add(Vec3.atLowerCornerOf(hit.getDirection().getUnitVec3i()).scale(0.3));
         BlockHitResult floor = level.clip(new ClipContext(inFront, inFront.subtract(0, MAX_DROP, 0),
                 ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
         if (floor.getType() == HitResult.Type.MISS || floor.getDirection() != Direction.UP) return Optional.empty();

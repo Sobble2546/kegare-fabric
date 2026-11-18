@@ -28,10 +28,9 @@ import java.util.Optional;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import top.theillusivec4.curios.api.CuriosApi;
 
 /** Eyewear, Strain and the uncovered edge (DESIGN §3.32). */
 @ExtendWith(EphemeralTestServerProvider.class)
@@ -39,9 +38,8 @@ class StrainTest {
     private static final double EPS = 1.0e-6;
 
     static void wear(ServerPlayer p, ItemStack stack) {
-        var inventory = CuriosApi.getCuriosInventory(p).orElseThrow();
-        assertTrue(inventory.getStacksHandler(Eyewear.SLOT).isPresent(), "setup: players have the Eyes slot");
-        inventory.setEquippedCurio(Eyewear.SLOT, 0, stack);
+        assertTrue(TestEyewear.hasSlot(p), "setup: players have the Eyes slot (Trinkets loaded, its slot data read)");
+        TestEyewear.wear(p, stack);
     }
 
     private static double second(ServerPlayer p, boolean inFight) {
@@ -69,7 +67,7 @@ class StrainTest {
                 assertEquals(Eyewear.SUNGLASSES, Eyewear.of(plain));
                 assertFalse(SixEyes.isBearer(plain), "and it proves nothing");
                 assertTrue(new ItemStack(KegareItems.BLINDFOLD.get()).is(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM,
-                        net.minecraft.resources.Identifier.fromNamespaceAndPath("curios", Eyewear.SLOT))), "Curios' slot takes it");
+                        net.minecraft.resources.Identifier.fromNamespaceAndPath("trinkets", Eyewear.SLOT_ID))), "Trinkets' slot takes it");
             } finally {
                 TestServer.removePlayers(server);
             }
@@ -230,7 +228,7 @@ class StrainTest {
                 Edge.spark(special);
                 assertTrue(sentTo.isEmpty(), "at the top: lost");
                 Strain.set(p, 0);
-                special.moveTo(0.5 + SixEyesConfig.EDGE_RANGE.get() + 10, 120, 0.5, 0f, 0f);
+                special.snapTo(0.5 + SixEyesConfig.EDGE_RANGE.get() + 10, 120, 0.5, 0f, 0f);
                 Edge.snapshot(server);
                 Edge.spark(special);
                 assertTrue(sentTo.isEmpty(), "out of range");

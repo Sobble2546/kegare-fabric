@@ -25,7 +25,6 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.neoforged.neoforge.common.NeoForgeMod;
 import com.cnethuka.kegare.platform.event.entity.living.LivingEntityUseItemEvent;
 
 /**
@@ -69,7 +68,8 @@ public final class AccelerateAbility extends TimeAbility {
 
     /** The attributes its clock speeds up, each by the same factor. */
     private static List<Holder<Attribute>> attributes() {
-        return List.of(Attributes.MOVEMENT_SPEED, NeoForgeMod.SWIM_SPEED, Attributes.ATTACK_SPEED, Attributes.BLOCK_BREAK_SPEED);
+        // REDUCED on Fabric: NeoForge's swim speed attribute has no vanilla twin, so swimming is not sped up (the rest is).
+        return List.of(Attributes.MOVEMENT_SPEED, Attributes.ATTACK_SPEED, Attributes.BLOCK_BREAK_SPEED);
     }
 
     @Override

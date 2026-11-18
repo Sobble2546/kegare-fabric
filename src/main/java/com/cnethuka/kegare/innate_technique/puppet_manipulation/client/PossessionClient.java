@@ -7,6 +7,8 @@ import com.cnethuka.kegare.client.visual.PlayerAnimations;
 import com.cnethuka.kegare.innate_technique.puppet_manipulation.PossessionLinks;
 import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetHud;
 import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetManipulation;
+import com.cnethuka.kegare.client.render.Avatars;
+import com.cnethuka.kegare.client.visual.PlayerLayers;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,16 +16,16 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -135,35 +137,30 @@ public final class PossessionClient {
     }
 
     private static void addLayers(EntityRenderersEvent.AddLayers event) {
-        for (PlayerSkin.Model model : event.getSkins()) {
-            if (event.getSkin(model) instanceof PlayerRenderer renderer) {
-                renderer.addLayer(new GlowLayer(renderer, new PlayerModel<>(event.getEntityModels().bakeLayer(
-                        model == PlayerSkin.Model.SLIM ? PuppetGlowLayer.SLIM : PuppetGlowLayer.WIDE), model == PlayerSkin.Model.SLIM)));
-            }
-        }
+        PlayerLayers.addWithModels(event, (parent, models, slim) ->
+                new GlowLayer(parent, new PlayerModel(models.bakeLayer(slim ? PuppetGlowLayer.SLIM : PuppetGlowLayer.WIDE), slim)));
     }
 
     /** The puppet's glow on a player possessing it. */
-    private static final class GlowLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
-        private final PlayerModel<AbstractClientPlayer> model;
+    private static final class GlowLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
+        private final PlayerModel model;
 
-        GlowLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent, PlayerModel<AbstractClientPlayer> model) {
+        GlowLayer(RenderLayerParent<AvatarRenderState, PlayerModel> parent, PlayerModel model) {
             super(parent);
             this.model = model;
         }
 
         @Override
-        public void render(PoseStack pose, MultiBufferSource buffers, int light, AbstractClientPlayer player, float limbSwing, float limbSwingAmount,
-                           float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
+        public void submit(PoseStack pose, SubmitNodeCollector collector, int light, AvatarRenderState state, float yRot, float xRot) {
+            AbstractClientPlayer player = Avatars.player(state);
+            if (player == null) return;
             PossessionLinks.Entry e = entry(player.getUUID());
-            if (e == null || player.isInvisible()) return;
-            if (PlayerAnimations.firstPersonPass()) return; // first-person arms: the glow's head would wrap the camera
-            float t = player.tickCount + partialTick;
-            getParentModel().copyPropertiesTo(model);
-            model.prepareMobModel(player, limbSwing, limbSwingAmount, partialTick);
-            model.setupAnim(player, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
-            var consumer = buffers.getBuffer(RenderType.energySwirl(PuppetGlowLayer.TEXTURE, (t * 0.004f) % 1f, (t * 0.007f) % 1f));
-            model.renderToBuffer(pose, consumer, light, OverlayTexture.NO_OVERLAY, PuppetGlowLayer.color(e.color(), e.tier()));
+            if (e == null || state.isInvisible) return;
+            if (PlayerAnimations.firstPersonPass(state)) return; // first-person arms: the glow's head would wrap the camera
+            float t = state.ageInTicks;
+            // Posed when drawn, from the same state as the body.
+            collector.submitModel(model, state, pose, RenderTypes.energySwirl(PuppetGlowLayer.TEXTURE, (t * 0.004f) % 1f, (t * 0.007f) % 1f), light,
+                    OverlayTexture.NO_OVERLAY, PuppetGlowLayer.color(e.color(), e.tier()), null);
         }
     }
 
@@ -179,8 +176,8 @@ public final class PossessionClient {
         Component label = Component.translatable("hud.kegare.shell_health", health);
         int w = 10 + mc.font.width(label);
         int x = cx - w / 2;
-        g.blitSprite(HEART_EMPTY, x, y - 1, 9, 9);
-        g.blitSprite(HEART, x, y - 1, 9, 9);
+        g.blitSprite(RenderPipelines.GUI_TEXTURED, HEART_EMPTY, x, y - 1, 9, 9);
+        g.blitSprite(RenderPipelines.GUI_TEXTURED, HEART, x, y - 1, 9, 9);
         g.drawString(mc.font, label, x + 11, y, 0xFFE8E2F0, true);
         return y + 12;
     }

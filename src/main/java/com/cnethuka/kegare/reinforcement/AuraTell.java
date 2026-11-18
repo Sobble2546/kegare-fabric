@@ -104,7 +104,7 @@ public final class AuraTell {
 
     /** Whoever is watching them now. */
     static List<ServerPlayer> viewers(ServerPlayer player) {
-        Object tracked = ((ChunkMapAccessor) player.serverLevel().getChunkSource().chunkMap).kegare$entityMap().get(player.getId());
+        Object tracked = ((ChunkMapAccessor) player.level().getChunkSource().chunkMap).kegare$entityMap().get(player.getId());
         if (!(tracked instanceof TrackedEntityAccessor accessor)) return List.of();
         List<ServerPlayer> out = new ArrayList<>();
         for (ServerPlayerConnection connection : accessor.kegare$seenBy()) out.add(connection.getPlayer());

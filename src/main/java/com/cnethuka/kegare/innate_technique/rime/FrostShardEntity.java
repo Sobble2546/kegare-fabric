@@ -18,7 +18,7 @@ public class FrostShardEntity extends RimeProjectile {
     }
 
     FrostShardEntity(Level level, LivingEntity caster) {
-        super(RimeRegistry.FROST_SHARD.get(), caster, level);
+        super(RimeRegistry.FROST_SHARD.get(), caster, level, RimeRegistry.FROST_SHARD_ITEM.get());
         this.damage = RimeConfig.SHARD_DAMAGE.get().floatValue();
         this.lifetime = Math.max(1, RimeConfig.ticks(RimeConfig.SHARD_RANGE_SECONDS));
     }
@@ -52,7 +52,7 @@ public class FrostShardEntity extends RimeProjectile {
     @Override
     protected void onLivingHit(LivingEntity target, @Nullable ServerPlayer caster) {
         int slow = RimeConfig.ticks(RimeConfig.SHARD_SLOWNESS_SECONDS);
-        if (slow > 0) target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, slow, RimeConfig.SHARD_SLOWNESS_AMPLIFIER.get()), caster);
+        if (slow > 0) target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, slow, RimeConfig.SHARD_SLOWNESS_AMPLIFIER.get()), caster);
         FreezeService.addStacks(target, RimeConfig.SHARD_FREEZE_STACKS.get(), caster);
         if (caster != null && target instanceof ServerPlayer && target != caster) {
             RimeAdvancements.award(caster, RimeAdvancements.COLD_OPEN);

@@ -16,11 +16,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.level.block.Blocks;
 import com.cnethuka.kegare.platform.NeoForge;
 import com.cnethuka.kegare.platform.event.entity.player.AttackEntityEvent;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -59,8 +59,8 @@ class LightsOutTest {
         TestServer.onServerThread(server, () -> {
             TestServer.ensureOverworld(server);
             ServerLevel level = server.overworld();
-            server.setPvpAllowed(true);
-            boolean rule = level.getGameRules().getBoolean(BattleDamage.RULE);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
+            boolean rule = level.getGameRules().get(BattleDamage.RULE);
             BlockPos[] wall = {new BlockPos(3, (int) Y, 8), new BlockPos(3, (int) Y + 1, 8), new BlockPos(3, (int) Y, 12), new BlockPos(3, (int) Y + 1, 12),
                     new BlockPos(3, (int) Y, 4), new BlockPos(3, (int) Y + 1, 4)};
             Zombie zombie = new Zombie(EntityType.ZOMBIE, level);
@@ -69,10 +69,10 @@ class LightsOutTest {
                 ServerPlayer p = player(server, "lights_p");
                 ServerPlayer q = player(server, "lights_q");
                 ServerPlayer o = player(server, "lights_o");
-                p.moveTo(-1.5, Y, 8.5, -90f, 0f);
+                p.snapTo(-1.5, Y, 8.5, -90f, 0f);
 
                 // A mob slammed: never.
-                zombie.moveTo(0.3, Y, 4.5, 0f, 0f);
+                zombie.snapTo(0.3, Y, 4.5, 0f, 0f);
                 zombie.setNoGravity(true);
                 zombie.setNoAi(true);
                 level.addFreshEntity(zombie);
@@ -81,24 +81,24 @@ class LightsOutTest {
                 assertFalse(TestServer.hasAdvancement(server, p, FistsAdvancements.LIGHTS_OUT), "a mob never counts");
 
                 // Battle damage off: the same slam counts, and breaks nothing.
-                level.getGameRules().getRule(BattleDamage.RULE).set(false, server);
-                q.moveTo(0.3, Y, 8.5, 90f, 0f);
+                level.getGameRules().set(BattleDamage.RULE, false, server);
+                q.snapTo(0.3, Y, 8.5, 90f, 0f);
                 spark(p, q);
                 flyIntoTheWall(level, q, 8.5);
                 assertTrue(TestServer.hasAdvancement(server, p, FistsAdvancements.LIGHTS_OUT), "Lights Out, with battle damage off");
                 assertSame(Blocks.STONE, level.getBlockState(wall[0]).getBlock(), "and no crater");
 
                 // On: a crater, and it counts for anyone.
-                level.getGameRules().getRule(BattleDamage.RULE).set(true, server);
+                level.getGameRules().set(BattleDamage.RULE, true, server);
                 ServerPlayer p2 = player(server, "lights_p2");
-                p2.moveTo(-1.5, Y, 12.5, -90f, 0f);
-                o.moveTo(0.3, Y, 12.5, 90f, 0f);
+                p2.snapTo(-1.5, Y, 12.5, -90f, 0f);
+                o.snapTo(0.3, Y, 12.5, 90f, 0f);
                 spark(p2, o);
                 flyIntoTheWall(level, o, 12.5);
                 assertTrue(TestServer.hasAdvancement(server, p2, FistsAdvancements.LIGHTS_OUT), "Lights Out");
             } finally {
                 zombie.discard();
-                level.getGameRules().getRule(BattleDamage.RULE).set(rule, server);
+                level.getGameRules().set(BattleDamage.RULE, rule, server);
                 for (BlockPos at : wall) level.setBlock(at, Blocks.AIR.defaultBlockState(), 3);
                 WallSlams.clear();
                 BlackSpark.clear();

@@ -1,17 +1,20 @@
 package com.cnethuka.kegare.innate_technique.puppet_manipulation;
 
+import com.cnethuka.kegare.platform.saved.SavedDataCompat;
+import com.mojang.serialization.Codec;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 
 /**
  * Every puppet in the world, loaded or not ({@code data/kegare_puppets.dat} in the overworld), by owner:
@@ -24,7 +27,9 @@ import net.minecraft.world.level.saveddata.SavedData;
  */
 public final class PuppetSavedData extends SavedData {
     private static final String NAME = "kegare_puppets";
-    private static final SavedData.Factory<PuppetSavedData> FACTORY = new SavedData.Factory<>(PuppetSavedData::new, PuppetSavedData::load);
+    /** The same compound the NeoForge build wrote ({@code Owners} list), so an existing {@code data/kegare_puppets.dat} reads back. */
+    private static final Codec<PuppetSavedData> CODEC = CompoundTag.CODEC.xmap(PuppetSavedData::load, d -> d.save(new CompoundTag()));
+    private static final SavedDataType<PuppetSavedData> TYPE = SavedDataCompat.type(NAME, PuppetSavedData::new, CODEC);
 
     private static final class Owner {
         int generation;
@@ -34,7 +39,7 @@ public final class PuppetSavedData extends SavedData {
     private final Map<UUID, Owner> owners = new HashMap<>();
 
     public static PuppetSavedData get(MinecraftServer server) {
-        return server.overworld().getDataStorage().computeIfAbsent(FACTORY, NAME);
+        return server.overworld().getDataStorage().computeIfAbsent(TYPE);
     }
 
     public int count(UUID owner) {
@@ -69,29 +74,26 @@ public final class PuppetSavedData extends SavedData {
         setDirty();
     }
 
-    private static PuppetSavedData load(CompoundTag tag, HolderLookup.Provider registries) {
+    private static PuppetSavedData load(CompoundTag tag) {
         PuppetSavedData data = new PuppetSavedData();
-        ListTag list = tag.getList("Owners", Tag.TAG_COMPOUND);
-        for (int i = 0; i < list.size(); i++) {
-            CompoundTag entry = list.getCompound(i);
+        for (Tag t : tag.getListOrEmpty("Owners")) {
+            if (!(t instanceof CompoundTag entry)) continue;
             Owner o = new Owner();
-            o.generation = entry.getInt("Generation");
-            ListTag puppets = entry.getList("Puppets", Tag.TAG_INT_ARRAY);
-            for (Tag p : puppets) o.puppets.add(NbtUtils.loadUUID(p));
-            data.owners.put(entry.getUUID("Owner"), o);
+            o.generation = entry.getIntOr("Generation", 0);
+            for (Tag p : entry.getListOrEmpty("Puppets")) UUIDUtil.CODEC.parse(NbtOps.INSTANCE, p).result().ifPresent(o.puppets::add);
+            entry.read("Owner", UUIDUtil.CODEC).ifPresent(id -> data.owners.put(id, o));
         }
         return data;
     }
 
-    @Override
-    public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
+    private CompoundTag save(CompoundTag tag) {
         ListTag list = new ListTag();
         owners.forEach((id, o) -> {
             CompoundTag entry = new CompoundTag();
-            entry.putUUID("Owner", id);
+            entry.store("Owner", UUIDUtil.CODEC, id);
             entry.putInt("Generation", o.generation);
             ListTag puppets = new ListTag();
-            for (UUID p : o.puppets) puppets.add(NbtUtils.createUUID(p));
+            for (UUID p : o.puppets) UUIDUtil.CODEC.encodeStart(NbtOps.INSTANCE, p).result().ifPresent(puppets::add);
             entry.put("Puppets", puppets);
             list.add(entry);
         });

@@ -26,6 +26,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
+import com.cnethuka.kegare.platform.EntityCompat;
 import com.cnethuka.kegare.platform.event.entity.living.LivingIncomingDamageEvent;
 
 /**
@@ -148,7 +149,7 @@ public final class BlackSpark {
         if (!CombatHelper.isBoss(target)) KNOCK.put(target, attacker);
         BlackSparkFx.play(attacker, target);
         if (TimingLog.any()) {
-            TimingLog.send(attacker.server, String.format(Locale.ROOT, "  power: hit %.2f, x%.2f -> %.2f before %s's defences",
+            TimingLog.send(attacker.level().getServer(), String.format(Locale.ROOT, "  power: hit %.2f, x%.2f -> %.2f before %s's defences",
                     hit, multiplier, amount * multiplier, target.getName().getString()));
         }
         InsightHooks.firstBlackSpark(attacker);
@@ -171,13 +172,13 @@ public final class BlackSpark {
             if (!target.isAlive() || target.level() != attacker.level()) return;
             Vec3 away = target.position().subtract(attacker.position());
             target.knockback(strength, -away.x, -away.z);
-            target.hurtMarked = true;
+            EntityCompat.markHurt(target);
         });
     }
 
     private static void log(ServerPlayer attacker, LivingEntity target, String what) {
         if (TimingLog.any()) {
-            TimingLog.send(attacker.server, "Black Spark try, " + attacker.getGameProfile().getName() + " (" + SubTick.describe(attacker) + ") -> "
+            TimingLog.send(attacker.level().getServer(), "Black Spark try, " + attacker.getGameProfile().name() + " (" + SubTick.describe(attacker) + ") -> "
                     + target.getName().getString() + ": " + what);
         }
     }

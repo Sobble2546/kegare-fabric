@@ -5,6 +5,7 @@ import com.cnethuka.kegare.melee.MeleeHits;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
+import com.cnethuka.kegare.platform.EntityCompat;
 import com.cnethuka.kegare.platform.bus.SubscribeEvent;
 import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
 import com.cnethuka.kegare.platform.event.entity.living.LivingIncomingDamageEvent;
@@ -27,7 +28,7 @@ public final class FistsEvents {
         DamageSource source = event.getSource();
         if (!(event.getEntity().level() instanceof ServerLevel level)) return;
         if (SecondImpact.isSecondImpact(source)) { // it doesn't add to the hurt cooldown the Strike started
-            event.setInvulnerabilityTicks(event.getEntity().invulnerableTime);
+            event.setInvulnerabilityTicks(EntityCompat.invulnerableTime(event.getEntity()));
             return;
         }
         if (!(source.getEntity() instanceof ServerPlayer attacker) || !ReinforcedFists.isOn(attacker)) return;

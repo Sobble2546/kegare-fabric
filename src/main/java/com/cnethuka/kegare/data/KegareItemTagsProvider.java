@@ -1,27 +1,28 @@
 package com.cnethuka.kegare.data;
 
-import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.registry.KegareItems;
 import com.cnethuka.kegare.registry.KegareTags;
+import com.cnethuka.kegare.sixeyes.Eyewear;
 import java.util.concurrent.CompletableFuture;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.data.PackOutput;
-import net.minecraft.data.tags.ItemTagsProvider;
-import net.minecraft.data.tags.TagsProvider;
-import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 
-public final class KegareItemTagsProvider extends ItemTagsProvider {
-    public KegareItemTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup,
-                                  CompletableFuture<TagsProvider.TagLookup<Block>> blockTags, ExistingFileHelper files) {
-        super(output, lookup, blockTags, Kegare.MODID, files);
+public final class KegareItemTagsProvider extends FabricTagProvider.ItemTagProvider {
+    /** Trinkets' eyes slot takes what this tag holds (the slot itself: data/trinkets/slots/head/eyes.json). */
+    public static final TagKey<Item> EYES = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("trinkets", Eyewear.SLOT_ID));
+
+    public KegareItemTagsProvider(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+        super(output, registries);
     }
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
-        tag(KegareTags.TALISMANS).add(KegareItems.PURIFICATION_TALISMAN.get());
-        // Curios' "eyes" slot takes what this tag holds (the slot itself: data/kegare/curios).
-        tag(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, net.minecraft.resources.Identifier.fromNamespaceAndPath("curios", "eyes")))
-                .add(KegareItems.BLINDFOLD.get(), KegareItems.SUNGLASSES.get());
+        valueLookupBuilder(KegareTags.TALISMANS).add(KegareItems.PURIFICATION_TALISMAN.get());
+        valueLookupBuilder(EYES).add(KegareItems.BLINDFOLD.get(), KegareItems.SUNGLASSES.get());
     }
 }

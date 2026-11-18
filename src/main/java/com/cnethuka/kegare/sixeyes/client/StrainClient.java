@@ -20,7 +20,7 @@ import com.cnethuka.kegare.platform.bus.IEventBus;
 import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
 import com.cnethuka.kegare.platform.client.event.ClientTickEvent;
 import com.cnethuka.kegare.platform.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import com.cnethuka.kegare.platform.client.gui.VanillaGuiLayers;
 import com.cnethuka.kegare.platform.NeoForge;
 
 /**

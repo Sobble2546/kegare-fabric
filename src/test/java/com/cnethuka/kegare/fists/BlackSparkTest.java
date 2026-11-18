@@ -23,13 +23,13 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import com.cnethuka.kegare.platform.NeoForge;
 import com.cnethuka.kegare.platform.event.entity.player.AttackEntityEvent;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -48,7 +48,7 @@ class BlackSparkTest {
     }
 
     static <T extends LivingEntity> T place(ServerLevel level, T mob, double x, double z) {
-        mob.moveTo(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING, 8, 8), z, 0f, 0f);
+        mob.snapTo(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING, 8, 8), z, 0f, 0f);
         mob.setNoGravity(true);
         if (mob instanceof net.minecraft.world.entity.Mob m) m.setNoAi(true);
         level.addFreshEntity(mob);
@@ -118,7 +118,7 @@ class BlackSparkTest {
                 p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 0));
                 assertTrue(SparkWindow.body(p) < healthy, "Weakness: narrower");
                 p.removeAllEffects();
-                p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 200, 1));
+                p.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 200, 1));
                 assertTrue(SparkWindow.body(p) < healthy, "Slowness: narrower");
                 p.removeAllEffects();
                 FreezeService.addStacks(p, 2, null);
@@ -221,7 +221,7 @@ class BlackSparkTest {
                 assertEquals(fist * BlackSpark.multiplier(fist), swing(p, golem, 1f), EPS, "forced");
 
                 // It throws them back (a golem doesn't budge for anyone; a zombie does).
-                net.minecraft.world.entity.monster.Zombie zombie = place(level, new net.minecraft.world.entity.monster.Zombie(EntityType.ZOMBIE, level), 4.5, 6.5);
+                net.minecraft.world.entity.monster.zombie.Zombie zombie = place(level, new net.minecraft.world.entity.monster.zombie.Zombie(EntityType.ZOMBIE, level), 4.5, 6.5);
                 try {
                     BlackSpark.force(p);
                     swing(p, zombie, 1f);

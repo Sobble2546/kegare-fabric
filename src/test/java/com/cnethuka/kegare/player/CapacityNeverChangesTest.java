@@ -27,14 +27,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import javax.annotation.Nullable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import com.cnethuka.kegare.platform.FakePlayerFactory;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -124,27 +123,20 @@ class CapacityNeverChangesTest {
     }
 
     /**
-     * The testframework's ephemeral server defines FLAT dimensions but never loads them, and a player needs a world.
+     * The ephemeral test server defines FLAT dimensions but never loads them, and a player needs a world.
      * Creates the levels the way server startup does (MinecraftServer#createLevels is protected; test-only reflection).
      */
     private static void ensureOverworld(MinecraftServer server) {
         if (server.overworld() != null) return;
         try {
-            Method createLevels = MinecraftServer.class.getDeclaredMethod("createLevels", ChunkProgressListener.class);
+            Method createLevels = MinecraftServer.class.getDeclaredMethod("createLevels");
             createLevels.setAccessible(true);
-            createLevels.invoke(server, NO_PROGRESS);
+            createLevels.invoke(server);
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("couldn't create the test server's levels", e);
         }
         assertTrue(server.overworld() != null, "test server has no overworld");
     }
-
-    private static final ChunkProgressListener NO_PROGRESS = new ChunkProgressListener() {
-        @Override public void updateSpawnPos(ChunkPos center) {}
-        @Override public void onStatusChange(ChunkPos pos, @Nullable ChunkStatus status) {}
-        @Override public void start() {}
-        @Override public void stop() {}
-    };
 
     private static InnateTechnique currentOrNull(ServerPlayer player) {
         return InnateTechniqueService.current(player).orElse(null);

@@ -88,7 +88,7 @@ public final class Reads {
     /** What this bearer reads now. */
     public static ReadsPayload build(ServerPlayer bearer) {
         List<ReadsPayload.Glance> glances = new ArrayList<>();
-        for (ServerPlayer other : bearer.serverLevel().players()) {
+        for (ServerPlayer other : bearer.level().players()) {
             if (other == bearer || other.isSpectator() || !other.isAlive() || other.distanceTo(bearer) > RANGE) continue;
             glances.add(glance(other));
         }
@@ -117,7 +117,7 @@ public final class Reads {
     static List<LivingEntity> mobsInView(ServerPlayer bearer) {
         Vec3 eye = bearer.getEyePosition(), look = bearer.getLookAngle();
         List<LivingEntity> out = new ArrayList<>();
-        for (Entity e : bearer.serverLevel().getEntities(bearer, bearer.getBoundingBox().inflate(MOB_RANGE), Reads::readableMob)) {
+        for (Entity e : bearer.level().getEntities(bearer, bearer.getBoundingBox().inflate(MOB_RANGE), Reads::readableMob)) {
             if (e.distanceTo(bearer) <= MOB_RANGE && angle(eye, look, e) <= VIEW_DEGREES) out.add((LivingEntity) e);
         }
         out.sort(Comparator.comparingDouble(e -> e.distanceToSqr(bearer)));
@@ -138,7 +138,7 @@ public final class Reads {
         Vec3 eye = bearer.getEyePosition(), look = bearer.getLookAngle();
         LivingEntity best = null;
         double bestAngle = FOCUS_DEGREES;
-        for (ServerPlayer other : bearer.serverLevel().players()) {
+        for (ServerPlayer other : bearer.level().players()) {
             if (other == bearer || other.isSpectator() || !other.isAlive() || other.distanceTo(bearer) > RANGE) continue;
             double angle = angle(eye, look, other);
             if (angle < bestAngle) {
@@ -146,7 +146,7 @@ public final class Reads {
                 best = other;
             }
         }
-        for (Entity e : bearer.serverLevel().getEntities(bearer, bearer.getBoundingBox().inflate(RANGE), Reads::readableMob)) {
+        for (Entity e : bearer.level().getEntities(bearer, bearer.getBoundingBox().inflate(RANGE), Reads::readableMob)) {
             double angle = angle(eye, look, e);
             if (e.distanceTo(bearer) <= RANGE && angle < bestAngle) {
                 bestAngle = angle;

@@ -34,7 +34,7 @@ public final class SeveredBody {
     /** Toughness, on what's left after armour. */
     static void onDamage(LivingDamageEvent.Pre event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || !Severed.is(player) || event.getNewDamage() <= 0) return;
-        event.setNewDamage(event.getNewDamage() * taken(event.getSource(), player.serverLevel()));
+        event.setNewDamage(event.getNewDamage() * taken(event.getSource(), player.level()));
     }
 
     static float strength() {

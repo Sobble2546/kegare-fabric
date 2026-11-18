@@ -1,5 +1,6 @@
 package com.cnethuka.kegare.innate_technique.swap;
 
+import com.cnethuka.kegare.platform.EntityCompat;
 import com.cnethuka.kegare.innatetechnique.AbilityContext;
 import com.cnethuka.kegare.innatetechnique.CastManager;
 import com.cnethuka.kegare.innatetechnique.CastType;
@@ -40,7 +41,7 @@ public final class MomentumExchangeAbility extends SwapAbility.Special {
         setMotion(target, casterMotion);
         Swapper.landed(caster, target, 0, casterMotion.length(), 0);
         SwapTracker.momentum(caster, target);
-        float casterFall = caster.fallDistance;
+        double casterFall = caster.fallDistance;
         caster.fallDistance = target.fallDistance;
         target.fallDistance = casterFall;
         VisualService.playOnce(caster, SwapIds.MOMENTUM_BURST);
@@ -53,6 +54,6 @@ public final class MomentumExchangeAbility extends SwapAbility.Special {
     private static void setMotion(LivingEntity entity, Vec3 motion) {
         entity.setDeltaMovement(motion);
         if (entity instanceof ServerPlayer player) player.setKnownMovement(motion);
-        entity.hurtMarked = true;
+        EntityCompat.markHurt(entity);
     }
 }

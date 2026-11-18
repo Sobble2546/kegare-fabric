@@ -19,10 +19,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.Cow;
+import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -41,7 +41,7 @@ class RimeSpecialsTest {
             ServerPlayer p = TestServer.player(server, "rime_specials");
             BirthService.rebirth(p, OptionalInt.of(1000));
             InnateTechniqueService.setInnateTechnique(p, Rime.RIME.get());
-            p.moveTo(0.5, ground, 0.5, 0f, 0f);
+            p.snapTo(0.5, ground, 0.5, 0f, 0f);
             p.setOnGround(true);
             MaliceService.refill(p);
 
@@ -77,7 +77,7 @@ class RimeSpecialsTest {
             assertEquals(1, spires.size(), "the spire marker");
             GlacialSpireEntity spire = spires.get(0);
             Cow cow = new Cow(EntityType.COW, level);
-            cow.moveTo(spire.getX() + 0.3, spire.getY(), spire.getZ(), 0f, 0f);
+            cow.snapTo(spire.getX() + 0.3, spire.getY(), spire.getZ(), 0f, 0f);
             level.addFreshEntity(cow);
             spire.tickCount = RimeConfig.ticks(RimeConfig.SPIRE_DELAY);
             spire.tick();
@@ -97,10 +97,10 @@ class RimeSpecialsTest {
             assertNotNull(CastManager.state(p).casting(), "sliding");
             CastManager.tick(p);
             assertTrue(IcePaths.points(level, p.getUUID()) > 0, "ice laid under the feet");
-            cow.moveTo(p.getX(), p.getY(), p.getZ(), 0f, 0f);
+            cow.snapTo(p.getX(), p.getY(), p.getZ(), 0f, 0f);
             while (level.getGameTime() % 4 != 0) TestServer.advanceGameTime(server, 1);
             IcePaths.tick(level);
-            assertTrue(cow.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "slowed on the trail");
+            assertTrue(cow.hasEffect(MobEffects.SLOWNESS), "slowed on the trail");
             CastManager.handleIntent(p, CastIntent.SPECIAL_RELEASE);
             assertTrue(InnateTechniqueService.cooldownRemaining(p, Rime.FROST_FIELD) > 0, "shared cooldown with Frost Field");
             TestServer.advanceGameTime(server, RimeConfig.ticks(RimeConfig.PATH_TRAIL_SECONDS) + 1);
@@ -113,7 +113,7 @@ class RimeSpecialsTest {
             InnateTechniqueService.select(p, 3);
             CastManager.handleIntent(p, CastIntent.CAST_PRESS);
             assertTrue(Rime.RIME_SHELL.isActive(p), "setup: shell on");
-            cow.moveTo(p.getX() + 2, p.getY(), p.getZ(), 0f, 0f);
+            cow.snapTo(p.getX() + 2, p.getY(), p.getZ(), 0f, 0f);
             cow.setDeltaMovement(0, 0, 0);
             double withShell = Rime.SHATTER_SHELL.cost(p);
             assertEquals(RimeConfig.SHATTER_COST.get() * RimeEnvironment.evaluate(p).multiplier(), withShell, 1e-6);
@@ -141,16 +141,16 @@ class RimeSpecialsTest {
             BirthService.rebirth(shatterCaster, OptionalInt.of(1000));
             InnateTechniqueService.setInnateTechnique(shatterCaster, Rime.RIME.get());
             InnateTechniqueService.select(shatterCaster, 3);
-            shatterCaster.moveTo(0.5, ground, 0.5, 0f, 0f);
+            shatterCaster.snapTo(0.5, ground, 0.5, 0f, 0f);
             MaliceService.refill(shatterCaster);
             ServerPlayer a = TestServer.player(server, "rime_target_a");
             ServerPlayer b = TestServer.player(server, "rime_target_b");
             ServerPlayer c = TestServer.player(server, "rime_target_c");
             // Fake players aren't in the level until added, and area queries only see entities that are.
             for (ServerPlayer t : List.of(a, b, c)) level.addNewPlayer(t);
-            a.moveTo(shatterCaster.getX() + 2, shatterCaster.getY(), shatterCaster.getZ(), 0f, 0f);
-            b.moveTo(shatterCaster.getX() - 2, shatterCaster.getY(), shatterCaster.getZ(), 0f, 0f);
-            c.moveTo(shatterCaster.getX(), shatterCaster.getY(), shatterCaster.getZ() + 40, 0f, 0f); // out of range for the first burst
+            a.snapTo(shatterCaster.getX() + 2, shatterCaster.getY(), shatterCaster.getZ(), 0f, 0f);
+            b.snapTo(shatterCaster.getX() - 2, shatterCaster.getY(), shatterCaster.getZ(), 0f, 0f);
+            c.snapTo(shatterCaster.getX(), shatterCaster.getY(), shatterCaster.getZ() + 40, 0f, 0f); // out of range for the first burst
             CastManager.handleIntent(shatterCaster, CastIntent.SPECIAL_PRESS);
             assertEquals(RimeConfig.SHATTER_FREEZE_STACKS.get(), FreezeService.stacks(a), "setup: the burst reached the players");
             assertEquals(0, FreezeService.stacks(c), "setup: the far one was out of range");
@@ -158,12 +158,12 @@ class RimeSpecialsTest {
             InnateTechniqueService.clearCooldowns(shatterCaster);
             MaliceService.refill(shatterCaster);
             for (ServerPlayer t : List.of(a, b, c)) FreezeService.clear(t);
-            a.moveTo(shatterCaster.getX() + 2, shatterCaster.getY(), shatterCaster.getZ(), 0f, 0f);
-            b.moveTo(shatterCaster.getX() - 2, shatterCaster.getY(), shatterCaster.getZ(), 0f, 0f);
-            c.moveTo(shatterCaster.getX(), shatterCaster.getY(), shatterCaster.getZ() + 2, 0f, 0f);
+            a.snapTo(shatterCaster.getX() + 2, shatterCaster.getY(), shatterCaster.getZ(), 0f, 0f);
+            b.snapTo(shatterCaster.getX() - 2, shatterCaster.getY(), shatterCaster.getZ(), 0f, 0f);
+            c.snapTo(shatterCaster.getX(), shatterCaster.getY(), shatterCaster.getZ() + 2, 0f, 0f);
             CastManager.handleIntent(shatterCaster, CastIntent.SPECIAL_PRESS);
             for (ServerPlayer t : List.of(a, b, c)) {
-                assertEquals(RimeConfig.SHATTER_FREEZE_STACKS.get(), FreezeService.stacks(t), "setup: the second burst reached " + t.getGameProfile().getName());
+                assertEquals(RimeConfig.SHATTER_FREEZE_STACKS.get(), FreezeService.stacks(t), "setup: the second burst reached " + t.getGameProfile().name());
             }
             assertTrue(Rime.holds(shatterCaster), "setup: the caster holds Rime");
             assertTrue(hasAdvancement(server, shatterCaster, RimeAdvancements.SHATTERED_PRESSURE), "three players in one burst");
@@ -176,12 +176,8 @@ class RimeSpecialsTest {
 
     private static ServerPlayer withRealAdvancements(MinecraftServer server, ServerLevel level, String name) {
         java.util.UUID uuid = java.util.UUID.nameUUIDFromBytes(("kegare-test:" + name).getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        return new net.fabricmc.fabric.api.entity.FakePlayer(level, new com.mojang.authlib.GameProfile(uuid, name)) {
-            @Override
-            public boolean isFakePlayer() {
-                return false; // NeoForge gives fake players throwaway advancements; this one keeps real ones
-            }
-        };
+        // A Fabric API fake player keeps real advancements; it counts as a real player to Kegare's code.
+        return com.cnethuka.kegare.platform.Players.treatAsReal(new net.fabricmc.fabric.api.entity.FakePlayer(level, new com.mojang.authlib.GameProfile(uuid, name)) {});
     }
 
     private static boolean hasAdvancement(MinecraftServer server, ServerPlayer p, net.minecraft.resources.Identifier id) {

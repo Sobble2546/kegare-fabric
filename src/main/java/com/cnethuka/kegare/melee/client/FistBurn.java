@@ -7,7 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.world.entity.player.Player;
 import org.joml.Vector3f;
 
@@ -62,8 +63,7 @@ public final class FistBurn {
         return shown == null || !shown.has(FistsPayload.ZONE) ? null : MeleeTell.bright(shown.color()) & 0xFFFFFF;
     }
 
-    private static final net.minecraft.client.renderer.RenderType FLICKER = net.minecraft.client.renderer.RenderType.entityTranslucentEmissive(
-            net.minecraft.resources.Identifier.withDefaultNamespace("textures/misc/white.png"));
+    private static final net.minecraft.resources.Identifier WHITE = net.minecraft.resources.Identifier.withDefaultNamespace("textures/misc/white.png");
     private static final int BLACK = 0x050307;
     /** How many chips can be round a fist at once, and how often one shows (per tick, each). */
     private static final int FLICKER_CHIPS = 4;
@@ -73,22 +73,23 @@ public final class FistBurn {
      * The zone, on one fist: a faint flicker of black sparks, a few small chips with a rim of the color, here for a tick and gone, never the
      * same place twice. With the pose in the arm's space.
      */
-    static void drawFlicker(PoseStack pose, MultiBufferSource buffers, int rgb, int tick, int seed, boolean slim, boolean leftArm, Vector3f toCamera) {
-        Vector3f look = pose.last().normal().transformTranspose(toCamera, new Vector3f()).normalize();
-        Vector3f right = new Vector3f(look).cross(0f, 1f, 0f);
-        if (right.lengthSquared() < 1.0e-6f) right.set(1f, 0f, 0f);
-        right.normalize();
-        Vector3f up = new Vector3f(right).cross(look).normalize();
-        float cx = FistShellMesh.armCentre(slim, leftArm), cy = FistShellMesh.fistY();
-        com.mojang.blaze3d.vertex.VertexConsumer out = buffers.getBuffer(FLICKER);
-        net.minecraft.util.RandomSource r = net.minecraft.util.RandomSource.create(tick * 341873128712L + seed * 132897987541L);
-        for (int i = 0; i < FLICKER_CHIPS; i++) {
-            float x = cx + (r.nextFloat() - 0.5f) * 0.42f, y = cy + (r.nextFloat() - 0.6f) * 0.4f, z = (r.nextFloat() - 0.5f) * 0.42f;
-            float size = 0.022f + 0.018f * r.nextFloat();
-            if (r.nextFloat() > FLICKER_CHANCE) continue;
-            chip(out, pose.last(), x, y, z, right, up, size * 1.7f, rgb);
-            chip(out, pose.last(), x + look.x * 0.004f, y + look.y * 0.004f, z + look.z * 0.004f, right, up, size, BLACK);
-        }
+    static void drawFlicker(PoseStack pose, SubmitNodeCollector collector, int rgb, int tick, int seed, boolean slim, boolean leftArm, Vector3f toCamera) {
+        collector.submitCustomGeometry(pose, RenderTypes.entityTranslucentEmissive(WHITE), (p, out) -> {
+            Vector3f look = p.normal().transformTranspose(toCamera, new Vector3f()).normalize();
+            Vector3f right = new Vector3f(look).cross(0f, 1f, 0f);
+            if (right.lengthSquared() < 1.0e-6f) right.set(1f, 0f, 0f);
+            right.normalize();
+            Vector3f up = new Vector3f(right).cross(look).normalize();
+            float cx = FistShellMesh.armCentre(slim, leftArm), cy = FistShellMesh.fistY();
+            net.minecraft.util.RandomSource r = net.minecraft.util.RandomSource.create(tick * 341873128712L + seed * 132897987541L);
+            for (int i = 0; i < FLICKER_CHIPS; i++) {
+                float x = cx + (r.nextFloat() - 0.5f) * 0.42f, y = cy + (r.nextFloat() - 0.6f) * 0.4f, z = (r.nextFloat() - 0.5f) * 0.42f;
+                float size = 0.022f + 0.018f * r.nextFloat();
+                if (r.nextFloat() > FLICKER_CHANCE) continue;
+                chip(out, p, x, y, z, right, up, size * 1.7f, rgb);
+                chip(out, p, x + look.x * 0.004f, y + look.y * 0.004f, z + look.z * 0.004f, right, up, size, BLACK);
+            }
+        });
     }
 
     private static void chip(com.mojang.blaze3d.vertex.VertexConsumer out, PoseStack.Pose pose, float x, float y, float z, Vector3f right, Vector3f up,

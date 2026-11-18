@@ -30,7 +30,7 @@ final class TimeTargeting {
         LivingEntity best = null;
         double bestDistance = Double.MAX_VALUE;
         AABB search = caster.getBoundingBox().expandTowards(look.scale(reach)).inflate(1.0 + tolerance);
-        for (LivingEntity other : caster.serverLevel().getEntitiesOfClass(LivingEntity.class, search,
+        for (LivingEntity other : caster.level().getEntitiesOfClass(LivingEntity.class, search,
                 e -> e != caster && e.isAlive() && !e.isSpectator() && !(e instanceof ArmorStand))) {
             AABB box = other.getBoundingBox().inflate(tolerance);
             Optional<Vec3> hit = box.contains(eye) ? Optional.of(eye) : box.clip(eye, end);

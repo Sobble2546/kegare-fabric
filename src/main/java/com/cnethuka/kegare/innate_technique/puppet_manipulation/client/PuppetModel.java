@@ -1,36 +1,50 @@
 package com.cnethuka.kegare.innate_technique.puppet_manipulation.client;
 
-import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetEntity;
-import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.player.PlayerModel;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import org.joml.Vector3f;
 
 /**
- * The owner's player model, posed like a player, plus the idle spin's arm and head keyframes while spinning
- * ({@link PuppetPoses}; the whole-body turn is applied by the renderer).
+ * The owner's player model, posed like a player (crouching, arms held out for what it holds: both are in the render state, see
+ * {@link PuppetRenderer}), plus the idle spin's arm and head keyframes while spinning ({@link PuppetPoses}; the whole-body turn is
+ * applied by the renderer). It is posed when it is drawn, from the render state alone.
  */
-public class PuppetModel extends PlayerModel<PuppetEntity> {
+public class PuppetModel extends PlayerModel {
     public PuppetModel(ModelPart root, boolean slim) {
         super(root, slim);
     }
 
     @Override
-    public void setupAnim(PuppetEntity puppet, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-        // Like a player: crouching, and arms held out for whatever it holds (a Stand-In borrows its owner's items).
-        crouching = puppet.isCrouching();
-        rightArmPose = puppet.getMainHandItem().isEmpty() ? ArmPose.EMPTY : ArmPose.ITEM;
-        leftArmPose = puppet.getOffhandItem().isEmpty() ? ArmPose.EMPTY : ArmPose.ITEM;
-        super.setupAnim(puppet, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
-        if (!puppet.isSpinning()) return;
+    public void setupAnim(AvatarRenderState state) {
+        super.setupAnim(state);
+        spin(this, state);
+    }
+
+    /** The idle spin's arm and head keyframes, if the state is a spinning puppet's. */
+    static void spin(HumanoidModel<?> model, AvatarRenderState state) {
+        PuppetRenderer.Look look = state.getData(PuppetRenderer.LOOK);
+        if (look == null || !look.spinning()) return;
         PuppetPoses.idleSpin().ifPresent(clip -> {
-            float t = puppet.spinSeconds(ageInTicks - puppet.tickCount);
-            apply(clip.rotation("right_arm", t), rightArm);
-            apply(clip.rotation("left_arm", t), leftArm);
-            apply(clip.rotation("head", t), head);
-            apply(clip.rotation("head", t), hat);
-            rightSleeve.copyFrom(rightArm);
-            leftSleeve.copyFrom(leftArm);
+            float t = look.spinSeconds();
+            apply(clip.rotation("right_arm", t), model.rightArm);
+            apply(clip.rotation("left_arm", t), model.leftArm);
+            apply(clip.rotation("head", t), model.head); // the hat and the sleeves are children of these parts: they follow
         });
+    }
+
+    /** The armor a puppet wears: posed from the state alone like any armor model, so it takes the spin's keyframes itself. */
+    static final class Armor extends HumanoidModel<AvatarRenderState> {
+        Armor(ModelPart root) {
+            super(root);
+        }
+
+        @Override
+        public void setupAnim(AvatarRenderState state) {
+            super.setupAnim(state);
+            spin(this, state);
+        }
     }
 
     /** Degrees on the model's own axes (player_animations/puppet_manipulation.json): x negative = arm forward, z positive = right arm out. */

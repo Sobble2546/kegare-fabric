@@ -11,8 +11,12 @@ import com.cnethuka.kegare.melee.MeleeHudPayload;
 import com.cnethuka.kegare.melee.MeleeIds;
 import com.cnethuka.kegare.melee.MeleeIntentPayload;
 import com.cnethuka.kegare.client.visual.VanillaFallback;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.particles.ParticleTypes;
@@ -22,6 +26,7 @@ import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
 import com.cnethuka.kegare.platform.client.event.ClientTickEvent;
 import com.cnethuka.kegare.platform.client.event.InputEvent;
 import com.cnethuka.kegare.platform.NeoForge;
+import com.cnethuka.kegare.platform.net.ClientNet;
 import com.cnethuka.kegare.platform.net.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
@@ -101,6 +106,10 @@ public final class MeleeClient {
             parryHeld = false;
             return;
         }
+        if (!ClientNet.isActive()) {
+            while (KegareKeys.DASH.consumeClick() | KegareKeys.PARRY.consumeClick()) { /* off a Kegare server: swallow the keys, send nothing */ }
+            return;
+        }
         while (KegareKeys.DASH.consumeClick()) dash(mc);
         boolean clicked = false;
         while (KegareKeys.PARRY.consumeClick()) clicked = true;
@@ -114,23 +123,23 @@ public final class MeleeClient {
     /** Sprint is Ctrl unless it's been rebound, so the double tap follows it. Holding it to sprint is one press. */
     private static void onKey(InputEvent.Key event) {
         Minecraft mc = Minecraft.getInstance();
-        if (event.getAction() == GLFW.GLFW_PRESS && mc.options.keySprint.matches(event.getKey(), event.getScanCode())) sprintPressed(mc);
+        if (event.getAction() == GLFW.GLFW_PRESS && mc.options.keySprint.matches(new KeyEvent(event.getKey(), event.getScanCode(), event.getModifiers()))) sprintPressed(mc);
     }
 
     private static void onMouse(InputEvent.MouseButton.Post event) {
         Minecraft mc = Minecraft.getInstance();
-        if (event.getAction() == GLFW.GLFW_PRESS && mc.options.keySprint.matchesMouse(event.getButton())) sprintPressed(mc);
+        if (event.getAction() == GLFW.GLFW_PRESS && mc.options.keySprint.matchesMouse(new MouseButtonEvent(0, 0, new MouseButtonInfo(event.getButton(), event.getModifiers())))) sprintPressed(mc);
     }
 
     private static void sprintPressed(Minecraft mc) {
-        if (mc.screen != null || mc.player == null) return;
+        if (!ClientNet.isActive() || mc.screen != null || mc.player == null) return;
         if (SPRINT_TAPS.press(Util.getMillis(), KegareClientConfig.DASH_DOUBLE_TAP_MILLIS.get())) dash(mc);
     }
 
     private static void dash(Minecraft mc) {
         if (mc.player == null) return;
-        PacketDistributor.sendToServer(new MeleeIntentPayload(MeleeIntentPayload.Action.DASH,
-                (byte) Mth.sign(mc.player.input.forwardImpulse), (byte) Mth.sign(mc.player.input.leftImpulse)));
+        Vec2 move = mc.player.input.getMoveVector(); // x: left, y: forward
+        PacketDistributor.sendToServer(new MeleeIntentPayload(MeleeIntentPayload.Action.DASH, (byte) Mth.sign(move.y), (byte) Mth.sign(move.x)));
     }
 
     private static void send(MeleeIntentPayload.Action action) {

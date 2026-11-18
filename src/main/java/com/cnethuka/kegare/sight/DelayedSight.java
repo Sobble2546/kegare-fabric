@@ -8,13 +8,11 @@ import com.cnethuka.kegare.mixin.TrackedEntityAccessor;
 import com.cnethuka.kegare.severed.Severed;
 import com.cnethuka.kegare.trait.KegareTraits;
 import com.cnethuka.kegare.trait.TraitService;
-import io.netty.buffer.Unpooled;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -30,6 +28,7 @@ import com.cnethuka.kegare.platform.event.tick.ServerTickEvent;
 import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
+import net.minecraft.network.protocol.game.ClientboundEntityPositionSyncPacket;
 import net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -39,6 +38,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.PositionMoveRotation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -138,7 +138,7 @@ public final class DelayedSight {
     /** The mover's hitbox where this viewer sees it. */
     public static AABB seenHitbox(@Nullable Entity viewer, LivingEntity mover) {
         Vec3 at = seenAt(viewer, mover);
-        return mover.getHitbox().move(at.subtract(mover.position()));
+        return mover.getBoundingBox().move(at.subtract(mover.position()));
     }
 
     /** A mob sees a delayed player where they were (bosses see the real one). */
@@ -193,7 +193,7 @@ public final class DelayedSight {
     private static void resync(ServerPlayer player) {
         Object tracked = tracked(player);
         if (!(tracked instanceof TrackedEntityAccessor accessor)) return;
-        Packet<?> teleport = new ClientboundTeleportEntityPacket(player);
+        Packet<?> teleport = new ClientboundTeleportEntityPacket(player.getId(), PositionMoveRotation.of(player), Set.of(), player.onGround());
         Packet<?> head = new ClientboundRotateHeadPacket(player, (byte) Mth.floor(player.getYHeadRot() * 256.0F / 360.0F));
         for (ServerPlayerConnection connection : accessor.kegare$seenBy()) {
             connection.send(teleport);
@@ -204,7 +204,7 @@ public final class DelayedSight {
 
     @Nullable
     private static Object tracked(ServerPlayer player) {
-        ServerLevel level = player.serverLevel();
+        ServerLevel level = player.level();
         return ((ChunkMapAccessor) level.getChunkSource().chunkMap).kegare$entityMap().get(player.getId());
     }
 
@@ -213,26 +213,18 @@ public final class DelayedSight {
         return tracked(player) instanceof TrackedEntityAccessor accessor ? accessor.kegare$seenBy() : null;
     }
 
-    /** A teleport packet to anywhere (vanilla's only takes an entity's own position). */
+    /** A teleport packet to anywhere (vanilla's {@code teleport} helper only takes an entity's own position). 1.21.11 sends floats and a delta. */
     static ClientboundTeleportEntityPacket teleport(int id, Vec3 pos, float yRot, float xRot, boolean onGround) {
-        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
-        buf.writeVarInt(id);
-        buf.writeDouble(pos.x);
-        buf.writeDouble(pos.y);
-        buf.writeDouble(pos.z);
-        buf.writeByte(Mth.floor(yRot * 256.0F / 360.0F));
-        buf.writeByte(Mth.floor(xRot * 256.0F / 360.0F));
-        buf.writeBoolean(onGround);
-        try {
-            return ClientboundTeleportEntityPacket.STREAM_CODEC.decode(buf);
-        } finally {
-            buf.release();
-        }
+        return new ClientboundTeleportEntityPacket(id, new PositionMoveRotation(pos, Vec3.ZERO, yRot, xRot), Set.of(), onGround);
     }
 
-    /** Vanilla's own movement updates for an entity: what a viewer of a delayed player mustn't get. */
+    /**
+     * Vanilla's own movement updates for an entity: what a viewer of a delayed player mustn't get. 1.21.11's tracker sends its periodic and
+     * forced position syncs as {@link ClientboundEntityPositionSyncPacket} (not a teleport), so that one is movement too.
+     */
     public static boolean isMovement(Packet<?> packet) {
         return packet instanceof ClientboundMoveEntityPacket || packet instanceof ClientboundTeleportEntityPacket
+                || packet instanceof ClientboundEntityPositionSyncPacket
                 || packet instanceof ClientboundRotateHeadPacket || packet instanceof ClientboundSetEntityMotionPacket;
     }
 
@@ -264,7 +256,7 @@ public final class DelayedSight {
         }
         long seed = mover.getRandom().nextLong();
         double range = sound.value().getRange(volume);
-        for (ServerPlayer listener : mover.serverLevel().players()) {
+        for (ServerPlayer listener : mover.level().players()) {
             Vec3 at = seenAt(listener, mover);
             if (listener.distanceToSqr(at) > range * range || listener.connection == null) continue;
             listener.connection.send(new ClientboundSoundPacket(sound, source, at.x, at.y, at.z, volume, pitch, seed));

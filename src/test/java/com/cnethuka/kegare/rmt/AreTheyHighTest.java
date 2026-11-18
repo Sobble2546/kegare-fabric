@@ -13,7 +13,7 @@ import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -28,14 +28,14 @@ class AreTheyHighTest {
         ServerPlayer p = TestServer.damageable(server, name);
         server.overworld().addNewPlayer(p);
         BirthService.rebirth(p, OptionalInt.of(1000));
-        p.moveTo(x, 120, 0.5, 0f, 0f);
+        p.snapTo(x, 120, 0.5, 0f, 0f);
         p.setHealth(p.getMaxHealth());
         return p;
     }
 
     /** Two players in a fight, the first having "It's been a while". */
     static ServerPlayer[] fight(MinecraftServer server, String name) {
-        server.setPvpAllowed(true);
+        server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
         ServerPlayer p = player(server, name + "_p", 0.5);
         ServerPlayer q = player(server, name + "_q", 6.5);
         KegareAdvancements.award(p, KegareAdvancements.ITS_BEEN_A_WHILE);
@@ -120,7 +120,7 @@ class AreTheyHighTest {
 
                 // The one they fought is past 16 blocks.
                 ServerPlayer[] far = fight(server, "high_far");
-                far[1].moveTo(30.5, 120, 0.5, 0f, 0f);
+                far[1].snapTo(30.5, 120, 0.5, 0f, 0f);
                 AreTheyHigh.onChat(far[0], FIRST);
                 assertFalse(AreTheyHigh.onChat(far[0], SECOND), "too far");
 

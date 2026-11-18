@@ -1,34 +1,26 @@
 package com.cnethuka.kegare.data;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.data.PackOutput;
-import net.neoforged.neoforge.common.data.AdvancementProvider;
-import net.neoforged.neoforge.common.data.BlockTagsProvider;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
-import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 
-/** {@code ./gradlew runData} writes everything into {@code src/generated/resources}. */
-public final class KegareDataGen {
-    private KegareDataGen() {}
-
-    public static void gather(GatherDataEvent event) {
-        DataGenerator generator = event.getGenerator();
-        PackOutput output = generator.getPackOutput();
-        CompletableFuture<HolderLookup.Provider> lookup = event.getLookupProvider();
-        ExistingFileHelper files = event.getExistingFileHelper();
+/**
+ * {@code ./gradlew runData} (an alias of Fabric's {@code runDatagen}) writes everything into {@code src/generated/resources}. Registered under the
+ * {@code fabric-datagen} entrypoint in fabric.mod.json. The client providers (language, item models, sounds) run in the same pass because the
+ * run configuration is a client one.
+ */
+public final class KegareDataGen implements DataGeneratorEntrypoint {
+    @Override
+    public void onInitializeDataGenerator(FabricDataGenerator generator) {
+        FabricDataGenerator.Pack pack = generator.createPack();
 
         // Assets
-        generator.addProvider(event.includeClient(), new KegareLanguageProvider(output));
-        generator.addProvider(event.includeClient(), new KegareItemModelProvider(output, files));
-        generator.addProvider(event.includeClient(), new KegareSoundProvider(output, files));
+        pack.addProvider(KegareLanguageProvider::new);
+        pack.addProvider(KegareItemModelProvider::new);
+        pack.addProvider(KegareSoundProvider::new);
 
         // Data
-        BlockTagsProvider blockTags = generator.addProvider(event.includeServer(), new KegareBlockTagsProvider(output, lookup, files));
-        generator.addProvider(event.includeServer(), new KegareItemTagsProvider(output, lookup, blockTags.contentsGetter(), files));
-        generator.addProvider(event.includeServer(), new KegareRecipeProvider(output, lookup));
-        generator.addProvider(event.includeServer(), new AdvancementProvider(output, lookup, files, List.of(new KegareAdvancementGenerator())));
+        pack.addProvider(KegareItemTagsProvider::new);
+        pack.addProvider(KegareRecipeProvider::new);
+        pack.addProvider(KegareAdvancementProvider::new);
     }
 }

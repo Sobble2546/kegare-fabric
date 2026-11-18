@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.OptionalInt;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +35,7 @@ class FightTrackerTest {
 
     private static void hit(ServerPlayer attacker, ServerPlayer victim, float amount) {
         victim.invulnerableTime = 0;
-        assertTrue(victim.hurt(attacker.damageSources().playerAttack(attacker), amount), "setup: the hit lands");
+        assertTrue(victim.hurtServer((net.minecraft.server.level.ServerLevel) victim.level(), attacker.damageSources().playerAttack(attacker), amount), "setup: the hit lands");
     }
 
     private static ServerPlayer born(MinecraftServer server, String name) {
@@ -113,7 +113,7 @@ class FightTrackerTest {
             ServerPlayer enemy = born(server, "puppet_enemy");
             InnateTechniqueService.setInnateTechnique(owner, PuppetManipulation.PUPPET_MANIPULATION.get());
             PuppetEntity puppet = Puppets.create(owner, PuppetTier.TAP);
-            assertTrue(enemy.hurt(enemy.damageSources().mobAttack(puppet), 3), "setup");
+            assertTrue(enemy.hurtServer((net.minecraft.server.level.ServerLevel) enemy.level(), enemy.damageSources().mobAttack(puppet), 3), "setup");
             Fight fight = FightTracker.between(owner, enemy);
             assertNotNull(fight, "the owner is in the fight, not the puppet");
             assertEquals(3, fight.side(owner.getUUID()).dealt(), 1.0e-3);

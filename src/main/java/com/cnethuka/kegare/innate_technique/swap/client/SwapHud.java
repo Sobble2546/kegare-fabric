@@ -6,11 +6,12 @@ import com.cnethuka.kegare.innate_technique.swap.SwapIds;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import com.cnethuka.kegare.platform.net.ClientNet;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import com.cnethuka.kegare.platform.bus.IEventBus;
 import com.cnethuka.kegare.platform.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import com.cnethuka.kegare.platform.client.gui.VanillaGuiLayers;
 
 /**
  * What only a disguised player sees, so they know it's on (DESIGN §3.19): thin teal brackets in the four screen corners,
@@ -32,7 +33,7 @@ final class SwapHud {
 
     private static void render(GuiGraphics g, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.options.hideGui) return;
+        if (!ClientNet.isActive() || mc.player == null || mc.options.hideGui) return;
         float partial = delta.getGameTimeDeltaPartialTick(false);
         ClientVisuals.LoopTime time = ClientVisuals.loopTime(mc.player, SwapIds.AWARENESS_SHIMMER_KEY, partial);
         if (time == null) return;

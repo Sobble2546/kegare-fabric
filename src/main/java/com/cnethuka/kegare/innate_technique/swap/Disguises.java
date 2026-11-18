@@ -100,11 +100,11 @@ public final class Disguises {
 
     /** {@code wearer} looks like {@code as} for {@code ticks}. Replaces any disguise the wearer had. */
     public static void apply(ServerPlayer wearer, ServerPlayer as, int ticks, Kind kind, ServerPlayer caster) {
-        long end = wearer.serverLevel().getGameTime() + ticks;
+        long end = wearer.level().getGameTime() + ticks;
         boolean had = SERVER.containsKey(wearer.getUUID());
         SERVER.put(wearer.getUUID(), new Disguise(wearer.getUUID(), as.getUUID(), end, kind, caster.getUUID()));
         if (!had) shimmer(wearer, true);
-        sync(wearer.server);
+        sync(wearer.level().getServer());
     }
 
     /** Ends every disguise this player wears or is the face of (death, logout, dimension change). */
@@ -114,12 +114,12 @@ public final class Disguises {
             Disguise d = it.next();
             if (d.wearer().equals(player.getUUID()) || d.as().equals(player.getUUID())) {
                 it.remove();
-                ServerPlayer wearer = Switchback.find(player.server, d.wearer());
+                ServerPlayer wearer = Switchback.find(player.level().getServer(), d.wearer());
                 if (wearer != null) shimmer(wearer, false);
                 changed = true;
             }
         }
-        if (changed) sync(player.server);
+        if (changed) sync(player.level().getServer());
     }
 
     /** Every server tick: ends expired disguises and sends any change in a face's eyewear. */
@@ -149,7 +149,7 @@ public final class Disguises {
 
     /** A player joined: send them the current map. */
     static void sendTo(ServerPlayer player) {
-        PacketDistributor.sendToPlayer(player, state(player.server));
+        PacketDistributor.sendToPlayer(player, state(player.level().getServer()));
     }
 
     static void clear() {

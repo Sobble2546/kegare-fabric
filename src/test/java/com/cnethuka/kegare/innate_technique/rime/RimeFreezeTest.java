@@ -25,12 +25,11 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import com.cnethuka.kegare.platform.FakePlayerFactory;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -107,7 +106,7 @@ class RimeFreezeTest {
             // The shell reduces damage from any source...
             var event = shellHit(shell, shell.damageSources().generic());
             assertEquals(10f * (1f - RimeConfig.SHELL_DAMAGE_REDUCTION.get().floatValue()), event.getNewDamage(), 0.01f, "shell reduced the damage");
-            var pig = net.minecraft.world.entity.EntityType.PIG.create(server.overworld());
+            var pig = net.minecraft.world.entity.EntityType.PIG.create(server.overworld(), net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             assertEquals(10f * (1f - RimeConfig.SHELL_DAMAGE_REDUCTION.get().floatValue()),
                     shellHit(shell, shell.damageSources().mobAttack(pig)).getNewDamage(), 0.01f, "a mob's hit is reduced too");
             // ...but Thin Ice (mastery) only counts what it blocked from players.
@@ -123,8 +122,8 @@ class RimeFreezeTest {
     private static com.cnethuka.kegare.platform.event.entity.living.LivingDamageEvent.Pre shellHit(ServerPlayer shell,
                                                                                          net.minecraft.world.damagesource.DamageSource source) {
         var event = new com.cnethuka.kegare.platform.event.entity.living.LivingDamageEvent.Pre(shell,
-                new net.neoforged.neoforge.common.damagesource.DamageContainer(source, 10f));
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(event);
+                new com.cnethuka.kegare.platform.damage.DamageContainer(source, 10f));
+        com.cnethuka.kegare.platform.NeoForge.EVENT_BUS.post(event);
         return event;
     }
 
@@ -133,18 +132,13 @@ class RimeFreezeTest {
         return FakePlayerFactory.get(server.overworld(), new GameProfile(uuid, name));
     }
 
-    /** The testframework's server defines FLAT dimensions but never loads them; create them as startup does. */
+    /** The test server defines FLAT dimensions but never loads them; create them as startup does. */
     private static void ensureOverworld(MinecraftServer server) {
         if (server.overworld() != null) return;
         try {
-            Method createLevels = MinecraftServer.class.getDeclaredMethod("createLevels", ChunkProgressListener.class);
+            Method createLevels = MinecraftServer.class.getDeclaredMethod("createLevels");
             createLevels.setAccessible(true);
-            createLevels.invoke(server, new ChunkProgressListener() {
-                @Override public void updateSpawnPos(ChunkPos center) {}
-                @Override public void onStatusChange(ChunkPos pos, @Nullable ChunkStatus status) {}
-                @Override public void start() {}
-                @Override public void stop() {}
-            });
+            createLevels.invoke(server);
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("couldn't create the test server's levels", e);
         }

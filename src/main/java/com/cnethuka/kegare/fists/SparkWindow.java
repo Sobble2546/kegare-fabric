@@ -1,5 +1,7 @@
 package com.cnethuka.kegare.fists;
 
+import com.cnethuka.kegare.mixin.BiomeClimateAccessor;
+import com.cnethuka.kegare.mixin.ClimateSettingsAccessor;
 import com.cnethuka.kegare.innate_technique.rime.FreezeService;
 import com.cnethuka.kegare.malice.MaliceData;
 import com.cnethuka.kegare.malice.MaliceService;
@@ -54,7 +56,7 @@ public record SparkWindow(double malice, double opponent, double body, double we
         double food = Mth.clamp(attacker.getFoodData().getFoodLevel() / 20.0, 0, 1);
         double out = Mth.lerp(health, FistsConfig.HEALTH_LOW.get(), 1.0) * Mth.lerp(food, FistsConfig.HUNGER_LOW.get(), 1.0);
         out *= effect(attacker, MobEffects.WEAKNESS, FistsConfig.WEAKNESS.get());
-        out *= effect(attacker, MobEffects.MOVEMENT_SLOWDOWN, FistsConfig.SLOWNESS.get());
+        out *= effect(attacker, MobEffects.SLOWNESS, FistsConfig.SLOWNESS.get());
         out *= Math.max(0.5, 1.0 - FistsConfig.FREEZE_PER_STACK.get() * FreezeService.stacks(attacker));
         return out;
     }
@@ -71,7 +73,7 @@ public record SparkWindow(double malice, double opponent, double body, double we
     static double weather(Level level, BlockPos at) {
         Biome biome = level.getBiome(at).value();
         boolean rain = level.isRainingAt(at.above());
-        return weather(biome.getBaseTemperature(), biome.getModifiedClimateSettings().downfall(), rain, rain && level.isThundering());
+        return weather(biome.getBaseTemperature(), ((ClimateSettingsAccessor) ((BiomeClimateAccessor) (Object) biome).kegare$climateSettings()).kegare$downfall(), rain, rain && level.isThundering());
     }
 
     /** The same, from the raw numbers: the biome's temperature and rainfall, and whether it's raining or storming there. */

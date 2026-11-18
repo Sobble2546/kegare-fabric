@@ -18,7 +18,7 @@ import java.util.OptionalInt;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -104,7 +104,7 @@ class UnlocksTest {
         java.nio.file.Path lang = java.nio.file.Path.of(System.getProperty("kegare.projectDir", "."), "src/generated/resources/assets/kegare/lang/en_us.json");
         com.google.gson.JsonObject names = com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(lang)).getAsJsonObject();
         for (Identifier id : Unlocks.registered()) {
-            assertTrue(names.has(net.minecraft.Util.makeDescriptionId("unlock", id)), id + " has a name for its toast");
+            assertTrue(names.has(net.minecraft.util.Util.makeDescriptionId("unlock", id)), id + " has a name for its toast");
         }
     }
 

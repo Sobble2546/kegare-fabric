@@ -55,10 +55,10 @@ public final class SightRender {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
         if (level == null) return;
-        Vec3 cam = camera.getPosition();
+        Vec3 cam = camera.position();
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
         PoseStack pose = new PoseStack();
-        Vector3f right = new Vector3f(camera.getLeftVector()).negate(), up = new Vector3f(camera.getUpVector());
+        Vector3f right = new Vector3f(camera.leftVector()).negate(), up = new Vector3f(camera.upVector());
         long now = SightClient.now();
         double far = renderDistance();
 

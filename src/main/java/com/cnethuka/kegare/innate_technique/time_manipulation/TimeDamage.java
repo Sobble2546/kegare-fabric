@@ -16,6 +16,6 @@ public final class TimeDamage {
     private TimeDamage() {}
 
     public static DamageSource source(Level level, Entity direct, @Nullable Entity caster) {
-        return new DamageSource(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(TIME), direct, caster);
+        return new DamageSource(level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(TIME), direct, caster);
     }
 }

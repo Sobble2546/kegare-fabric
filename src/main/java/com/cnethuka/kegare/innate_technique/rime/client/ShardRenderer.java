@@ -7,13 +7,16 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -31,7 +34,7 @@ import org.joml.Vector3f;
  * whoever threw it, or whoever it's coming at) it becomes a sheet across the whole view. This one is a strip turned the same way
  * that narrows to nothing as it's seen end-on, as a thin line would. With vfxQuality VANILLA it's left to the snowflakes.
  */
-public class ShardRenderer<T extends RimeProjectile> extends EntityRenderer<T> {
+public class ShardRenderer<T extends RimeProjectile> extends EntityRenderer<T, ShardRenderer.State> {
     /** Your own isn't drawn this close to your first-person camera. */
     static final double OWN_HIDDEN_WITHIN = 3.0;
     /** The line's texture: even along its length, soft across it (the lance's Photon trail uses it too). */
@@ -47,6 +50,17 @@ public class ShardRenderer<T extends RimeProjectile> extends EntityRenderer<T> {
     final float lineLength, lineWidth;
     /** Where its back is, behind its middle. */
     private final float back;
+
+    /** Where the line runs this frame, read off the entity when its state is extracted (all in the world's axes). */
+    record Line(Vec3 dir, Vec3 at, Vec3 camera, float length) {}
+
+    /** What the shard looks like this frame, read off the entity when its state is extracted. */
+    public static final class State extends EntityRenderState {
+        float yRot, xRot;
+        int id;
+        boolean hidden;
+        @Nullable Line line;
+    }
 
     private ShardRenderer(EntityRendererProvider.Context context, String piece, float spin, float lineLength, float lineWidth, float back) {
         super(context);
@@ -67,22 +81,37 @@ public class ShardRenderer<T extends RimeProjectile> extends EntityRenderer<T> {
     }
 
     @Override
+    public State createRenderState() {
+        return new State();
+    }
+
+    @Override
+    public void extractRenderState(T shard, State state, float partialTick) {
+        super.extractRenderState(shard, state, partialTick);
+        state.yRot = Mth.lerp(partialTick, shard.yRotO, shard.getYRot());
+        state.xRot = Mth.lerp(partialTick, shard.xRotO, shard.getXRot());
+        state.id = shard.getId();
+        state.hidden = hiddenFromOwnCamera(shard, partialTick);
+        state.line = state.hidden || KegareClientConfig.VFX_QUALITY.get() == KegareClientConfig.VfxQuality.VANILLA ? null : line(shard, partialTick);
+    }
+
+    @Override
     public boolean shouldRender(T shard, Frustum frustum, double camX, double camY, double camZ) {
         if (!shard.shouldRender(camX, camY, camZ)) return false;
         return frustum.isVisible(shard.getBoundingBox().inflate(0.5));
     }
 
     @Override
-    public void render(T shard, float yaw, float partialTick, PoseStack pose, MultiBufferSource buffers, int light) {
-        if (hiddenFromOwnCamera(shard, partialTick)) return;
+    public void submit(State state, PoseStack pose, SubmitNodeCollector collector, CameraRenderState camera) {
+        if (state.hidden) return;
         pose.pushPose();
-        pose.translate(0f, shard.getBbHeight() * 0.5f, 0f);
-        GlacialLanceRenderer.orient(pose, Mth.lerp(partialTick, shard.yRotO, shard.getYRot()), Mth.lerp(partialTick, shard.xRotO, shard.getXRot()));
-        pose.mulPose(Axis.ZP.rotationDegrees((shard.tickCount + partialTick) * spin + shard.getId() * 47f));
-        LanceMesh.SHARD.draw(pose.last(), buffers, List.of(piece), new float[] {1f}, light);
+        pose.translate(0f, state.boundingBoxHeight * 0.5f, 0f);
+        GlacialLanceRenderer.orient(pose, state.yRot, state.xRot);
+        pose.mulPose(Axis.ZP.rotationDegrees(state.ageInTicks * spin + state.id * 47f));
+        LanceMesh.SHARD.draw(collector, pose, List.of(piece), new float[] {1f}, state.lightCoords);
         pose.popPose();
-        if (KegareClientConfig.VFX_QUALITY.get() != KegareClientConfig.VfxQuality.VANILLA) line(shard, partialTick, pose, buffers);
-        super.render(shard, yaw, partialTick, pose, buffers, light);
+        if (state.line != null) drawLine(state, state.line, pose, collector);
+        super.submit(state, pose, collector, camera);
     }
 
     /** How long the line is: never back past where it was thrown from (it's drawn from the start, a whole move a tick). */
@@ -103,42 +132,49 @@ public class ShardRenderer<T extends RimeProjectile> extends EntityRenderer<T> {
         return width * Mth.clamp(sin / 0.35f, 0f, 1f);
     }
 
-    private void line(T shard, float partialTick, PoseStack pose, MultiBufferSource buffers) {
+    /** Works out where the line runs, or null for none. */
+    @Nullable
+    private Line line(T shard, float partialTick) {
         Vec3 v = shard.getDeltaMovement();
-        if (v.lengthSqr() < 1.0e-4) return;
+        if (v.lengthSqr() < 1.0e-4) return null;
         Vec3 dir = v.normalize();
         Vec3 at = shard.getPosition(partialTick).add(0, shard.getBbHeight() * 0.5, 0);
         float travelled = (float) ((shard.tickCount + partialTick) * v.length());
         Entity owner = shard.getOwner();
         float length = owner == null ? lineLength(lineLength, travelled)
                 : lineLength(lineLength, travelled, at.distanceTo(owner.getEyePosition(partialTick)), back);
-        if (length <= 0.05f) return;
-        Vec3 cam = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+        if (length <= 0.05f) return null;
+        Vec3 cam = Minecraft.getInstance().gameRenderer.getMainCamera().position();
         if (shard.getOwner() == Minecraft.getInstance().player && Minecraft.getInstance().options.getCameraType().isFirstPerson()) {
             // Your own: never in your face, it stops short of your camera.
             length = Math.min(length, (float) at.distanceTo(cam) - (float) OWN_HIDDEN_WITHIN);
-            if (length <= 0.05f) return;
+            if (length <= 0.05f) return null;
         }
-        VertexConsumer out = buffers.getBuffer(RenderType.entityTranslucentEmissive(LINE));
-        Matrix4f m = pose.last().pose();
-        float h = shard.getBbHeight() * 0.5f;
-        for (int i = 0; i < SEGMENTS; i++) {
-            float t0 = (float) i / SEGMENTS, t1 = (float) (i + 1) / SEGMENTS;
-            float d0 = back + t0 * length, d1 = back + t1 * length;
-            Vec3 p0 = dir.scale(-d0), p1 = dir.scale(-d1);
-            // Turned to face the camera, narrowing as it's seen end-on.
-            Vec3 toCam = cam.subtract(at.add(p0)).normalize();
-            Vec3 across = dir.cross(toCam);
-            float sin = (float) across.length();
-            if (sin < 1.0e-4f) continue;
-            float w0 = seenWidth(lineWidth, sin) * (1f - t0), w1 = seenWidth(lineWidth, sin) * (1f - t1);
-            Vec3 side = across.scale(1.0 / sin);
-            int a0 = Math.round(200 * (1f - t0) * (1f - t0)), a1 = Math.round(200 * (1f - t1) * (1f - t1));
-            vertex(out, m, p0.add(side.scale(w0)), h, t0, 0f, a0);
-            vertex(out, m, p0.subtract(side.scale(w0)), h, t0, 1f, a0);
-            vertex(out, m, p1.subtract(side.scale(w1)), h, t1, 1f, a1);
-            vertex(out, m, p1.add(side.scale(w1)), h, t1, 0f, a1);
-        }
+        return new Line(dir, at, cam, length);
+    }
+
+    private void drawLine(State state, Line line, PoseStack pose, SubmitNodeCollector collector) {
+        float h = state.boundingBoxHeight * 0.5f;
+        collector.submitCustomGeometry(pose, RenderTypes.entityTranslucentEmissive(LINE), (p, out) -> {
+            Matrix4f m = p.pose();
+            for (int i = 0; i < SEGMENTS; i++) {
+                float t0 = (float) i / SEGMENTS, t1 = (float) (i + 1) / SEGMENTS;
+                float d0 = back + t0 * line.length(), d1 = back + t1 * line.length();
+                Vec3 p0 = line.dir().scale(-d0), p1 = line.dir().scale(-d1);
+                // Turned to face the camera, narrowing as it's seen end-on.
+                Vec3 toCam = line.camera().subtract(line.at().add(p0)).normalize();
+                Vec3 across = line.dir().cross(toCam);
+                float sin = (float) across.length();
+                if (sin < 1.0e-4f) continue;
+                float w0 = seenWidth(lineWidth, sin) * (1f - t0), w1 = seenWidth(lineWidth, sin) * (1f - t1);
+                Vec3 side = across.scale(1.0 / sin);
+                int a0 = Math.round(200 * (1f - t0) * (1f - t0)), a1 = Math.round(200 * (1f - t1) * (1f - t1));
+                vertex(out, m, p0.add(side.scale(w0)), h, t0, 0f, a0);
+                vertex(out, m, p0.subtract(side.scale(w0)), h, t0, 1f, a0);
+                vertex(out, m, p1.subtract(side.scale(w1)), h, t1, 1f, a1);
+                vertex(out, m, p1.add(side.scale(w1)), h, t1, 0f, a1);
+            }
+        });
     }
 
     private static void vertex(VertexConsumer out, Matrix4f m, Vec3 p, float h, float u, float v, int alpha) {
@@ -150,12 +186,7 @@ public class ShardRenderer<T extends RimeProjectile> extends EntityRenderer<T> {
     private static boolean hiddenFromOwnCamera(RimeProjectile shard, float partialTick) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || shard.getOwner() != mc.player || !mc.options.getCameraType().isFirstPerson()) return false;
-        Vec3 camera = mc.gameRenderer.getMainCamera().getPosition();
+        Vec3 camera = mc.gameRenderer.getMainCamera().position();
         return shard.getPosition(partialTick).distanceToSqr(camera) < OWN_HIDDEN_WITHIN * OWN_HIDDEN_WITHIN;
-    }
-
-    @Override
-    public Identifier getTextureLocation(T shard) {
-        return LanceMesh.SHARD.texture;
     }
 }

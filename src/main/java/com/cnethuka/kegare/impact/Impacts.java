@@ -188,7 +188,7 @@ public final class Impacts {
 
     /** A Kegare technique's own damage, or a puppet's punch. */
     private static boolean technique(DamageSource source) {
-        boolean ours = source.typeHolder().unwrapKey().map(k -> k.location().getNamespace().equals(Kegare.MODID)).orElse(false);
+        boolean ours = source.typeHolder().unwrapKey().map(k -> k.identifier().getNamespace().equals(Kegare.MODID)).orElse(false);
         return ours || source.getEntity() instanceof PuppetEntity || source.getDirectEntity() instanceof PuppetEntity;
     }
 

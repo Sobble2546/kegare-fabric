@@ -46,7 +46,7 @@ public final class MeleeTell {
     public static Look seenByOthers(ServerPlayer player) {
         Optional<UUID> face = Disguises.getDisguisedAs(player);
         if (face.isEmpty()) return of(player);
-        ServerPlayer wearer = Attribution.player(player.server, face.get());
+        ServerPlayer wearer = Attribution.player(player.level().getServer(), face.get());
         // A disguise ends when its face logs out, so this shouldn't happen. If it does, a neutral color, never the real one.
         return wearer == null ? Look.glow(InnateTechnique.DEFAULT_MALICE_COLOR) : of(wearer);
     }
@@ -93,7 +93,7 @@ public final class MeleeTell {
      * Innate burst reads as two effects, while one color reads as what was on the fist going off.
      */
     public static void playStrikeImpact(ServerPlayer attacker, Vec3 at) {
-        var level = attacker.serverLevel();
+        var level = attacker.level();
         VisualService.playAt(level, at, attacker, impact(of(attacker)), impact(seenByOthers(attacker)));
         VisualService.playAt(level, at, attacker, burst(of(attacker)), burst(seenByOthers(attacker)));
     }

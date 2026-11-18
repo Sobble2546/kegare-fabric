@@ -1,7 +1,8 @@
 package com.cnethuka.kegare.sixeyes;
 
 import com.cnethuka.kegare.mixin.MeleeAttackGoalAccessor;
-import com.cnethuka.kegare.mixin.MobAttackBoxInvoker;
+import com.cnethuka.kegare.mixin.MobGoalsAccessor;
+import com.cnethuka.kegare.platform.MobReach;
 import com.cnethuka.kegare.mixin.RangedAttackGoalAccessor;
 import com.cnethuka.kegare.mixin.ShulkerAttackGoalAccessor;
 import com.cnethuka.kegare.mixin.WitherBossAccessor;
@@ -30,11 +31,11 @@ import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.world.entity.monster.Drowned;
+import net.minecraft.world.entity.monster.zombie.Drowned;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.monster.Guardian;
-import net.minecraft.world.entity.monster.SpellcasterIllager;
+import net.minecraft.world.entity.monster.illager.SpellcasterIllager;
 import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.entity.monster.breeze.Breeze;
 import net.minecraft.world.entity.monster.warden.Warden;
@@ -146,7 +147,7 @@ public final class MobIntent {
         int f = 0;
         boolean readable = mob instanceof Creeper || mob instanceof Ghast || mob instanceof Blaze || mob instanceof Breeze || mob instanceof SpellcasterIllager
                 || mob instanceof Guardian || mob instanceof EnderDragon; // these have their own reads, above
-        for (WrappedGoal wrapped : mob.goalSelector.getAvailableGoals()) {
+        for (WrappedGoal wrapped : ((MobGoalsAccessor) mob).kegare$goalSelector().getAvailableGoals()) {
             Goal goal = wrapped.getGoal();
             if (goal instanceof MeleeAttackGoal melee) {
                 readable = true;
@@ -219,12 +220,12 @@ public final class MobIntent {
     }
 
     private static boolean holdingProjectileWeapon(Mob mob) {
-        return mob.isHolding(stack -> stack.getItem() instanceof ProjectileWeaponItem weapon && mob.canFireProjectileWeapon(weapon));
+        return mob.isHolding(stack -> stack.getItem() instanceof ProjectileWeaponItem && mob.canUseNonMeleeWeapon(stack));
     }
 
     /** How far its target is from its melee reach: 0 in reach. */
     private static double gap(Mob mob, LivingEntity target) {
-        AABB reach = ((MobAttackBoxInvoker) mob).kegare$attackBox(), body = target.getHitbox();
+        AABB reach = MobReach.attackBox(mob), body = target.getBoundingBox();
         double dx = Math.max(0, Math.max(reach.minX - body.maxX, body.minX - reach.maxX));
         double dy = Math.max(0, Math.max(reach.minY - body.maxY, body.minY - reach.maxY));
         double dz = Math.max(0, Math.max(reach.minZ - body.maxZ, body.minZ - reach.maxZ));

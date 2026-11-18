@@ -83,7 +83,7 @@ public final class RollService {
         int counter = roll.state().effectiveCounter(reason);
         Optional<PityRoller.Result> result = PityRoller.pick(settings(), counter, available, player.getRandom()::nextInt);
         if (result.isEmpty()) {
-            Kegare.LOGGER.warn("No eligible innate technique to roll for {}", player.getGameProfile().getName());
+            Kegare.LOGGER.warn("No eligible innate technique to roll for {}", player.getGameProfile().name());
             return Optional.empty();
         }
         List<InnateTechnique> candidates = pool.get(result.get().rarity());

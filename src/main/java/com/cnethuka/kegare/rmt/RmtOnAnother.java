@@ -84,7 +84,7 @@ public final class RmtOnAnother extends SpecialAbility {
         Vec3 end = eye.add(look.scale(reach));
         ServerPlayer best = null;
         double bestDistance = Double.MAX_VALUE;
-        for (ServerPlayer other : caster.serverLevel().players()) {
+        for (ServerPlayer other : caster.level().players()) {
             if (other == caster || !other.isAlive() || other.isSpectator()) continue;
             AABB box = other.getBoundingBox().inflate(tolerance);
             Optional<Vec3> hit = box.contains(eye) ? Optional.of(eye) : box.clip(eye, end);
@@ -185,7 +185,7 @@ public final class RmtOnAnother extends SpecialAbility {
     static void onDroppedLow(ServerPlayer low) {
         long now = low.level().getGameTime();
         double range = RmtConfig.MOMENT_RANGE.get();
-        for (ServerPlayer near : low.serverLevel().players()) {
+        for (ServerPlayer near : low.level().players()) {
             if (near == low || near.distanceToSqr(low) > range * range || !couldLearn(near)) continue;
             RmtState state = GreenOrbService.state(near);
             if (now < state.momentUntil) continue; // one already showing

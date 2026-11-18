@@ -68,7 +68,7 @@ public final class Edge {
         Map<UUID, Reader> fresh = new HashMap<>();
         for (ServerPlayer bearer : SixEyes.bearers(server)) {
             if (!Strain.edgeAvailable(bearer)) continue;
-            ServerLevel level = bearer.serverLevel();
+            ServerLevel level = bearer.level();
             double range = SixEyesConfig.EDGE_RANGE.get();
             Set<UUID> top = new java.util.HashSet<>();
             for (ServerPlayer other : level.players()) {

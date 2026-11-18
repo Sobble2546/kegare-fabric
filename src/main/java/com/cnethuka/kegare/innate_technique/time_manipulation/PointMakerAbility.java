@@ -1,5 +1,6 @@
 package com.cnethuka.kegare.innate_technique.time_manipulation;
 
+import com.cnethuka.kegare.platform.EntityCompat;
 import com.cnethuka.kegare.innate_technique.swap.Swapper;
 import com.cnethuka.kegare.innatetechnique.Ability;
 import com.cnethuka.kegare.innatetechnique.AbilityContext;
@@ -85,7 +86,7 @@ public final class PointMakerAbility extends TimeAbility {
         TimeManipulation.sound(p, KegareSounds.TIME_CLICK, 1f, 0.9f);
         Swapper.moveTo(p, mark.standAt, mark.yaw, mark.pitch);
         p.setDeltaMovement(Vec3.ZERO);
-        p.hurtMarked = true;
+        EntityCompat.markHurt(p);
         for (MobEffectInstance effect : List.copyOf(p.getActiveEffects())) {
             if (!mark.effects.contains(effect.getEffect())) p.removeEffect(effect.getEffect());
         }

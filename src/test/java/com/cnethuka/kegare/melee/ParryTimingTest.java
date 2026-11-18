@@ -19,7 +19,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -36,7 +36,7 @@ class ParryTimingTest {
         BirthService.rebirth(p, OptionalInt.of(1000));
         InnateTechniqueService.setInnateTechnique(p, Rime.RIME.get());
         MaliceService.refill(p);
-        p.moveTo(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING, 8, 8), 8.5, yaw, 0f);
+        p.snapTo(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING, 8, 8), 8.5, yaw, 0f);
         p.setHealth(p.getMaxHealth());
         return p;
     }
@@ -62,7 +62,7 @@ class ParryTimingTest {
     @Test
     void ticksStayTheRuleAndSubTickIsLoggedBesideIt(MinecraftServer server) throws Exception {
         TestServer.onServerThread(server, () -> {
-            server.setPvpAllowed(true);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
             try {
                 ServerPlayer defender = player(server, "parry_t_def", 2.5, -90f);
                 ServerPlayer attacker = player(server, "parry_t_att", 4.0, 90f);
@@ -77,7 +77,7 @@ class ParryTimingTest {
                 float health = defender.getHealth();
                 swing(attacker, defender, swungAt, now);
                 assertEquals(health, defender.getHealth(), 1.0e-4, "by ticks: perfect (both reached the server in the same tick)");
-                assertTrue(attacker.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "parried: staggered");
+                assertTrue(attacker.hasEffect(MobEffects.SLOWNESS), "parried: staggered");
                 double gap = SubTick.time(attacker, TimedInput.ATTACK).orElseThrow() - MeleeLayer.state(defender).guardStartMs;
                 assertEquals(-50, gap, 1.0, "the swing came 50 ms before the press");
                 assertFalse(Parry.subTickPerfect(gap, MeleeNumbers.of(defender).perfectTicks() * 50.0), "sub-tick: too late, so it's worse here");
@@ -91,7 +91,7 @@ class ParryTimingTest {
     @Test
     void atTheWindowsFarEdgeSubTickIsKinderAndTheSwitchUsesIt(MinecraftServer server) throws Exception {
         TestServer.onServerThread(server, () -> {
-            server.setPvpAllowed(true);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
             boolean was = TimingConfig.PARRY_SUB_TICK.get();
             try {
                 ServerPlayer defender = player(server, "parry_e_def", 2.5, -90f);

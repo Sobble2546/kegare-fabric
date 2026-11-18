@@ -14,20 +14,19 @@ import com.cnethuka.kegare.network.RevealPayload;
 import com.cnethuka.kegare.registry.KegareRegistries;
 import com.cnethuka.kegare.trait.KegareTraits;
 import com.cnethuka.kegare.trait.Trait;
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.math.Axis;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -37,6 +36,8 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import org.joml.Quaternionf;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -77,14 +78,6 @@ public final class RevealScreen extends Screen {
     private static final int SEVERED_GREY = 0x8A8A92;
     private static final int SIX_EYES_BLUE = 0x39C0FF;
 
-    // Draw order. GUI depth testing is on, so what's drawn later must not sit behind what's already there.
-    private static final int Z_PARTICLES = 150;
-    private static final int Z_BAND = 180;
-    private static final int Z_DETAILS = 200;
-    private static final int Z_TEXT = 300;
-    private static final int Z_OVERLAY = 800;
-    private static final int Z_HINT = 850;
-
     /** How long a word takes to slam down. */
     private static final long SLAM_MS = 130;
     private static final long STAR_DROP_MS = 220;
@@ -105,6 +98,12 @@ public final class RevealScreen extends Screen {
     private final List<Trait> listedTraits = new ArrayList<>();
     private final RandomSource random = RandomSource.create();
     private final RevealParticles particles = new RevealParticles();
+    /**
+     * Draws that belong above the particles and the ring: the name card's dark band, its text, stars and icons, the lines and hairlines. The
+     * 1.21.11 GUI has no z to put them above the particles with, and the particles are drawn last (they fly over the whole scene), so
+     * these wait in call order and are drawn right after them ({@link #flushRaised}).
+     */
+    private final List<Runnable> raised = new ArrayList<>();
     /** The talisman's burn line: how far each column lags the middle, so the edge is ragged. */
     private final float[] burnEdge = new float[TALISMAN_W];
 
@@ -247,16 +246,17 @@ public final class RevealScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent event) {
+        int keyCode = event.key();
         if (keyCode == GLFW.GLFW_KEY_ESCAPE || keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER || keyCode == GLFW.GLFW_KEY_SPACE) {
             advance();
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         advance();
         return true;
     }
@@ -283,10 +283,10 @@ public final class RevealScreen extends Screen {
     @Override
     public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         // Opaque: nothing behind (chat, HUD) can spoil the result, since the HUD already shows it.
-        g.pose().pushPose();
-        g.pose().scale(canvasScale, canvasScale, 1f);
+        g.pose().pushMatrix();
+        g.pose().scale(canvasScale, canvasScale);
         GuiDraw.inkBackground(g, cw, ch);
-        g.pose().popPose();
+        g.pose().popMatrix();
     }
 
     @Override
@@ -301,9 +301,9 @@ public final class RevealScreen extends Screen {
         if (step != current) enter(step, current, now);
         if (atEnd(t) && endedAtMillis < 0) endedAtMillis = now;
 
-        g.pose().pushPose();
-        g.pose().scale(canvasScale, canvasScale, 1f);
-        g.pose().pushPose();
+        g.pose().pushMatrix();
+        g.pose().scale(canvasScale, canvasScale);
+        g.pose().pushMatrix();
         applyShake(g, now);
         switch (step.scene()) {
             case OMEN -> renderOmen(g, step, t, dt);
@@ -319,11 +319,12 @@ public final class RevealScreen extends Screen {
             case RESULT -> renderResult(g, now, dt, partialTick);
         }
         renderRing(g, now);
-        particles.render(g, dt, Z_PARTICLES);
-        g.pose().popPose();
+        particles.render(g, dt);
+        flushRaised();
+        g.pose().popMatrix();
         renderOverlays(g, step, t, now);
         renderHint(g, t, now);
-        g.pose().popPose();
+        g.pose().popMatrix();
     }
 
     /** A scene begins. */
@@ -431,7 +432,7 @@ public final class RevealScreen extends Screen {
             return;
         }
         float amount = shakeAmount * left * left;
-        g.pose().translate(Math.round((random.nextFloat() - 0.5f) * 2f * amount), Math.round((random.nextFloat() - 0.5f) * 2f * amount), 0);
+        g.pose().translate(Math.round((random.nextFloat() - 0.5f) * 2f * amount), Math.round((random.nextFloat() - 0.5f) * 2f * amount));
     }
 
     private void ring(float x, float y, float size, int rgb, long now) {
@@ -450,15 +451,11 @@ public final class RevealScreen extends Screen {
             return;
         }
         int size = Math.round(ringSize * (0.25f + 0.75f * outCubic(p)));
-        additive(true);
-        GuiDraw.tinted(g, RING, Math.round(ringX) - size / 2, Math.round(ringY) - size / 2, size, size, ringRgb, (1f - p) * 0.8f);
-        additive(false);
+        GuiDraw.tintedAdditive(g, RING, Math.round(ringX) - size / 2, Math.round(ringY) - size / 2, size, size, ringRgb, (1f - p) * 0.8f);
     }
 
     /** Flash, and the dip to black between scenes. */
     private void renderOverlays(GuiGraphics g, Step step, long t, long now) {
-        g.pose().pushPose();
-        g.pose().translate(0, 0, Z_OVERLAY);
         if (flashLengthMillis > 0) {
             float left = 1f - (now - flashStartMillis) / (float) flashLengthMillis;
             if (left <= 0f) flashLengthMillis = 0;
@@ -466,7 +463,6 @@ public final class RevealScreen extends Screen {
         }
         float dip = dip(step, t);
         if (dip > 0f) g.fill(0, 0, cw + 1, ch + 1, (int) (dip * 255) << 24);
-        g.pose().popPose();
     }
 
     /** How black the screen is, 0-1: each scene fades in from and out to black, over its own lengths. */
@@ -509,12 +505,9 @@ public final class RevealScreen extends Screen {
             alpha = 0.4f * clamp01((t - 600L) / 500f);
         }
         if (alpha <= 0.02f) return;
-        g.pose().pushPose();
-        g.pose().translate(0, 0, Z_HINT);
         Component hint = Component.translatable(end ? "gui.kegare.reveal.continue" : "gui.kegare.reveal.skip");
         FormattedCharSequence seq = hint.getVisualOrderText();
         g.drawString(font, seq, centerX - font.width(seq) / 2, ch - 11, color(0xC8C2D0, alpha), true);
-        g.pose().popPose();
     }
 
     // ---------------------------------------------------------------- Omen
@@ -567,10 +560,7 @@ public final class RevealScreen extends Screen {
         int ty = (ch - TALISMAN_H * q) / 2;
         int w = ASH_W * q, h = ASH_H * q;
         if (ash > 0f) {
-            RenderSystem.enableBlend();
-            g.setColor(1f, 1f, 1f, ash);
-            g.blitSprite(ASH, centerX - w / 2, ty + TALISMAN_H * q - h, w, h);
-            g.setColor(1f, 1f, 1f, 1f);
+            g.blitSprite(RenderPipelines.GUI_TEXTURED, ASH, centerX - w / 2, ty + TALISMAN_H * q - h, w, h, GuiDraw.fade(ash));
         }
         if (p >= 0.68f && cues == 0) {
             cues = 1;
@@ -601,18 +591,16 @@ public final class RevealScreen extends Screen {
 
         if (size > 0.01f) glow(g, centerX, front, Math.round(tw * 3.4f * Math.max(0.5f, size)), rgb, 0.5f * Math.min(1f, size));
 
-        g.pose().pushPose();
-        g.pose().translate(x, y, 0);
-        g.pose().scale(q, q, 1f);
-        RenderSystem.enableBlend();
-        g.setColor(paper, paper, paper, 1f);
+        g.pose().pushMatrix();
+        g.pose().translate(x, y);
+        g.pose().scale(q, q);
+        int paperTint = 0xFF000000 | (Math.round(Mth.clamp(paper, 0f, 1f) * 255f) * 0x010101);
         float jag = Math.min(1f, burn * 6f) * Math.min(1f, (1f - burn) * 6f);
         int[] keep = new int[TALISMAN_W];
         for (int c = 0; c < TALISMAN_W; c++) {
             keep[c] = Mth.clamp(Math.round(TALISMAN_H * (1f - burn) + burnEdge[c] * jag), 0, TALISMAN_H);
-            if (keep[c] > 0) g.blitSprite(TALISMAN, TALISMAN_W, TALISMAN_H, c, 0, c, 0, 1, keep[c]);
+            if (keep[c] > 0) g.blitSprite(RenderPipelines.GUI_TEXTURED, TALISMAN, TALISMAN_W, TALISMAN_H, c, 0, c, 0, 1, keep[c], paperTint);
         }
-        g.setColor(1f, 1f, 1f, 1f);
         if (burn > 0f) {
             int hot = color(GuiDraw.mix(rgb, 0xFFFFFF, 0.45f), 1f);
             for (int c = 2; c < TALISMAN_W - 2; c++) {
@@ -623,7 +611,7 @@ public final class RevealScreen extends Screen {
                 g.fill(c, k - 1, c + 1, k, hot);
             }
         }
-        g.pose().popPose();
+        g.pose().popMatrix();
 
         if (size > 0.01f) {
             int fw = Math.round(tw * 1.25f * size);
@@ -634,9 +622,7 @@ public final class RevealScreen extends Screen {
             GuiDraw.tinted(g, FLAMES[frame], centerX - fw / 2, base - fh, fw, fh, GuiDraw.mix(rgb, 0xFFFFFF, 0.12f), 0.96f);
             int coreW = Math.round(fw * 0.5f), coreH = Math.round(fh * 0.46f);
             GuiDraw.tinted(g, FLAMES[(frame + 3) % FLAMES.length], centerX - coreW / 2, base - coreH, coreW, coreH, GuiDraw.mix(rgb, 0xFFFFFF, 0.6f), 0.85f);
-            additive(true);
-            GuiDraw.tinted(g, FLAMES[(frame + 5) % FLAMES.length], centerX - fw / 2, base - fh, fw, fh, rgb, 0.22f);
-            additive(false);
+            GuiDraw.tintedAdditive(g, FLAMES[(frame + 5) % FLAMES.length], centerX - fw / 2, base - fh, fw, fh, rgb, 0.22f);
         }
 
         for (float budget = dt * 46f * heat; budget > 0f; budget -= 1f) {
@@ -741,17 +727,19 @@ public final class RevealScreen extends Screen {
         int x = centerX - font.width(full) * scale / 2;
         int y = centerY - font.lineHeight * scale / 2;
         String typed = full.substring(0, chars);
-        g.pose().pushPose();
-        g.pose().translate(x, y, Z_TEXT);
-        g.pose().scale(scale, scale, 1f);
-        int ink = 0xFFE9E4F0;
-        g.drawString(font, typed, 0, 0, ink, true);
-        boolean typingNow = chars < full.length();
-        if (typingNow || (age / 280L) % 2 == 0) {
-            int cx = font.width(typed) + 1;
-            g.fill(cx, 0, cx + 1, font.lineHeight - 1, ink);
-        }
-        g.pose().popPose();
+        raised.add(() -> {
+            g.pose().pushMatrix();
+            g.pose().translate(x, y);
+            g.pose().scale(scale, scale);
+            int ink = 0xFFE9E4F0;
+            g.drawString(font, typed, 0, 0, ink, true);
+            boolean typingNow = chars < full.length();
+            if (typingNow || (age / 280L) % 2 == 0) {
+                int cx = font.width(typed) + 1;
+                g.fill(cx, 0, cx + 1, font.lineHeight - 1, ink);
+            }
+            g.pose().popMatrix();
+        });
         float finished = phase(age, 200 + typing, 320);
         if (finished > 0f) {
             hairline(g, Math.round((font.width(full) * scale + 24) * outCubic(finished)), y + font.lineHeight * scale + 6, rarity.color(), finished);
@@ -790,15 +778,12 @@ public final class RevealScreen extends Screen {
         float emblemIn = phase(age, 40, 340);
         if (emblemIn > 0f) {
             float zoom = 1f + 0.14f * (1f - outCubic(emblemIn));
-            g.pose().pushPose();
-            g.pose().translate(centerX, emblemCy, 0);
-            g.pose().scale(zoom, zoom, 1f);
-            g.pose().translate(-centerX, -emblemCy, 0);
-            RenderSystem.enableBlend();
-            g.setColor(1f, 1f, 1f, emblemIn);
-            GuiDraw.framedEmblem(g, result, centerX - c.emblem() / 2, c.emblemY(), c.emblem());
-            g.setColor(1f, 1f, 1f, 1f);
-            g.pose().popPose();
+            g.pose().pushMatrix();
+            g.pose().translate(centerX, emblemCy);
+            g.pose().scale(zoom, zoom);
+            g.pose().translate(-centerX, -emblemCy);
+            GuiDraw.framedEmblem(g, result, centerX - c.emblem() / 2, c.emblemY(), c.emblem(), emblemIn);
+            g.pose().popMatrix();
         }
 
         if (age >= 120) renderModel(g, c, partialTick);
@@ -817,15 +802,14 @@ public final class RevealScreen extends Screen {
         long detailFrom = (long) (nameLength * 0.3f);
         float details = phase(age, detailFrom, Math.max(300L, nameLength - detailFrom));
         renderStarRow(g, c, details);
-        int y = c.descY();
         if (details > 0f) {
-            g.pose().pushPose();
-            g.pose().translate(0, 0, Z_TEXT);
-            for (FormattedCharSequence line : c.desc()) {
-                g.drawString(font, line, centerX - font.width(line) / 2, y, color(0xBDB7C6, details), true);
-                y += font.lineHeight + 1;
-            }
-            g.pose().popPose();
+            raised.add(() -> {
+                int y = c.descY();
+                for (FormattedCharSequence line : c.desc()) {
+                    g.drawString(font, line, centerX - font.width(line) / 2, y, color(0xBDB7C6, details), true);
+                    y += font.lineHeight + 1;
+                }
+            });
         }
         renderIcons(g, c, details);
 
@@ -848,20 +832,18 @@ public final class RevealScreen extends Screen {
 
     private void renderRays(GuiGraphics g, int x, int y, float length, int rgb, float alpha, long now) {
         if (length < 4f) return;
-        additive(true);
         float spin = reducedMotion() ? 0f : (now % 90_000L) / 90_000f * Mth.TWO_PI;
         int rays = 14;
         for (int i = 0; i < rays; i++) {
             float wave = 0.5f + 0.5f * Mth.sin(i * 2.4f + now * 0.0011f);
             int len = Math.round(length * (0.72f + 0.28f * wave));
             int w = Math.round(len * 0.24f);
-            g.pose().pushPose();
-            g.pose().translate(x, y, 0);
-            g.pose().mulPose(Axis.ZP.rotation(spin + i * Mth.TWO_PI / rays));
-            GuiDraw.tinted(g, RAY, -w / 2, 0, w, len, rgb, alpha * (0.35f + 0.65f * wave));
-            g.pose().popPose();
+            g.pose().pushMatrix();
+            g.pose().translate(x, y);
+            g.pose().rotate(spin + i * Mth.TWO_PI / rays);
+            GuiDraw.tintedAdditive(g, RAY, -w / 2, 0, w, len, rgb, alpha * (0.35f + 0.65f * wave));
+            g.pose().popMatrix();
         }
-        additive(false);
     }
 
     /** The name card's "stars and rarity" row. */
@@ -874,14 +856,10 @@ public final class RevealScreen extends Screen {
         int textW = font.width(line);
         int rowW = n * 10 + 4 + textW;
         int x = centerX - rowW / 2;
-        g.pose().pushPose();
-        g.pose().translate(0, 0, Z_DETAILS);
-        for (int i = 0; i < n; i++) tinted(g, STAR_SMALL, x + i * 10, c.starsY() + 1, 9, 9, rgb, alpha);
-        g.pose().popPose();
-        g.pose().pushPose();
-        g.pose().translate(0, 0, Z_TEXT);
-        g.drawString(font, line.getVisualOrderText(), x + n * 10 + 4, c.starsY() + 2, color(0xFFFFFF, alpha), true);
-        g.pose().popPose();
+        raised.add(() -> {
+            for (int i = 0; i < n; i++) tinted(g, STAR_SMALL, x + i * 10, c.starsY() + 1, 9, 9, rgb, alpha);
+            g.drawString(font, line.getVisualOrderText(), x + n * 10 + 4, c.starsY() + 2, color(0xFFFFFF, alpha), true);
+        });
     }
 
     /** The technique's ability icons, one after another. */
@@ -890,23 +868,18 @@ public final class RevealScreen extends Screen {
         int n = abilities.size();
         int slot = CombatPanelLayer.SLOT_SIZE;
         int x0 = RevealLayout.rowStart(n, slot, c.iconStep(), centerX);
-        g.pose().pushPose();
-        g.pose().translate(0, 0, Z_DETAILS);
-        for (int i = 0; i < n; i++) {
-            float a = clamp01(alpha * (n + 2f) - i);
-            if (a <= 0f) continue;
-            Ability ability = abilities.get(i);
-            int x = x0 + i * c.iconStep();
-            RenderSystem.enableBlend();
-            g.setColor(1f, 1f, 1f, a);
-            CombatPanelLayer.slotFrame(g, x, c.iconsY(), false);
-            if (!GuiDraw.abilityIcon(g, ability, x + 2, c.iconsY() + 2)) {
-                g.setColor(1f, 1f, 1f, 1f);
-                g.drawCenteredString(font, ability.displayName().getString().substring(0, 1), x + slot / 2, c.iconsY() + 6, color(0xFFFFFF, a));
+        raised.add(() -> {
+            for (int i = 0; i < n; i++) {
+                float a = clamp01(alpha * (n + 2f) - i);
+                if (a <= 0f) continue;
+                Ability ability = abilities.get(i);
+                int x = x0 + i * c.iconStep();
+                CombatPanelLayer.slotFrame(g, x, c.iconsY(), false, a);
+                if (!GuiDraw.abilityIcon(g, ability, x + 2, c.iconsY() + 2, a)) {
+                    g.drawCenteredString(font, ability.displayName().getString().substring(0, 1), x + slot / 2, c.iconsY() + 6, color(0xFFFFFF, a));
+                }
             }
-            g.setColor(1f, 1f, 1f, 1f);
-        }
-        g.pose().popPose();
+        });
     }
 
     /** Under the icons: Malice on a birth, otherwise why this roll happened; then Six Eyes' lines and any other trait. */
@@ -939,11 +912,8 @@ public final class RevealScreen extends Screen {
     }
 
     private void lineAt(GuiGraphics g, Component text, int y, int rgb, float alpha) {
-        g.pose().pushPose();
-        g.pose().translate(0, 0, Z_TEXT);
         FormattedCharSequence seq = text.getVisualOrderText();
-        g.drawString(font, seq, centerX - font.width(seq) / 2, y, color(rgb, alpha), true);
-        g.pose().popPose();
+        raised.add(() -> g.drawString(font, seq, centerX - font.width(seq) / 2, y, color(rgb, alpha), true));
     }
 
     private MaliceTier tier() {
@@ -993,21 +963,12 @@ public final class RevealScreen extends Screen {
         player.xRotO = 4f;
         player.yHeadRot = player.yHeadRotO = look;
 
-        Quaternionf upright = new Quaternionf().rotateZ(Mth.PI);
-        Quaternionf camera = new Quaternionf();
-        g.pose().pushPose();
-        g.pose().translate(x, feetY, 50);
-        g.pose().scale(scale, scale, -scale);
-        g.pose().mulPose(upright);
-        Lighting.setupForEntityInInventory();
-        EntityRenderDispatcher dispatcher = minecraft.getEntityRenderDispatcher();
-        dispatcher.overrideCameraOrientation(camera.conjugate(new Quaternionf()).rotateY(Mth.PI));
-        dispatcher.setRenderShadow(false);
-        RenderSystem.runAsFancy(() -> dispatcher.render(player, 0.0, 0.0, 0.0, 0f, partialTick, g.pose(), g.bufferSource(), 0xF000F0));
-        g.flush();
-        dispatcher.setRenderShadow(true);
-        g.pose().popPose();
-        Lighting.setupFor3DItems();
+        // Vanilla's inventory call, minus the mouse: extract the real local player (a real partial tick, so PAL's animation is smooth) into a
+        // render state while the head and body are turned to face the emblem, then hand the state to the GUI to draw in its own pass.
+        EntityRenderState state = minecraft.getEntityRenderDispatcher().extractEntity(player, partialTick);
+        state.shadowRadius = 0f;
+        state.shadowPieces.clear();
+        state.nameTag = null;
 
         player.yBodyRot = yBody;
         player.yBodyRotO = yBodyO;
@@ -1017,6 +978,16 @@ public final class RevealScreen extends Screen {
         player.xRotO = pitchO;
         player.yHeadRot = head;
         player.yHeadRotO = headO;
+
+        // The GUI draws the model into its own picture-in-picture box, which ignores the canvas's pose: work in GUI units.
+        Vector2f feet = g.pose().transformPosition(x, feetY, new Vector2f());
+        float size = scale * canvasScale;
+        float height = Math.max(1f, state.boundingBoxHeight);
+        // generous: the box clips the model, and a signature animation swings its arms well outside the idle pose
+        float halfW = size * 1.7f, halfH = size * (height * 0.5f + 0.7f);
+        int cx = Math.round(feet.x), cy = Math.round(feet.y - size * height * 0.5f);
+        g.submitEntityRenderState(state, size, new Vector3f(0f, height * 0.5f, 0f), new Quaternionf().rotateZ(Mth.PI), new Quaternionf(),
+                Math.round(cx - halfW), Math.round(cy - halfH), Math.round(cx + halfW), Math.round(cy + halfH));
     }
 
     /** Plays the technique's signature animation on the model every few seconds. PAL draws it because the model is the real local player. */
@@ -1136,10 +1107,8 @@ public final class RevealScreen extends Screen {
         lineAt(g, Component.translatable("gui.kegare.reveal.severed.subtitle"), y, GuiDraw.RED & 0xFFFFFF, 1f);
         y += line + 4;
         for (FormattedCharSequence text : desc) {
-            g.pose().pushPose();
-            g.pose().translate(0, 0, Z_TEXT);
-            g.drawString(font, text, centerX - font.width(text) / 2, y, color(0xAAAAAA, 1f), true);
-            g.pose().popPose();
+            int ty = y;
+            raised.add(() -> g.drawString(font, text, centerX - font.width(text) / 2, ty, color(0xAAAAAA, 1f), true));
             y += line;
         }
         y += 4;
@@ -1164,6 +1133,12 @@ public final class RevealScreen extends Screen {
 
     // ---------------------------------------------------------------- drawing helpers
 
+    private void flushRaised() {
+        List<Runnable> now = new ArrayList<>(raised);
+        raised.clear();
+        now.forEach(Runnable::run);
+    }
+
     /** Dims the ink background, nearly to black in the darkest scenes. */
     private void darken(GuiGraphics g, int alpha) {
         g.fill(0, 0, cw + 1, ch + 1, alpha << 24 | 0x030206);
@@ -1172,14 +1147,13 @@ public final class RevealScreen extends Screen {
     /** A centered one-pixel line, brightest in the middle and fading out toward both ends. */
     private void hairline(GuiGraphics g, int w, int y, int rgb, float alpha) {
         if (w < 4 || alpha <= 0f) return;
-        g.pose().pushPose();
-        g.pose().translate(0, 0, Z_DETAILS);
-        int steps = 6;
-        for (int i = 0; i < steps; i++) {
-            int half = w / 2 - i * w / (2 * steps);
-            g.fill(centerX - half, y, centerX + half, y + 1, ((int) (alpha * 90) << 24) | (rgb & 0xFFFFFF));
-        }
-        g.pose().popPose();
+        raised.add(() -> {
+            int steps = 6;
+            for (int i = 0; i < steps; i++) {
+                int half = w / 2 - i * w / (2 * steps);
+                g.fill(centerX - half, y, centerX + half, y + 1, ((int) (alpha * 90) << 24) | (rgb & 0xFFFFFF));
+            }
+        });
     }
 
     /** Darker in the middle, thinning out at both ends. */
@@ -1188,23 +1162,24 @@ public final class RevealScreen extends Screen {
         int half = Math.min(cw / 2, textWidth / 2 + 28);
         int steps = 7;
         int perStep = (int) (alpha * 34);
-        g.pose().pushPose();
-        g.pose().translate(0, 0, Z_BAND);
-        for (int i = 0; i < steps; i++) {
-            int inset = i * 4;
-            g.fill(centerX - half + inset, y, centerX + half - inset, y + h, perStep << 24 | 0x05030A);
-        }
-        g.pose().popPose();
+        raised.add(() -> {
+            for (int i = 0; i < steps; i++) {
+                int inset = i * 4;
+                g.fill(centerX - half + inset, y, centerX + half - inset, y + h, perStep << 24 | 0x05030A);
+            }
+        });
     }
 
     /** Text centered on a point, at any scale. Whole-number scales at a whole-number point stay crisp. */
     private void centeredText(GuiGraphics g, FormattedCharSequence text, float x, float y, float scale, int rgb, float alpha) {
         if (alpha <= 0.02f) return; // Font treats near-zero alpha as opaque
-        g.pose().pushPose();
-        g.pose().translate(Math.round(x), Math.round(y), Z_TEXT);
-        g.pose().scale(scale, scale, 1f);
-        g.drawString(font, text, -font.width(text) / 2, -font.lineHeight / 2, color(rgb, alpha), true);
-        g.pose().popPose();
+        raised.add(() -> {
+            g.pose().pushMatrix();
+            g.pose().translate(Math.round(x), Math.round(y));
+            g.pose().scale(scale, scale);
+            g.drawString(font, text, -font.width(text) / 2, -font.lineHeight / 2, color(rgb, alpha), true);
+            g.pose().popMatrix();
+        });
     }
 
     private static int color(int rgb, float alpha) {
@@ -1221,9 +1196,7 @@ public final class RevealScreen extends Screen {
 
     private void glow(GuiGraphics g, int x, int y, int size, int rgb, float alpha) {
         if (alpha <= 0f || size <= 0) return;
-        additive(true);
-        GuiDraw.tinted(g, GLOW, x - size / 2, y - size / 2, size, size, rgb, alpha);
-        additive(false);
+        GuiDraw.tintedAdditive(g, GLOW, x - size / 2, y - size / 2, size, size, rgb, alpha);
     }
 
     private static void sprite(GuiGraphics g, Identifier sprite, int x, int y, int w, int h) {
@@ -1232,12 +1205,6 @@ public final class RevealScreen extends Screen {
 
     private static void tinted(GuiGraphics g, Identifier sprite, int x, int y, int w, int h, int rgb, float alpha) {
         GuiDraw.tinted(g, sprite, x, y, w, h, rgb, alpha);
-    }
-
-    private static void additive(boolean on) {
-        RenderSystem.enableBlend();
-        if (on) RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
-        else RenderSystem.defaultBlendFunc();
     }
 
     private static float clamp01(float value) {

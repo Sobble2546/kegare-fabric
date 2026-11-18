@@ -45,8 +45,8 @@ public final class TraitSuccession {
             TraitService.remove(victim, trait, Trait.RemoveReason.LOST_IN_PVP);
             victim.sendSystemMessage(Component.translatable("message.kegare.trait.lost").withStyle(ChatFormatting.DARK_GRAY));
             trait.onBearerKilledByPlayer(victim, killer);
-            Kegare.LOGGER.info("{} lost {} to {}", victim.getGameProfile().getName(), id, killer.getGameProfile().getName());
-            if (trait.isInheritable()) begin(victim.server, trait, victim.getUUID(), killer.getUUID());
+            Kegare.LOGGER.info("{} lost {} to {}", victim.getGameProfile().name(), id, killer.getGameProfile().name());
+            if (trait.isInheritable()) begin(victim.level().getServer(), trait, victim.getUUID(), killer.getUUID());
         }
     }
 
@@ -63,8 +63,8 @@ public final class TraitSuccession {
             if (action == TraitRules.SeveredAction.KEEP) continue;
             TraitService.remove(player, trait, Trait.RemoveReason.SEVERED);
             player.sendSystemMessage(Component.translatable("message.kegare.trait.lost").withStyle(ChatFormatting.DARK_GRAY));
-            Kegare.LOGGER.info("{} became Severed and lost {}", player.getGameProfile().getName(), id);
-            if (action == TraitRules.SeveredAction.TRANSFER) begin(player.server, trait, player.getUUID(), null);
+            Kegare.LOGGER.info("{} became Severed and lost {}", player.getGameProfile().name(), id);
+            if (action == TraitRules.SeveredAction.TRANSFER) begin(player.level().getServer(), trait, player.getUUID(), null);
         }
     }
 
@@ -119,14 +119,14 @@ public final class TraitSuccession {
 
     /** On login: an eligible player receives any trait that is due and still waiting for an heir. */
     public static void onLogin(ServerPlayer player) {
-        UniqueTraitSavedData saved = UniqueTraitSavedData.get(player.server);
+        UniqueTraitSavedData saved = UniqueTraitSavedData.get(player.level().getServer());
         if (saved.isNetworked()) return; // the next network pass sees them online
-        long now = now(player.server);
+        long now = now(player.level().getServer());
         for (Map.Entry<Identifier, UniqueTraitSavedData.Pending> entry : List.copyOf(saved.pendingView().entrySet())) {
             Trait trait = KegareRegistries.TRAIT.get(entry.getKey());
             if (trait == null || entry.getValue().dueTick() > now) continue;
             if (TransferRules.isEligibleHeir(candidate(player, trait), entry.getValue().previousBearer())) {
-                assign(player.server, trait, player);
+                assign(player.level().getServer(), trait, player);
             }
         }
     }
@@ -141,7 +141,7 @@ public final class TraitSuccession {
 
     private static boolean inherit(ServerPlayer heir, Trait trait) {
         if (TraitService.add(heir, trait, Trait.AddReason.INHERITED) != TraitService.AddResult.ADDED) return false;
-        Kegare.LOGGER.info("{} passed to {}", trait.id(), heir.getGameProfile().getName());
+        Kegare.LOGGER.info("{} passed to {}", trait.id(), heir.getGameProfile().name());
         heir.sendSystemMessage(Component.translatable("message.kegare.trait.inherited").withStyle(ChatFormatting.LIGHT_PURPLE));
         return true;
     }
@@ -188,7 +188,7 @@ public final class TraitSuccession {
     // ------------------------------------------------------------------ inactivity
 
     public static void markSeen(ServerPlayer player) {
-        UniqueTraitSavedData.get(player.server).markSeen(player.getUUID(), System.currentTimeMillis());
+        UniqueTraitSavedData.get(player.level().getServer()).markSeen(player.getUUID(), System.currentTimeMillis());
     }
 
     /** Releases unique traits whose holder has been offline longer than {@code uniqueTraitInactiveDays}. */

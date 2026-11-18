@@ -27,9 +27,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.Pig;
+import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -59,9 +59,9 @@ class LandingsTest {
 
     /** Stands them 6 blocks apart, the caster looking straight at the target. */
     private static void face(ServerPlayer caster, ServerPlayer target) {
-        caster.moveTo(0.5, Y, 0.5, -90f, 0f);
+        caster.snapTo(0.5, Y, 0.5, -90f, 0f);
         caster.setYHeadRot(-90f);
-        target.moveTo(6.5, Y, 0.5, 90f, 0f);
+        target.snapTo(6.5, Y, 0.5, 90f, 0f);
     }
 
     private static List<String> landed(ServerPlayer caster, ServerPlayer target) {
@@ -82,7 +82,7 @@ class LandingsTest {
             assertTrue(landed(caster, target).isEmpty(), "casting isn't landing");
 
             FrostShardEntity shard = level.getEntitiesOfClass(FrostShardEntity.class, new AABB(-16, 60, -16, 16, 100, 16)).get(0);
-            assertTrue(target.hurt(RimeDamage.source(level, shard, caster), 3f), "setup: the shard hits");
+            assertTrue(target.hurtServer((net.minecraft.server.level.ServerLevel) target.level(), RimeDamage.source(level, shard, caster), 3f), "setup: the shard hits");
             assertEquals(List.of(Rime.FROST_SHARD.id().toString()), landed(caster, target), "traced through the shard to its ability");
             shard.discard();
         });
@@ -100,7 +100,7 @@ class LandingsTest {
             CastScope.run(owner, PuppetManipulation.PUPPET_CREATION, () -> holder[0] = Puppets.create(owner, PuppetTier.TAP));
             PuppetEntity puppet = holder[0];
             assertTrue(puppet.hasData(com.cnethuka.kegare.registry.KegareAttachments.CAST_ORIGIN), "what a cast spawns is tagged");
-            assertTrue(enemy.hurt(enemy.damageSources().mobAttack(puppet), 2f), "setup");
+            assertTrue(enemy.hurtServer((net.minecraft.server.level.ServerLevel) enemy.level(), enemy.damageSources().mobAttack(puppet), 2f), "setup");
             assertEquals(List.of(PuppetManipulation.PUPPET_CREATION.id().toString()), landed(owner, enemy));
             assertEquals(0.0, RefinementService.get(owner).xp(), 1.0e-6, "on the fight's record, but the owner has done nothing to earn from it");
 
@@ -131,7 +131,7 @@ class LandingsTest {
         TestServer.onServerThread(server, () -> {
             TestServer.ensureOverworld(server);
             ServerPlayer caster = sorcerer(server, "air_caster", Swap.SWAP.get());
-            caster.moveTo(0.5, Y, 0.5);
+            caster.snapTo(0.5, Y, 0.5);
             double before = MaliceService.get(caster).current();
             InnateTechniqueService.select(caster, 2); // Anchor: no target of its own, thrown with nobody around
             CastManager.handleIntent(caster, CastIntent.CAST_PRESS);
@@ -146,9 +146,9 @@ class LandingsTest {
             TestServer.ensureOverworld(server);
             ServerPlayer caster = sorcerer(server, "notarget_caster", Swap.SWAP.get());
             ServerPlayer enemy = sorcerer(server, "notarget_enemy", Rime.RIME.get());
-            caster.moveTo(0.5, Y, 0.5);
-            enemy.moveTo(6.5, Y, 0.5);
-            assertTrue(enemy.hurt(enemy.damageSources().playerAttack(caster), 1f), "setup: they've traded a hit");
+            caster.snapTo(0.5, Y, 0.5);
+            enemy.snapTo(6.5, Y, 0.5);
+            assertTrue(enemy.hurtServer((net.minecraft.server.level.ServerLevel) enemy.level(), enemy.damageSources().playerAttack(caster), 1f), "setup: they've traded a hit");
             InnateTechniqueService.select(caster, 2); // Anchor
             CastManager.handleIntent(caster, CastIntent.CAST_PRESS);
             assertEquals(List.of(Swap.ANCHOR.id().toString()), landed(caster, enemy), "used in a fight, it counts against that opponent");
@@ -204,11 +204,11 @@ class LandingsTest {
             TestServer.ensureOverworld(server);
             ServerLevel level = server.overworld();
             ServerPlayer caster = sorcerer(server, "effect_caster", Rime.RIME.get());
-            Pig pig = EntityType.PIG.create(level);
+            Pig pig = EntityType.PIG.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             level.addFreshEntity(pig);
             ServerPlayer enemy = sorcerer(server, "effect_enemy", Rime.RIME.get());
             CastScope.run(caster, Rime.FROST_FIELD, () -> enemy.addEffect(
-                    new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN, 20), caster));
+                    new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.SLOWNESS, 20), caster));
             assertEquals(List.of(Rime.FROST_FIELD.id().toString()), landed(caster, enemy));
             CastScope.run(caster, Rime.SHATTER_SHELL, () -> enemy.knockback(1.0, 1.0, 0.0));
             assertEquals(2, landed(caster, enemy).size(), "so does knocking them back");
@@ -225,7 +225,7 @@ class LandingsTest {
             face(caster, enemy);
             InnateTechniqueService.select(caster, 0);
             CastManager.handleIntent(caster, CastIntent.CAST_PRESS); // Frost Shard, before any fight
-            assertTrue(enemy.hurt(enemy.damageSources().playerAttack(caster), 1f), "setup");
+            assertTrue(enemy.hurtServer((net.minecraft.server.level.ServerLevel) enemy.level(), enemy.damageSources().playerAttack(caster), 1f), "setup");
             Fight fight = FightTracker.between(caster, enemy);
             assertNotNull(fight);
             assertEquals(40.0, fight.side(caster.getUUID()).baseMalice(), 1.0e-6, "the shard that opened it, at base cost");

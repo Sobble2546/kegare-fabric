@@ -3,13 +3,13 @@ package com.cnethuka.kegare.client.gui;
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.innatetechnique.Ability;
 import com.cnethuka.kegare.innatetechnique.InnateTechnique;
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
@@ -96,21 +96,53 @@ public final class GuiDraw {
     // ---------------------------------------------------------------- primitives
 
     public static void sprite(GuiGraphics g, Identifier sprite, int x, int y, int w, int h) {
-        RenderSystem.enableBlend();
-        g.blitSprite(sprite, x, y, w, h);
+        g.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, x, y, w, h);
+    }
+
+    /** Packs an RGB color and an alpha (0..1) into the ARGB int the 1.21.11 GUI draw calls take as their tint. */
+    public static int argb(int rgb, float alpha) {
+        return (Mth.clamp(Math.round(alpha * 255f), 0, 255) << 24) | (rgb & 0xFFFFFF);
+    }
+
+    /** White at an alpha: the tint for fading a sprite or texture. */
+    public static int fade(float alpha) {
+        return argb(0xFFFFFF, alpha);
+    }
+
+    /** A whole-texture or region blit with the GUI's textured pipeline (alpha-blended), at 1 texel per GUI pixel. */
+    public static void blit(GuiGraphics g, Identifier texture, int x, int y, float u, float v, int w, int h, int texW, int texH) {
+        g.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, w, h, texW, texH);
+    }
+
+    /** {@link #blit} multiplied by an ARGB tint. */
+    public static void blit(GuiGraphics g, Identifier texture, int x, int y, float u, float v, int w, int h, int texW, int texH, int argb) {
+        g.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, w, h, texW, texH, argb);
+    }
+
+    /** A region {@code (u, v, regionW x regionH)} of a texture stretched to {@code w x h}. */
+    public static void blitScaled(GuiGraphics g, Identifier texture, int x, int y, int w, int h, float u, float v, int regionW, int regionH, int texW, int texH) {
+        g.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, w, h, regionW, regionH, texW, texH);
     }
 
     /** Sprite multiplied by an RGB color (the sparkle is white so it can take any color). */
     public static void tinted(GuiGraphics g, Identifier sprite, int x, int y, int w, int h, int rgb, float alpha) {
-        RenderSystem.enableBlend();
-        g.setColor(((rgb >> 16) & 0xFF) / 255f, ((rgb >> 8) & 0xFF) / 255f, (rgb & 0xFF) / 255f, alpha);
-        g.blitSprite(sprite, x, y, w, h);
-        g.setColor(1f, 1f, 1f, 1f);
+        g.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, x, y, w, h, argb(rgb, alpha));
+    }
+
+    /** {@link #tinted} blended additively (adds light instead of covering): glows, rays, flames' halos. */
+    public static void tintedAdditive(GuiGraphics g, Identifier sprite, int x, int y, int w, int h, int rgb, float alpha) {
+        g.blitSprite(GuiPipelines.GUI_ADDITIVE, sprite, x, y, w, h, argb(rgb, alpha));
     }
 
     /** Full-screen, opaque smoky ink (tiled) that darkens in steps toward the edges. */
     public static void inkBackground(GuiGraphics g, int w, int h) {
-        g.blit(INK_BACKGROUND, 0, 0, 0f, 0f, w, h, INK_BACKGROUND_SIZE, INK_BACKGROUND_SIZE); // opaque; UVs past 1 repeat
+        // opaque, tiled (a draw call no longer repeats its UVs, so lay the tiles out)
+        for (int ty = 0; ty < h; ty += INK_BACKGROUND_SIZE) {
+            for (int tx = 0; tx < w; tx += INK_BACKGROUND_SIZE) {
+                blit(g, INK_BACKGROUND, tx, ty, 0f, 0f, Math.min(INK_BACKGROUND_SIZE, w - tx), Math.min(INK_BACKGROUND_SIZE, h - ty),
+                        INK_BACKGROUND_SIZE, INK_BACKGROUND_SIZE);
+            }
+        }
         int steps = 8;
         int band = Math.max(2, Math.min(w, h) / 20);
         for (int i = 0; i < steps; i++) {
@@ -169,26 +201,18 @@ public final class GuiDraw {
             g.fill(x - 1, y - 1, x + fill + 1, y + BAR_HEIGHT + 1, 0x38000000 | (rgb & 0xFFFFFF));
             g.fill(x - 2, y, x + fill + 2, y + BAR_HEIGHT, 0x20000000 | (rgb & 0xFFFFFF));
         }
-        barRow(g, x, y, w, 0);
+        barRow(g, x, y, w, 0, WHITE);
         if (ghostFill > fill) {
             g.enableScissor(x + fill, y, x + ghostFill, y + BAR_HEIGHT);
-            tint(g, mix(rgb, 0xFFFFFF, 0.45f), 0.55f);
-            barRow(g, x, y, w, BAR_HEIGHT);
-            g.setColor(1f, 1f, 1f, 1f);
+            barRow(g, x, y, w, BAR_HEIGHT, argb(mix(rgb, 0xFFFFFF, 0.45f), 0.55f));
             g.disableScissor();
         }
         if (fill > 0) {
             g.enableScissor(x, y, x + fill, y + BAR_HEIGHT); // intersects with any enclosing scissor
-            tint(g, rgb, 1f);
-            barRow(g, x, y, w, BAR_HEIGHT);
-            g.setColor(1f, 1f, 1f, 1f);
-            barRow(g, x, y, w, 2 * BAR_HEIGHT); // shine, untinted
+            barRow(g, x, y, w, BAR_HEIGHT, argb(rgb, 1f));
+            barRow(g, x, y, w, 2 * BAR_HEIGHT, WHITE); // shine, untinted
             g.disableScissor();
         }
-    }
-
-    private static void tint(GuiGraphics g, int rgb, float alpha) {
-        g.setColor(((rgb >> 16) & 0xFF) / 255f, ((rgb >> 8) & 0xFF) / 255f, (rgb & 0xFF) / 255f, alpha);
     }
 
     /** Blends two RGB colors ({@code t} = 0: a, 1: b). */
@@ -199,24 +223,21 @@ public final class GuiDraw {
         return (r << 16) | (gr << 8) | bl;
     }
 
-    private static void barRow(GuiGraphics g, int x, int y, int w, int v) {
-        RenderSystem.enableBlend();
-        g.blit(MALICE_BAR, x, y, 0f, v, BAR_CAP, BAR_HEIGHT, BAR_TEXTURE_W, BAR_TEXTURE_H);
+    private static void barRow(GuiGraphics g, int x, int y, int w, int v, int argb) {
+        blit(g, MALICE_BAR, x, y, 0f, v, BAR_CAP, BAR_HEIGHT, BAR_TEXTURE_W, BAR_TEXTURE_H, argb);
         for (int dx = BAR_CAP; dx < w - BAR_CAP; dx += BAR_MIDDLE) {
             int segment = Math.min(BAR_MIDDLE, w - BAR_CAP - dx);
-            g.blit(MALICE_BAR, x + dx, y, BAR_CAP, v, segment, BAR_HEIGHT, BAR_TEXTURE_W, BAR_TEXTURE_H);
+            blit(g, MALICE_BAR, x + dx, y, BAR_CAP, v, segment, BAR_HEIGHT, BAR_TEXTURE_W, BAR_TEXTURE_H, argb);
         }
-        g.blit(MALICE_BAR, x + w - BAR_CAP, y, BAR_TEXTURE_W - BAR_CAP, v, BAR_CAP, BAR_HEIGHT, BAR_TEXTURE_W, BAR_TEXTURE_H);
+        blit(g, MALICE_BAR, x + w - BAR_CAP, y, BAR_TEXTURE_W - BAR_CAP, v, BAR_CAP, BAR_HEIGHT, BAR_TEXTURE_W, BAR_TEXTURE_H, argb);
     }
 
     // ---------------------------------------------------------------- abilities
 
     /** The small "R" badge on a slot: lit if the ability has a special, greyed out if not. 9x9. */
     public static void specialBadge(GuiGraphics g, int x, int y, boolean hasSpecial) {
-        g.pose().pushPose();
-        g.pose().translate(0, 0, 200);
+        // drawn after the slot's icon, so it lands on top (there is no z to raise any more: overlapping GUI draws stack in call order)
         sprite(g, hasSpecial ? BADGE_SPECIAL : BADGE_SPECIAL_NONE, x, y, 9, 9);
-        g.pose().popPose();
     }
 
     /** The ability's 16x16 icon at 1:1. Returns false (drawing nothing) if it has no icon art. */
@@ -226,17 +247,22 @@ public final class GuiDraw {
 
     /** A locked ability's icon, greyed out. */
     public static boolean greyedAbilityIcon(GuiGraphics g, Ability ability, int x, int y) {
-        g.setColor(0.42f, 0.42f, 0.42f, 1f);
-        boolean drawn = abilityIcon(g, ability.id(), x, y);
-        g.setColor(1f, 1f, 1f, 1f);
-        return drawn;
+        return abilityIcon(g, ability.id(), x, y, 0xFF6B6B6B);
     }
 
     public static boolean abilityIcon(GuiGraphics g, Identifier ability, int x, int y) {
+        return abilityIcon(g, ability, x, y, WHITE);
+    }
+
+    /** The ability's icon faded to {@code alpha}. */
+    public static boolean abilityIcon(GuiGraphics g, Ability ability, int x, int y, float alpha) {
+        return abilityIcon(g, ability.id(), x, y, fade(alpha));
+    }
+
+    private static boolean abilityIcon(GuiGraphics g, Identifier ability, int x, int y, int argb) {
         Identifier texture = art("ability", ability);
         if (texture == null) return false;
-        RenderSystem.enableBlend();
-        g.blit(texture, x, y, 0f, 0f, 16, 16, 16, 16);
+        blit(g, texture, x, y, 0f, 0f, 16, 16, 16, 16, argb);
         return true;
     }
 
@@ -253,37 +279,50 @@ public final class GuiDraw {
      * Without art: its advancement tab item on a dark well.
      */
     public static void emblem(GuiGraphics g, InnateTechnique innateTechnique, int x, int y, int size) {
-        g.fill(x - 1, y - 1, x + size + 1, y + size + 1, INK);
+        emblem(g, innateTechnique, x, y, size, 1f);
+    }
+
+    /** {@link #emblem} faded to {@code alpha} (the item stand-in, drawn when there is no art, cannot be faded and stays solid). */
+    public static void emblem(GuiGraphics g, InnateTechnique innateTechnique, int x, int y, int size, float alpha) {
+        g.fill(x - 1, y - 1, x + size + 1, y + size + 1, scaleAlpha(INK, alpha));
         Identifier texture = art("emblem", innateTechnique.id());
         if (texture != null) {
-            RenderSystem.enableBlend();
-            g.blit(texture, x, y, size, size, 0f, 0f, EMBLEM_TEXTURE_SIZE, EMBLEM_TEXTURE_SIZE, EMBLEM_TEXTURE_SIZE, EMBLEM_TEXTURE_SIZE);
+            g.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, 0f, 0f, size, size, EMBLEM_TEXTURE_SIZE, EMBLEM_TEXTURE_SIZE,
+                    EMBLEM_TEXTURE_SIZE, EMBLEM_TEXTURE_SIZE, fade(alpha));
             return;
         }
-        g.fill(x, y, x + size, y + size, WELL);
+        g.fill(x, y, x + size, y + size, scaleAlpha(WELL, alpha));
         float scale = Math.max(0.5f, size / 16f * 0.6f);
-        g.pose().pushPose();
-        g.pose().translate(x + size / 2f - 8 * scale, y + size / 2f - 8 * scale, 0);
-        g.pose().scale(scale, scale, 1f);
+        g.pose().pushMatrix();
+        g.pose().translate(x + size / 2f - 8 * scale, y + size / 2f - 8 * scale);
+        g.pose().scale(scale, scale);
         g.renderItem(new ItemStack(innateTechnique.tabIcon()), 0, 0);
-        g.pose().popPose();
+        g.pose().popMatrix();
+    }
+
+    /** An ARGB color with its alpha multiplied by {@code alpha}. */
+    public static int scaleAlpha(int argb, float alpha) {
+        return (Mth.clamp(Math.round((argb >>> 24) * alpha), 0, 255) << 24) | (argb & 0xFFFFFF);
     }
 
     /** The emblem plus a 1px rim in the rarity color. */
     public static void framedEmblem(GuiGraphics g, InnateTechnique innateTechnique, int x, int y, int size) {
-        g.renderOutline(x - 2, y - 2, size + 4, size + 4, 0xFF000000 | innateTechnique.rarity().color());
-        emblem(g, innateTechnique, x, y, size);
+        framedEmblem(g, innateTechnique, x, y, size, 1f);
+    }
+
+    public static void framedEmblem(GuiGraphics g, InnateTechnique innateTechnique, int x, int y, int size, float alpha) {
+        g.renderOutline(x - 2, y - 2, size + 4, size + 4, scaleAlpha(0xFF000000 | innateTechnique.rarity().color(), alpha));
+        emblem(g, innateTechnique, x, y, size, alpha);
     }
 
     // ---------------------------------------------------------------- text
 
     /** Centered text at a scale (1 = normal). */
     public static void centered(GuiGraphics g, Font font, FormattedCharSequence text, int centerX, int y, float scale, int color) {
-        g.pose().pushPose();
-        g.pose().translate(0, 0, 200); // above item icons (z~150)
-        g.pose().scale(scale, scale, 1f);
+        g.pose().pushMatrix(); // text submitted after an icon draws over it (no z to raise)
+        g.pose().scale(scale, scale);
         g.drawString(font, text, (int) (centerX / scale - font.width(text) / 2f), (int) (y / scale), color, true);
-        g.pose().popPose();
+        g.pose().popMatrix();
     }
 
     public static void centered(GuiGraphics g, Font font, Component text, int centerX, int y, float scale, int color) {
@@ -292,10 +331,10 @@ public final class GuiDraw {
 
     /** Left-aligned text at a scale. Returns the scaled line height. */
     public static int text(GuiGraphics g, Font font, Component text, int x, int y, float scale, int color) {
-        g.pose().pushPose();
-        g.pose().scale(scale, scale, 1f);
+        g.pose().pushMatrix();
+        g.pose().scale(scale, scale);
         g.drawString(font, text, (int) (x / scale), (int) (y / scale), color, true);
-        g.pose().popPose();
+        g.pose().popMatrix();
         return (int) Math.ceil(font.lineHeight * scale);
     }
 

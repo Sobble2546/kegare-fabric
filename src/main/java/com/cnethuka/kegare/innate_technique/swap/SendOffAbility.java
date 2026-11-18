@@ -50,7 +50,7 @@ public final class SendOffAbility extends SwapAbility.Special {
         SwapSounds.SEND_OFF_ENDS.at(anchor);
         Swapper.depart(target);
         Swapper.depart(anchor);
-        SwapLink.play(caster.serverLevel(), Swapper.bodyPos(target), Swapper.bodyPos(anchor));
+        SwapLink.play(caster.level(), Swapper.bodyPos(target), Swapper.bodyPos(anchor));
         Anchors.consume(caster, anchor);
         Swapper.landed(caster, target, 0, 0, 0);
         Swapper.moveTo(target, to);

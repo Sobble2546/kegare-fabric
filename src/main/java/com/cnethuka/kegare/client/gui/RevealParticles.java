@@ -60,9 +60,8 @@ final class RevealParticles {
         }
     }
 
-    void render(GuiGraphics g, float dt, int z) {
-        g.pose().pushPose();
-        g.pose().translate(0, 0, z);
+    /** Draws and advances the particles. Overlapping GUI draws stack in call order, so call this after what they fly over. */
+    void render(GuiGraphics g, float dt) {
         Iterator<Particle> it = particles.iterator();
         while (it.hasNext()) {
             Particle p = it.next();
@@ -84,6 +83,5 @@ final class RevealParticles {
                 g.fill(px, py, px + p.size, py + p.size, ((int) (fade * 255) << 24) | p.rgb);
             }
         }
-        g.pose().popPose();
     }
 }

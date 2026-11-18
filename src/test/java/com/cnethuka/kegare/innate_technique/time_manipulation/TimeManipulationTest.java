@@ -31,9 +31,9 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.Pig;
+import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
-import net.minecraft.world.entity.projectile.Snowball;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -43,7 +43,7 @@ import com.cnethuka.kegare.platform.event.entity.EntityTravelToDimensionEvent;
 import com.cnethuka.kegare.platform.event.entity.living.LivingDeathEvent;
 import com.cnethuka.kegare.platform.event.entity.player.AttackEntityEvent;
 import com.cnethuka.kegare.platform.event.tick.EntityTickEvent;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -83,7 +83,7 @@ class TimeManipulationTest {
         Vec3 d = at.subtract(p.getEyePosition());
         float yaw = (float) Math.toDegrees(Math.atan2(-d.x, d.z));
         float pitch = (float) -Math.toDegrees(Math.atan2(d.y, Math.sqrt(d.x * d.x + d.z * d.z)));
-        p.moveTo(p.getX(), p.getY(), p.getZ(), yaw, pitch);
+        p.snapTo(p.getX(), p.getY(), p.getZ(), yaw, pitch);
         p.setYHeadRot(yaw);
     }
 
@@ -121,7 +121,7 @@ class TimeManipulationTest {
                 assertEquals(TimeManipulation.POINT_MAKER, com.cnethuka.kegare.loadout.LoadoutService.abilityAt(p, 0), "setup: slot 1");
                 BlockPos block = new BlockPos(4, 117, 0);
                 level.setBlock(block, Blocks.STONE.defaultBlockState(), 3);
-                p.moveTo(0.5, Y, 0.5, 0f, 0f);
+                p.snapTo(0.5, Y, 0.5, 0f, 0f);
                 lookAt(p, new Vec3(4.5, 118.0, 0.5));
                 p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 2000));
 
@@ -134,7 +134,7 @@ class TimeManipulationTest {
                 float yaw = p.getYRot(), pitch = p.getXRot();
 
                 // Somewhere else, hurt to 8 and poisoned: the return puts it right.
-                p.moveTo(10.5, Y, 10.5, 45f, 30f);
+                p.snapTo(10.5, Y, 10.5, 45f, 30f);
                 p.addEffect(new MobEffectInstance(MobEffects.POISON, 200));
                 p.setHealth(8f);
                 before = malice(p);
@@ -152,7 +152,7 @@ class TimeManipulationTest {
                 // 20 -> 18: back to 20, never past it.
                 InnateTechniqueService.clearCooldowns(p);
                 p.setHealth(20f);
-                p.moveTo(0.5, Y, 0.5, 0f, 0f);
+                p.snapTo(0.5, Y, 0.5, 0f, 0f);
                 lookAt(p, new Vec3(4.5, 118.0, 0.5));
                 CastManager.handleIntent(p, CastIntent.CAST_PRESS);
                 p.setHealth(18f);
@@ -161,7 +161,7 @@ class TimeManipulationTest {
 
                 // A mark left to run out is gone, and that starts the cooldown.
                 InnateTechniqueService.clearCooldowns(p);
-                p.moveTo(0.5, Y, 0.5, 0f, 0f);
+                p.snapTo(0.5, Y, 0.5, 0f, 0f);
                 lookAt(p, new Vec3(4.5, 118.0, 0.5));
                 CastManager.handleIntent(p, CastIntent.CAST_PRESS);
                 assertTrue(PointMarks.has(p));
@@ -172,7 +172,7 @@ class TimeManipulationTest {
 
                 // Nothing in sight to mark: free.
                 InnateTechniqueService.clearCooldowns(p);
-                p.moveTo(0.5, Y, 0.5, 0f, -60f);
+                p.snapTo(0.5, Y, 0.5, 0f, -60f);
                 p.setYHeadRot(0f);
                 before = malice(p);
                 CastManager.handleIntent(p, CastIntent.CAST_PRESS);
@@ -188,7 +188,7 @@ class TimeManipulationTest {
     /** {@code ticks} of history: the target walks +X from {@code fromX} at 0.1 blocks a tick (staying in the loaded chunk). */
     private static void walk(MinecraftServer server, Entity target, double fromX, int ticks) {
         for (int i = 0; i < ticks; i++) {
-            target.moveTo(fromX + i * 0.1, Y, 0.5, target.getYRot(), 0f);
+            target.snapTo(fromX + i * 0.1, Y, 0.5, target.getYRot(), 0f);
             PositionHistory.tick(server);
             TestServer.advanceGameTime(server, 1);
         }
@@ -200,13 +200,13 @@ class TimeManipulationTest {
             TestServer.ensureOverworld(server);
             ServerLevel level = server.overworld();
             level.getHeight(Heightmap.Types.MOTION_BLOCKING, 0, 0);
-            Consumer<TimeTargetEvent> refuse = e -> e.setCanceled(true);
-            Pig pig = EntityType.PIG.create(level);
-            WitherBoss wither = EntityType.WITHER.create(level);
+            com.cnethuka.kegare.platform.bus.Listener<TimeTargetEvent> refuse = e -> e.setCanceled(true);
+            Pig pig = EntityType.PIG.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            WitherBoss wither = EntityType.WITHER.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             try {
                 ServerPlayer caster = holder(server, level, "tm_rewind");
                 ServerPlayer target = bystander(server, level, "tm_rewind_target");
-                caster.moveTo(0.5, Y, 0.5, 0f, 0f);
+                caster.snapTo(0.5, Y, 0.5, 0f, 0f);
                 InnateTechniqueService.select(caster, 0);
                 int ticks = TimeConfig.ticks(TimeConfig.REWIND_SECONDS);
 
@@ -221,11 +221,11 @@ class TimeManipulationTest {
                 assertEquals(then.x, target.getX(), 1.0e-6, "where it was 3 s ago");
                 assertEquals(before - TimeConfig.REWIND_COST.get(), malice(caster), EPS, "Rewind's cost");
                 assertTrue(InnateTechniqueService.cooldownRemaining(caster, TimeManipulation.POINT_MAKER) > 0, "shares Point Maker's cooldown");
-                target.moveTo(0.5, Y, 40.5); // out of the way
+                target.snapTo(0.5, Y, 40.5); // out of the way
 
                 // A mob, followed because it's near a Time Manipulation holder.
                 InnateTechniqueService.clearCooldowns(caster);
-                pig.moveTo(8.5, Y, 0.5, 0f, 0f);
+                pig.snapTo(8.5, Y, 0.5, 0f, 0f);
                 pig.setNoGravity(true);
                 level.addFreshEntity(pig);
                 walk(server, pig, 8.5, ticks + 4);
@@ -236,7 +236,7 @@ class TimeManipulationTest {
                 // Within a block of where it was 3 seconds ago (standing still): nothing would happen, so a free fizzle, told so.
                 InnateTechniqueService.clearCooldowns(caster);
                 for (int i = 0; i < ticks + 3; i++) {
-                    pig.moveTo(8.5 + (i % 2) * 0.3, Y, 0.5, 0f, 0f); // shuffling on the spot
+                    pig.snapTo(8.5 + (i % 2) * 0.3, Y, 0.5, 0f, 0f); // shuffling on the spot
                     PositionHistory.tick(server);
                     TestServer.advanceGameTime(server, 1);
                 }
@@ -275,7 +275,7 @@ class TimeManipulationTest {
                 pig.discard();
 
                 // A boss is never moved: free fizzle.
-                wither.moveTo(7.5, Y, 0.5, 0f, 0f);
+                wither.snapTo(7.5, Y, 0.5, 0f, 0f);
                 wither.setNoGravity(true);
                 level.addFreshEntity(wither);
                 walk(server, wither, 7.5, ticks + 4);
@@ -301,10 +301,10 @@ class TimeManipulationTest {
             ServerLevel level = server.overworld();
             try {
                 ServerPlayer p = holder(server, level, "tm_accelerate");
-                p.moveTo(0.5, Y, 0.5, 0f, 0f);
+                p.snapTo(0.5, Y, 0.5, 0f, 0f);
                 InnateTechniqueService.select(p, 1);
                 assertEquals(TimeManipulation.ACCELERATE, com.cnethuka.kegare.loadout.LoadoutService.abilityAt(p, 1), "setup: slot 2");
-                var speeds = java.util.List.of(Attributes.MOVEMENT_SPEED, net.neoforged.neoforge.common.NeoForgeMod.SWIM_SPEED, Attributes.ATTACK_SPEED,
+                var speeds = java.util.List.of(Attributes.MOVEMENT_SPEED, Attributes.WATER_MOVEMENT_EFFICIENCY, Attributes.ATTACK_SPEED,
                         Attributes.BLOCK_BREAK_SPEED);
                 java.util.Map<Object, Double> normal = new java.util.HashMap<>();
                 for (var a : speeds) normal.put(a, p.getAttributeValue(a));
@@ -312,7 +312,7 @@ class TimeManipulationTest {
                 assertTrue(TimeManipulation.ACCELERATE.isActive(p), "on");
                 double rate = TimeConfig.ACCELERATE_RATE.get();
                 assertEquals(2.0, rate, 1.0e-9, "the default");
-                assertFalse(p.hasEffect(MobEffects.MOVEMENT_SPEED), "no potion");
+                assertFalse(p.hasEffect(MobEffects.SPEED), "no potion");
                 for (var a : speeds) assertEquals(normal.get(a) * rate, p.getAttributeValue(a), 1.0e-9, a.getRegisteredName() + ": the same factor");
                 assertEquals(rate, AccelerateAbility.rate(p), 1.0e-9, "read back from the movement modifier (what the client reads)");
 
@@ -321,7 +321,7 @@ class TimeManipulationTest {
                 int left = 32, ticks = 0;
                 while (left > 0) {
                     var use = new com.cnethuka.kegare.platform.event.entity.living.LivingEntityUseItemEvent.Tick(p, bread, left);
-                    net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(use);
+                    com.cnethuka.kegare.platform.NeoForge.EVENT_BUS.post(use);
                     left = use.getDuration() - 1; // the game counts one off itself
                     ticks++;
                 }
@@ -375,20 +375,20 @@ class TimeManipulationTest {
         TestServer.onServerThread(server, () -> {
             TestServer.ensureOverworld(server);
             ServerLevel level = server.overworld();
-            Consumer<TimeTargetEvent> refuse = e -> e.setCanceled(true);
-            WitherBoss wither = EntityType.WITHER.create(level);
+            com.cnethuka.kegare.platform.bus.Listener<TimeTargetEvent> refuse = e -> e.setCanceled(true);
+            WitherBoss wither = EntityType.WITHER.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             try {
                 ServerPlayer caster = holder(server, level, "tm_decelerate");
                 ServerPlayer target = bystander(server, level, "tm_decelerate_target");
-                caster.moveTo(0.5, Y, 0.5, 0f, 0f);
-                target.moveTo(4.5, Y, 0.5, 0f, 0f);
+                caster.snapTo(0.5, Y, 0.5, 0f, 0f);
+                target.snapTo(4.5, Y, 0.5, 0f, 0f);
                 InnateTechniqueService.startCooldown(target, Swap.POSITIONS);
                 DecelerateEntity hand = new DecelerateEntity(level, caster);
 
                 DecelerateEntity.strike(hand, caster, target, TimeConfig.DECELERATE_DAMAGE.get().floatValue());
                 assertEquals(20f - TimeConfig.DECELERATE_DAMAGE.get().floatValue(), target.getHealth(), EPS, "the damage");
-                assertTrue(target.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "Slowness");
-                assertTrue(target.hasEffect(MobEffects.DIG_SLOWDOWN), "Mining Fatigue");
+                assertTrue(target.hasEffect(MobEffects.SLOWNESS), "Slowness");
+                assertTrue(target.hasEffect(MobEffects.MINING_FATIGUE), "Mining Fatigue");
                 assertEquals(TimeConfig.DECELERATE_COOLDOWN_RATE.get(), CooldownRates.multiplier(target, Swap.POSITIONS.cooldownKey()), EPS,
                         "their cooldowns at half speed");
                 int start = InnateTechniqueService.cooldownRemaining(target, Swap.POSITIONS);
@@ -404,19 +404,19 @@ class TimeManipulationTest {
                 target.invulnerableTime = 0;
                 NeoForge.EVENT_BUS.addListener(refuse);
                 DecelerateEntity.strike(hand, caster, target, 1f);
-                assertTrue(target.hasEffect(MobEffects.MOVEMENT_SLOWDOWN));
+                assertTrue(target.hasEffect(MobEffects.SLOWNESS));
                 assertEquals(1.0, CooldownRates.multiplier(target, Swap.POSITIONS.cooldownKey()), EPS, "refused: cooldowns untouched");
                 NeoForge.EVENT_BUS.unregister(refuse);
 
                 // A boss takes the damage, never the slow.
-                wither.moveTo(8.5, Y, 0.5, 0f, 0f);
+                wither.snapTo(8.5, Y, 0.5, 0f, 0f);
                 wither.setNoGravity(true);
                 level.addFreshEntity(wither);
                 float health = wither.getHealth();
                 wither.invulnerableTime = 0;
                 DecelerateEntity.strike(hand, caster, wither, 3f);
                 assertTrue(wither.getHealth() < health, "the boss is hurt");
-                assertFalse(wither.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "and never slowed");
+                assertFalse(wither.hasEffect(MobEffects.SLOWNESS), "and never slowed");
 
                 // The cast throws a real projectile.
                 InnateTechniqueService.select(caster, 2);
@@ -439,16 +439,16 @@ class TimeManipulationTest {
             TestServer.ensureOverworld(server);
             ServerLevel level = server.overworld();
             level.getHeight(Heightmap.Types.MOTION_BLOCKING, 0, 0);
-            Pig pig = EntityType.PIG.create(level);
-            WitherBoss wither = EntityType.WITHER.create(level);
-            Snowball a = new Snowball(level, 8.5, Y, 0.5), b = new Snowball(level, 8.5, Y, 1.5);
+            Pig pig = EntityType.PIG.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            WitherBoss wither = EntityType.WITHER.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            Snowball a = new Snowball(level, 8.5, Y, 0.5, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.SNOWBALL)), b = new Snowball(level, 8.5, Y, 1.5, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.SNOWBALL));
             try {
                 ServerPlayer caster = holder(server, level, "tm_stasis");
-                caster.moveTo(0.5, Y, 0.5, 0f, 0f);
+                caster.snapTo(0.5, Y, 0.5, 0f, 0f);
                 Vec3 centre = new Vec3(8.5, Y, 0.5);
                 StasisFields.open(caster, centre, 4.0, 100);
-                pig.moveTo(9.5, Y, 0.5, 0f, 0f);
-                wither.moveTo(6.5, Y, 2.5, 0f, 0f);
+                pig.snapTo(9.5, Y, 0.5, 0f, 0f);
+                wither.snapTo(6.5, Y, 2.5, 0f, 0f);
                 for (Entity e : List.of(pig, wither, a, b)) {
                     e.setNoGravity(true);
                     level.addFreshEntity(e);
@@ -458,10 +458,10 @@ class TimeManipulationTest {
                 StasisFields.tick(level);
                 assertEquals(0.05, a.getDeltaMovement().x, 1.0e-6, "a projectile inside crawls, same way");
                 assertEquals(-0.05, b.getDeltaMovement().z, 1.0e-6);
-                MobEffectInstance slow = pig.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
+                MobEffectInstance slow = pig.getEffect(MobEffects.SLOWNESS);
                 assertNotNull(slow, "heavy Slowness inside");
                 assertEquals(TimeConfig.STASIS_SLOWNESS.get(), slow.getAmplifier());
-                assertFalse(wither.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "never a boss");
+                assertFalse(wither.hasEffect(MobEffects.SLOWNESS), "never a boss");
 
                 // Out of the field: its own speed back.
                 a.setPos(14.5, Y, 0.5);
@@ -491,17 +491,17 @@ class TimeManipulationTest {
             TestServer.ensureOverworld(server);
             ServerLevel level = server.overworld();
             level.getHeight(Heightmap.Types.MOTION_BLOCKING, 0, 0);
-            Pig pig = EntityType.PIG.create(level);
-            WitherBoss wither = EntityType.WITHER.create(level);
+            Pig pig = EntityType.PIG.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            WitherBoss wither = EntityType.WITHER.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             try {
                 ServerPlayer caster = holder(server, level, "tm_stop");
                 ServerPlayer immune = holder(server, level, "tm_stop_immune");
                 ServerPlayer target = bystander(server, level, "tm_stop_target");
-                caster.moveTo(0.5, Y, 0.5, 0f, 0f);
-                immune.moveTo(4.5, Y, 4.5, 0f, 0f);
-                target.moveTo(6.5, Y, 0.5, 0f, 0f);
-                pig.moveTo(8.5, Y, 2.5, 0f, 0f);
-                wither.moveTo(12.5, Y, 0.5, 0f, 0f);
+                caster.snapTo(0.5, Y, 0.5, 0f, 0f);
+                immune.snapTo(4.5, Y, 4.5, 0f, 0f);
+                target.snapTo(6.5, Y, 0.5, 0f, 0f);
+                pig.snapTo(8.5, Y, 2.5, 0f, 0f);
+                wither.snapTo(12.5, Y, 0.5, 0f, 0f);
                 for (Entity e : List.of(pig, wither)) {
                     e.setNoGravity(true);
                     level.addFreshEntity(e);
@@ -528,11 +528,11 @@ class TimeManipulationTest {
                 assertEquals(new Vec3(6.5, Y, 0.5), target.position(), "held where they stood");
 
                 // Damage to the frozen is held; between the caster and the immune it lands at once.
-                assertFalse(target.hurt(caster.damageSources().playerAttack(caster), 4f), "held");
-                assertFalse(target.hurt(caster.damageSources().playerAttack(caster), 5f), "held");
-                assertFalse(pig.hurt(caster.damageSources().playerAttack(caster), 2f), "held");
+                assertFalse(target.hurtServer((net.minecraft.server.level.ServerLevel) target.level(), caster.damageSources().playerAttack(caster), 4f), "held");
+                assertFalse(target.hurtServer((net.minecraft.server.level.ServerLevel) target.level(), caster.damageSources().playerAttack(caster), 5f), "held");
+                assertFalse(pig.hurtServer((net.minecraft.server.level.ServerLevel) pig.level(), caster.damageSources().playerAttack(caster), 2f), "held");
                 assertEquals(20f, target.getHealth(), EPS, "nothing yet");
-                assertTrue(immune.hurt(caster.damageSources().playerAttack(caster), 3f), "immune: at once");
+                assertTrue(immune.hurtServer((net.minecraft.server.level.ServerLevel) immune.level(), caster.damageSources().playerAttack(caster), 3f), "immune: at once");
                 assertEquals(17f, immune.getHealth(), EPS);
 
                 // No second stop while one stands, not even by the immune.
@@ -543,7 +543,7 @@ class TimeManipulationTest {
                 assertEquals(caster, TimeStops.caster(level));
 
                 // Something the caster throws flies its first few ticks, then hangs.
-                Snowball thrown = new Snowball(level, caster);
+                Snowball thrown = new Snowball(level, caster, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.SNOWBALL));
                 thrown.setDeltaMovement(1, 0, 0);
                 level.addFreshEntity(thrown);
                 for (int i = 0; i < TimeConfig.STANDSTILL_FLIGHT_TICKS.get(); i++) assertTrue(ticks(thrown), "flies, tick " + i);

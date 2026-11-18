@@ -53,7 +53,7 @@ final class ScreenShake {
             roll += 0.5f * a * Mth.sin(Mth.TWO_PI * ROLL_HZ * secs + s.c);
             // The jolt: a quick shove the way the hit went, as the camera sees it, gone in about a tenth of a second.
             float kick = 1.2f * s.degrees * s.jolt * (float) Math.exp(-secs * 14);
-            Vec3 left = new Vec3(camera.getLeftVector()), up = new Vec3(camera.getUpVector());
+            Vec3 left = new Vec3(camera.leftVector()), up = new Vec3(camera.upVector());
             yaw -= kick * (float) s.direction.dot(left);
             pitch -= kick * (float) s.direction.dot(up);
         }

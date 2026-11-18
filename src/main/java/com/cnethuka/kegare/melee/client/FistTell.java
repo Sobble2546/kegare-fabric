@@ -1,6 +1,7 @@
 package com.cnethuka.kegare.melee.client;
 
 import com.cnethuka.kegare.Kegare;
+import com.cnethuka.kegare.client.visual.PlayerLayers;
 import com.cnethuka.kegare.client.visual.ClientVisuals;
 import com.cnethuka.kegare.config.KegareClientConfig;
 import com.cnethuka.kegare.config.KegareClientConfig.VfxQuality;
@@ -8,7 +9,6 @@ import com.cnethuka.kegare.melee.MeleeIds;
 import com.cnethuka.kegare.melee.MeleeTell;
 import com.cnethuka.kegare.melee.MeleeTellPayload;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -16,14 +16,14 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.player.PlayerRenderer;
-import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
+import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.Identifier;
@@ -35,9 +35,9 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import com.cnethuka.kegare.platform.bus.IEventBus;
+import com.cnethuka.kegare.platform.client.event.EntityRenderersEvent;
 import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
 import com.cnethuka.kegare.platform.client.event.ClientTickEvent;
-import com.cnethuka.kegare.platform.client.event.EntityRenderersEvent;
 import com.cnethuka.kegare.platform.client.event.RegisterClientReloadListenersEvent;
 import com.cnethuka.kegare.platform.client.event.RenderHandEvent;
 import com.cnethuka.kegare.platform.NeoForge;
@@ -101,6 +101,9 @@ public final class FistTell {
     private static final Map<Integer, MeleeTell.Look> STRIKE = new HashMap<>();
     /** What's burning on each hand that has something on it, by {@link #key}: the look, where the fist is, its curls. */
     private static final Map<Long, Shown> SHOWN = new HashMap<>();
+    /** A player at rest, for posing a model to read one arm off it. */
+    private static final AvatarRenderState NEUTRAL = new AvatarRenderState();
+    private static PlayerModel restWide, restSlim;
     private static float mainHandSwing;
     private static float mainHandEquip;
 
@@ -119,11 +122,7 @@ public final class FistTell {
     }
 
     private static void addLayers(EntityRenderersEvent.AddLayers event) {
-        for (PlayerSkin.Model model : event.getSkins()) {
-            if (event.getSkin(model) instanceof PlayerRenderer renderer) {
-                renderer.addLayer(new FistTellLayer(renderer, event.getContext().getItemInHandRenderer(), model == PlayerSkin.Model.SLIM));
-            }
-        }
+        PlayerLayers.addWithModels(event, (parent, models, slim) -> new FistTellLayer(parent, slim));
     }
 
     private static void update(MeleeTellPayload payload) {
@@ -165,62 +164,67 @@ public final class FistTell {
      * @param up       which way is up, in those axes
      * @param ownHand  your own hand in first person, right by the camera: a layer round it would fill the corner of the screen
      */
-    static void drawArm(PoseStack pose, MultiBufferSource buffers, MeleeTell.Look look, float time, boolean slim, boolean leftArm, int light,
+    static void drawArm(PoseStack pose, SubmitNodeCollector collector, MeleeTell.Look look, float time, boolean slim, boolean leftArm, int light,
                         Vector3f toCamera, Vector3f up, boolean ownHand) {
         if (look.kind() != MeleeTell.Kind.GLOW) return;
         float centre = FistShellMesh.armCentre(slim, leftArm);
         int rgb = MeleeTell.bright(look.color()) & 0xFFFFFF;
         if (!ownHand) {
-            FistFire.drawArm(pose.last(), buffers.getBuffer(FistFire.renderType()), rgb, time, FistShellMesh.handEnd(), centre, slim, toCamera, up);
+            collector.submitCustomGeometry(pose, FistFire.renderType(), (p, out) ->
+                    FistFire.drawArm(p, out, rgb, time, FistShellMesh.handEnd(), centre, slim, toCamera, up));
         } else {
-            FistFlames.drawOwnHand(pose.last(), buffers.getBuffer(FistFlames.renderType()), rgb, time, FistShellMesh.handEnd(), centre,
-                    slim ? RADIUS_SLIM : RADIUS, toCamera, up, leftArm);
+            collector.submitCustomGeometry(pose, FistFlames.renderType(), (p, out) ->
+                    FistFlames.drawOwnHand(p, out, rgb, time, FistShellMesh.handEnd(), centre, slim ? RADIUS_SLIM : RADIUS, toCamera, up, leftArm));
         }
     }
 
     /** The curls off this player's fist, where they came off it, in the world as the camera sees it. */
-    static void drawWisps(Player player, boolean offHand, MultiBufferSource buffers, float partialTick) {
+    static void drawWisps(Player player, boolean offHand, SubmitNodeCollector collector, float partialTick) {
         Shown shown = SHOWN.get(key(player.getId(), offHand));
         if (shown == null || shown.look.kind() != MeleeTell.Kind.GLOW || KegareClientConfig.VFX_QUALITY.get() == VfxQuality.VANILLA) return;
         Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
-        Vec3 from = camera.getPosition();
-        Vector3f right = new Vector3f(camera.getLeftVector()).negate();
-        Vector3f up = new Vector3f(camera.getUpVector());
-        Vector3f at = new Vector3f();
+        Vec3 from = camera.position();
+        Vector3f right = new Vector3f(camera.leftVector()).negate();
+        Vector3f up = new Vector3f(camera.upVector());
         int rgb = MeleeTell.bright(shown.look.color()) & 0xFFFFFF;
-        VertexConsumer out = buffers.getBuffer(FistFlames.renderType());
         float time = player.tickCount + partialTick;
-        for (int i = 0; i < shown.wispFrom.length; i++) {
-            Vec3 start = shown.wispFrom[i];
-            if (start == null) continue;
-            float age = (time - shown.wispBorn[i]) / FistFlames.WISP_LIFE_TICKS;
-            if (age < 0f || age >= 1f) continue;
-            float seed = seed(shown.wispBorn[i]);
-            FistFlames.wispPath(age, seed, at);
-            FistFlames.drawWisp(out, (float) (start.x - from.x) + at.x, (float) (start.y - from.y) + at.y, (float) (start.z - from.z) + at.z,
-                    right, up, WISP_SIZE, age, seed < 0.5f, rgb);
-        }
+        // Raw positions, from the camera along the world's axes: no pose.
+        collector.submitCustomGeometry(new PoseStack(), FistFlames.renderType(), (ignored, out) -> {
+            Vector3f at = new Vector3f();
+            for (int i = 0; i < shown.wispFrom.length; i++) {
+                Vec3 start = shown.wispFrom[i];
+                if (start == null) continue;
+                float age = (time - shown.wispBorn[i]) / FistFlames.WISP_LIFE_TICKS;
+                if (age < 0f || age >= 1f) continue;
+                float seed = seed(shown.wispBorn[i]);
+                FistFlames.wispPath(age, seed, at);
+                FistFlames.drawWisp(out, (float) (start.x - from.x) + at.x, (float) (start.y - from.y) + at.y, (float) (start.z - from.z) + at.z,
+                        right, up, WISP_SIZE, age, seed < 0.5f, rgb);
+            }
+        });
     }
 
     /** Your own curls in first person: they rise off the hand on the screen and stay near it. */
-    private static void drawWispsSelf(Shown shown, MultiBufferSource buffers, Vector3f fist, float time, float size) {
+    private static void drawWispsSelf(Shown shown, SubmitNodeCollector collector, Vector3f fist, float time, float size) {
         if (KegareClientConfig.VFX_QUALITY.get() == VfxQuality.VANILLA) return;
         Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
-        Vector3f right = new Vector3f(camera.getLeftVector()).negate();
-        Vector3f up = new Vector3f(camera.getUpVector());
-        Vector3f at = new Vector3f();
+        Vector3f right = new Vector3f(camera.leftVector()).negate();
+        Vector3f up = new Vector3f(camera.upVector());
         int rgb = MeleeTell.bright(shown.look.color()) & 0xFFFFFF;
-        VertexConsumer out = buffers.getBuffer(FistFlames.renderType());
-        for (int i = 0; i < shown.wispFrom.length; i++) {
-            if (shown.wispFrom[i] == null) continue;
-            float age = (time - shown.wispBorn[i]) / FistFlames.WISP_LIFE_TICKS;
-            if (age < 0f || age >= 1f) continue;
-            float seed = seed(shown.wispBorn[i]);
-            FistFlames.wispPath(age, seed, at).mul(WISP_SCALE_SELF);
-            at.x *= WISP_IN_SELF;
-            at.z *= WISP_IN_SELF;
-            FistFlames.drawWisp(out, fist.x + at.x, fist.y + at.y, fist.z + at.z, right, up, size, age, seed < 0.5f, rgb);
-        }
+        Vector3f where = new Vector3f(fist);
+        collector.submitCustomGeometry(new PoseStack(), FistFlames.renderType(), (ignored, out) -> {
+            Vector3f at = new Vector3f();
+            for (int i = 0; i < shown.wispFrom.length; i++) {
+                if (shown.wispFrom[i] == null) continue;
+                float age = (time - shown.wispBorn[i]) / FistFlames.WISP_LIFE_TICKS;
+                if (age < 0f || age >= 1f) continue;
+                float seed = seed(shown.wispBorn[i]);
+                FistFlames.wispPath(age, seed, at).mul(WISP_SCALE_SELF);
+                at.x *= WISP_IN_SELF;
+                at.z *= WISP_IN_SELF;
+                FistFlames.drawWisp(out, where.x + at.x, where.y + at.y, where.z + at.z, right, up, size, age, seed < 0.5f, rgb);
+            }
+        });
     }
 
     /** From when it came off, so it stays the same over its life and differs from the one before. */
@@ -232,7 +236,7 @@ public final class FistTell {
     static void reportFist(Player player, boolean offHand, Vector3f relative) {
         Shown shown = SHOWN.get(key(player.getId(), offHand));
         if (shown == null) return;
-        shown.fist = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().add(relative.x, relative.y, relative.z);
+        shown.fist = Minecraft.getInstance().gameRenderer.getMainCamera().position().add(relative.x, relative.y, relative.z);
         shown.staleTicks = 0;
     }
 
@@ -247,7 +251,7 @@ public final class FistTell {
 
     /** Is this fist being drawn in the world? A screen's preview of a player goes through the same layer, in its own space. */
     static boolean inWorld(Player player, Vector3f relative, float partialTick) {
-        Vec3 at = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().add(relative.x, relative.y, relative.z);
+        Vec3 at = Minecraft.getInstance().gameRenderer.getMainCamera().position().add(relative.x, relative.y, relative.z);
         return at.distanceToSqr(player.getPosition(partialTick)) < FARTHEST_FIST * FARTHEST_FIST;
     }
 
@@ -296,25 +300,34 @@ public final class FistTell {
         pose.mulPose(Axis.XP.rotationDegrees(200f));
         pose.mulPose(Axis.YP.rotationDegrees(side * -135f));
         pose.translate(side * 5.6f, 0f, 0f);
-        if (mc.getEntityRenderDispatcher().getRenderer(player) instanceof PlayerRenderer renderer) {
-            PlayerModel<AbstractClientPlayer> model = renderer.getModel();
+        {
+            boolean slim = player.getSkin().model() == PlayerModelType.SLIM;
+            // A model of our own: vanilla's bare arm has been queued by now with the renderer's parts themselves, which are drawn later.
+            PlayerModel model = restModel(slim);
             ModelPart arm = left ? model.leftArm : model.rightArm;
-            model.attackTime = 0f;
-            model.crouching = false;
-            model.swimAmount = 0f;
-            model.setupAnim(player, 0f, 0f, 0f, 0f, 0f);
+            model.setupAnim(NEUTRAL); // a bare arm at rest: nothing swinging, crouching or swimming
             arm.xRot = 0f;
             arm.translateAndRotate(pose);
-            boolean slim = player.getSkin().model() == PlayerSkin.Model.SLIM;
             float time = player.tickCount + event.getPartialTick();
             Vector3f fist = handPassPoint(pose.last(), FistShellMesh.armCentre(slim, left), FistShellMesh.fistY(), 0f);
-            drawArm(pose, event.getMultiBufferSource(), look, time, slim, left, event.getPackedLight(), fist.negate(new Vector3f()).normalize(),
+            drawArm(pose, event.getSubmitNodeCollector(), look, time, slim, left, event.getPackedLight(), fist.negate(new Vector3f()).normalize(),
                     new Vector3f(0f, 1f, 0f), true);
             Shown shown = SHOWN.get(key(player.getId(), false));
-            if (shown != null && look.kind() == MeleeTell.Kind.GLOW) drawWispsSelf(shown, event.getMultiBufferSource(), fist, time, WISP_SIZE_SELF);
+            if (shown != null && look.kind() == MeleeTell.Kind.GLOW) drawWispsSelf(shown, event.getSubmitNodeCollector(), fist, time, WISP_SIZE_SELF);
             reportFist(player, false, fist);
         }
         pose.popPose();
+    }
+
+    /** A player model that is only ever posed, never drawn: the arm at rest, to read where the hand pass puts a bare fist. */
+    private static PlayerModel restModel(boolean slim) {
+        PlayerModel model = slim ? restSlim : restWide;
+        if (model == null) {
+            model = new PlayerModel(Minecraft.getInstance().getEntityModels().bakeLayer(slim ? ModelLayers.PLAYER_SLIM : ModelLayers.PLAYER), slim);
+            if (slim) restSlim = model;
+            else restWide = model;
+        }
+        return model;
     }
 
     /** With something in hand there's no arm to wrap: one clump round the grip, going wherever vanilla's item moves take it (renderArmWithItem's default case). */
@@ -329,13 +342,16 @@ public final class FistTell {
         // The hand pass's pose comes out relative to the camera along the world's axes, so the camera's own axes are what face it.
         Vector3f base = handPassPoint(pose.last(), side * CLUMP_ACROSS, CLUMP_UP, CLUMP_NEARER);
         Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
-        Vector3f right = new Vector3f(camera.getLeftVector()).negate();
-        Vector3f up = new Vector3f(camera.getUpVector());
+        Vector3f right = new Vector3f(camera.leftVector()).negate();
+        Vector3f up = new Vector3f(camera.upVector());
         float time = player.tickCount + event.getPartialTick();
-        FistFire.drawGrip(event.getMultiBufferSource().getBuffer(FistFire.renderType()), MeleeTell.bright(look.color()) & 0xFFFFFF, time, base, right, up);
+        int rgb = MeleeTell.bright(look.color()) & 0xFFFFFF;
+        Vector3f baseAt = new Vector3f(base), rightAt = new Vector3f(right), upAt = new Vector3f(up);
+        event.getSubmitNodeCollector().submitCustomGeometry(new PoseStack(), FistFire.renderType(), (ignored, out) ->
+                FistFire.drawGrip(out, rgb, time, baseAt, rightAt, upAt));
         Vector3f middle = FistFire.gripMiddle(base, up);
         Shown shown = SHOWN.get(key(player.getId(), false));
-        if (shown != null) drawWispsSelf(shown, event.getMultiBufferSource(), middle, time, WISP_SIZE_GRIP);
+        if (shown != null) drawWispsSelf(shown, event.getSubmitNodeCollector(), middle, time, WISP_SIZE_GRIP);
         reportFist(player, false, middle);
     }
 
@@ -403,7 +419,7 @@ public final class FistTell {
 
     private static void vanillaParticles(ClientLevel level, MeleeTell.Look look, Vec3 at) {
         int rgb = MeleeTell.bright(look.color());
-        level.addParticle(new DustParticleOptions(new Vector3f((rgb >> 16 & 0xFF) / 255f, (rgb >> 8 & 0xFF) / 255f, (rgb & 0xFF) / 255f), 0.8f),
+        level.addParticle(new DustParticleOptions(rgb & 0xFFFFFF, 0.8f),
                 at.x, at.y, at.z, 0, 0.02, 0);
     }
 }

@@ -12,10 +12,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -31,11 +31,11 @@ class DirectiveGoAimTest {
             ServerPlayer owner = TestServer.player(server, "go_aim");
             BirthService.rebirth(owner, OptionalInt.of(1000));
             InnateTechniqueService.setInnateTechnique(owner, PuppetManipulation.PUPPET_MANIPULATION.get());
-            owner.moveTo(1.5, ground, 8.5, -90f, 0f);
+            owner.snapTo(1.5, ground, 8.5, -90f, 0f);
 
             Villager target = new Villager(EntityType.VILLAGER, level);
             target.setNoAi(true);
-            target.moveTo(7.5, ground, 8.5, 0f, 0f);
+            target.snapTo(7.5, ground, 8.5, 0f, 0f);
             level.addFreshEntity(target);
             owner.lookAt(EntityAnchorArgument.Anchor.EYES, target.getEyePosition());
             assertEquals(new BlockPos(7, ground, 8), DirectiveAbility.goTarget(owner), "the ground under the villager");
@@ -44,7 +44,7 @@ class DirectiveGoAimTest {
             target.discard();
             PuppetEntity puppet = Puppets.create(owner, PuppetTier.TAP);
             puppet.setNoAi(true);
-            puppet.moveTo(4.5, ground, 8.5, 0f, 0f);
+            puppet.snapTo(4.5, ground, 8.5, 0f, 0f);
             owner.lookAt(EntityAnchorArgument.Anchor.EYES, new Vec3(7.5, ground, 8.5));
             assertEquals(new BlockPos(7, ground, 8), DirectiveAbility.goTarget(owner), "past the puppet, where the crosshair meets the ground");
             puppet.discard();

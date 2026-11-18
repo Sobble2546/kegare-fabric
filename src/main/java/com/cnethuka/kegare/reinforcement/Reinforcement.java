@@ -99,7 +99,7 @@ public final class Reinforcement {
         if (!(event.getEntity() instanceof ServerPlayer player) || event.getNewDamage() <= 0) return;
         double s = strength(player);
         if (s <= 0) return;
-        double share = reduction(event.getSource(), player.serverLevel()) * s;
+        double share = reduction(event.getSource(), player.level()) * s;
         if (share > 0) event.setNewDamage(event.getNewDamage() * (float) (1.0 - share));
     }
 

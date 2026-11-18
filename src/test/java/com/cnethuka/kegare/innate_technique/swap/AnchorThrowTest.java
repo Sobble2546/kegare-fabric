@@ -11,7 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -73,7 +73,7 @@ class AnchorThrowTest {
     }
 
     private static void stand(ServerPlayer caster, float pitch) {
-        caster.moveTo(0.5, Y, Z + 0.5, -90f, pitch); // facing +X
+        caster.snapTo(0.5, Y, Z + 0.5, -90f, pitch); // facing +X
         caster.setYHeadRot(-90f);
         caster.setYBodyRot(-90f);
     }

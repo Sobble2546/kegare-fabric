@@ -21,7 +21,7 @@ import java.util.OptionalInt;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -35,7 +35,7 @@ class RmtAdvancementsTest {
             ServerPlayer p = TestServer.playerWithAdvancements(server, "rmt_advancements");
             BirthService.rebirth(p, OptionalInt.of(500));
             InnateTechniqueService.setInnateTechnique(p, Rime.RIME.get());
-            p.moveTo(0.5, 100, 0.5, -90f, 0f);
+            p.snapTo(0.5, 100, 0.5, -90f, 0f);
             TestServer.advanceGameTime(server, KegareServerConfig.ticks(KegareServerConfig.COMBAT_TAG_SECONDS) + 1);
 
             // A Green Light: take in the orb.

@@ -23,7 +23,7 @@ import java.util.OptionalInt;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -40,7 +40,7 @@ class BackgroundRmtStandstillTest {
         TraitService.removeAll(p, Trait.RemoveReason.ADMIN);
         InnateTechniqueService.setInnateTechnique(p, Rime.RIME.get());
         MaliceService.refill(p);
-        p.moveTo(0.5, 120, 0.5, -90f, 0f);
+        p.snapTo(0.5, 120, 0.5, -90f, 0f);
         p.setHealth(p.getMaxHealth());
         SharedAbilityService.unlock(p, Rmt.REVERSE_MALICE_TECHNIQUE);
         Unlocks.grant(p, BackgroundRmt.ID);
@@ -62,7 +62,7 @@ class BackgroundRmtStandstillTest {
                 TraitService.removeAll(caster, Trait.RemoveReason.ADMIN);
                 InnateTechniqueService.setInnateTechnique(caster, TimeManipulation.TIME_MANIPULATION.get());
                 MaliceService.refill(caster);
-                caster.moveTo(3.5, 120, 0.5, 90f, 0f);
+                caster.snapTo(3.5, 120, 0.5, 90f, 0f);
                 CastManager.handleIntent(caster, CastIntent.ULTIMATE_PRESS);
                 assertTrue(TimeStops.active(level), "setup: time stands still");
                 assertTrue(TimeStops.frozen(p), "setup: frozen");

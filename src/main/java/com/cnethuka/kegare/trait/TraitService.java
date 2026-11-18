@@ -16,7 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.GameProfileCache;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.world.entity.player.Player;
 
 /** Grants/removes traits and enforces unique traits (one bearer per world) and Malice requirements. */
@@ -44,7 +44,7 @@ public final class TraitService {
         if (data.has(id)) return AddResult.ALREADY_HAS;
         if (!TraitRules.canHold(trait.requiresMalice(), MaliceService.isSevered(player))) return AddResult.REQUIRES_MALICE;
         if (trait.isUnique()) {
-            UniqueTraitSavedData saved = UniqueTraitSavedData.get(player.server);
+            UniqueTraitSavedData saved = UniqueTraitSavedData.get(player.level().getServer());
             boolean claimed = reason == Trait.AddReason.BIRTH
                     ? saved.tryClaim(id, player.getUUID())
                     : saved.forceClaim(id, player.getUUID());
@@ -69,7 +69,7 @@ public final class TraitService {
 
     private static boolean removeId(ServerPlayer player, Identifier id, Trait.RemoveReason reason) {
         if (!get(player).remove(id)) return false;
-        UniqueTraitSavedData.get(player.server).release(id, player.getUUID());
+        UniqueTraitSavedData.get(player.level().getServer()).release(id, player.getUUID());
         Trait trait = KegareRegistries.TRAIT.get(id);
         if (trait != null) trait.onRemoved(player, reason);
         PlayerSync.markDirty(player);
@@ -85,7 +85,7 @@ public final class TraitService {
         // With Postgres storage, a first join's unique traits were rolled and approved by the database before they arrived (DESIGN §3.33).
         KegareDatabase database = KegareDatabase.current();
         boolean preRolled = database != null && database.preRolledBirth(player.getUUID());
-        UniqueTraitSavedData saved = UniqueTraitSavedData.get(player.server);
+        UniqueTraitSavedData saved = UniqueTraitSavedData.get(player.level().getServer());
         List<Trait> granted = new ArrayList<>();
         for (Trait trait : KegareRegistries.TRAIT) {
             double chance = trait.birthChance();
@@ -113,9 +113,9 @@ public final class TraitService {
      */
     public static void reconcile(ServerPlayer player) {
         TraitData data = get(player);
-        UniqueTraitSavedData saved = UniqueTraitSavedData.get(player.server);
+        UniqueTraitSavedData saved = UniqueTraitSavedData.get(player.level().getServer());
         UUID uuid = player.getUUID();
-        String name = player.getGameProfile().getName();
+        String name = player.getGameProfile().name();
 
         for (Identifier id : saved.takeRevocations(uuid)) {
             if (data.has(id)) {
@@ -158,12 +158,9 @@ public final class TraitService {
     /** Best-effort name for a UUID (online player, then profile cache, then the raw UUID). */
     public static String nameOf(MinecraftServer server, UUID uuid) {
         ServerPlayer online = server.getPlayerList().getPlayer(uuid);
-        if (online != null) return online.getGameProfile().getName();
-        GameProfileCache cache = server.getProfileCache();
-        if (cache != null) {
-            Optional<GameProfile> profile = cache.get(uuid);
-            if (profile.isPresent()) return profile.get().getName();
-        }
+        if (online != null) return online.getGameProfile().name();
+        Optional<NameAndId> cached = server.services().nameToIdCache().get(uuid);
+        if (cached.isPresent()) return cached.get().name();
         return uuid.toString();
     }
 }

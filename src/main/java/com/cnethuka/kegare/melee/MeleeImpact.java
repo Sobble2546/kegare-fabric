@@ -24,7 +24,7 @@ public enum MeleeImpact {
     /** A perfect parry cancelled a melee hit: {@code at} is the point of contact, {@code who} the defender, {@code other} the attacker. */
     PARRY_PERFECT(SoundEvents.TRIDENT_HIT, 1.1f, 1.45f),
     /** A guard took some of a hit: {@code who} is the defender, {@code other} the attacker if there is one. */
-    GUARD_HIT(SoundEvents.SHIELD_BLOCK, 0.8f, 1.2f),
+    GUARD_HIT(SoundEvents.SHIELD_BLOCK.value(), 0.8f, 1.2f),
     /** An attacker was staggered. */
     STAGGER(SoundEvents.ANVIL_LAND, 0.25f, 1.9f),
     /**

@@ -49,7 +49,7 @@ public final class Landings {
     }
 
     private static long now(ServerPlayer player) {
-        return player.server.overworld().getGameTime();
+        return player.level().getServer().overworld().getGameTime();
     }
 
     /** {@code ability} of theirs landed on {@code target}. Ignored unless it's a real target and an ability of their current technique. */

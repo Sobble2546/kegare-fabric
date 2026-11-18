@@ -17,7 +17,8 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -183,10 +184,9 @@ public final class BlockMarks {
             int[] argb = new int[w * h], when = new int[w * h];
             for (int y = 0; y < h; y++) {
                 for (int x = 0; x < w; x++) {
-                    int abgr = ai.getPixelRGBA(x, y);
-                    int alpha = abgr >>> 24;
-                    argb[y * w + x] = alpha == 0 ? 0 : alpha << 24 | (abgr & 0xFF) << 16 | (abgr >> 8 & 0xFF) << 8 | (abgr >> 16 & 0xFF);
-                    when[y * w + x] = oi.getPixelRGBA(x, y) & 0xFF;
+                    int pixel = ai.getPixel(x, y); // ARGB
+                    argb[y * w + x] = pixel >>> 24 == 0 ? 0 : pixel;
+                    when[y * w + x] = oi.getPixel(x, y) >> 16 & 0xFF; // the order is grey: red says as much as any channel
                 }
             }
             byte[] glows = null;
@@ -196,7 +196,7 @@ public final class BlockMarks {
                     if (gi.getWidth() != w || gi.getHeight() != h) throw new IOException("the glow isn't the art's size");
                     glows = new byte[w * h];
                     for (int y = 0; y < h; y++) {
-                        for (int x = 0; x < w; x++) glows[y * w + x] = (byte) Math.min(15, Math.round((gi.getPixelRGBA(x, y) & 0xFF) / 17f));
+                        for (int x = 0; x < w; x++) glows[y * w + x] = (byte) Math.min(15, Math.round((gi.getPixel(x, y) >> 16 & 0xFF) / 17f));
                     }
                 }
             }
@@ -332,9 +332,9 @@ public final class BlockMarks {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
         if (level == null || level != lastLevel) return;
-        Vec3 cam = event.getCamera().getPosition();
+        Vec3 cam = event.getCamera().position();
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
-        RenderType type = RenderType.entityTranslucent(WHITE);
+        RenderType type = RenderTypes.entityTranslucent(WHITE);
         VertexConsumer out = buffers.getBuffer(type);
         for (Face f : FACES.values()) {
             if (f.solid.distToCenterSqr(cam) > DRAW_DISTANCE * DRAW_DISTANCE) continue;

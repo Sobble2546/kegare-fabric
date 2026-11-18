@@ -20,7 +20,7 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.neoforged.fml.loading.FMLEnvironment;
+import com.cnethuka.kegare.platform.FMLEnvironment;
 
 /**
  * {@code /kegare help [system]}, the one command anyone can use. It lists only what the sender may run. Every command is in
@@ -53,7 +53,7 @@ final class HelpCommand {
         }
 
         boolean visibleTo(CommandSourceStack source) {
-            return source.hasPermission(permission) && (!devClient || !FMLEnvironment.production);
+            return CommandArgs.allowed(source, permission) && (!devClient || !FMLEnvironment.production);
         }
     }
 
@@ -165,7 +165,7 @@ final class HelpCommand {
         Map<String, List<Entry>> systems = bySystem(source);
         systems.forEach((system, entries) -> {
             MutableComponent line = (MutableComponent) listEntry(usage("/kegare " + system), actions(entries));
-            say(source, line.withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/kegare help " + system))));
+            say(source, line.withStyle(style -> style.withClickEvent(new ClickEvent.RunCommand("/kegare help " + system))));
         });
         return systems.size();
     }
@@ -174,7 +174,7 @@ final class HelpCommand {
         say(source, Component.translatable("commands.kegare.help.header.system", entries.get(0).system()).withColor(GuiDraw.GOLD & 0xFFFFFF));
         for (Entry entry : entries) {
             Component line = Component.translatable("commands.kegare.entry", usage("/kegare " + entry.usage()), Component.translatable(entry.description()).withColor(GuiDraw.GRAY & 0xFFFFFF))
-                    .withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, entry.typedSoFar())));
+                    .withStyle(style -> style.withClickEvent(new ClickEvent.SuggestCommand(entry.typedSoFar())));
             say(source, line);
         }
         return entries.size();

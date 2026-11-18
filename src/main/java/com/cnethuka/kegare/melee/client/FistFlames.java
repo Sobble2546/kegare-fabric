@@ -4,7 +4,8 @@ import com.cnethuka.kegare.Kegare;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -55,7 +56,7 @@ final class FistFlames {
     private FistFlames() {}
 
     static RenderType renderType() {
-        return RenderType.entityCutoutNoCull(TEXTURE);
+        return RenderTypes.entityCutoutNoCull(TEXTURE);
     }
 
     /** Which frame of a loop shows at this time. */

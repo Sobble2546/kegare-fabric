@@ -45,14 +45,14 @@ public final class SwapEvents {
         if (Switchback.isPending(attacker)) SwapAdvancements.award(attacker, SwapAdvancements.ROUND_TRIP);
         Disguises.get(victim).ifPresent(d -> {
             if (d.kind() == Disguises.Kind.MIMIC || !d.as().equals(d.caster())) return;
-            ServerPlayer caster = Switchback.find(victim.server, d.caster());
+            ServerPlayer caster = Switchback.find(victim.level().getServer(), d.caster());
             if (caster != null && attacker != caster && Disguises.get(caster).isPresent()) {
                 SwapAdvancements.award(caster, SwapAdvancements.WRONG_TARGET);
             }
         });
         for (Disguises.Disguise d : Disguises.wearing(victim.getUUID())) {
             if (d.kind() != Disguises.Kind.MIMIC) continue;
-            ServerPlayer mimic = Switchback.find(victim.server, d.wearer());
+            ServerPlayer mimic = Switchback.find(victim.level().getServer(), d.wearer());
             if (mimic != null && mimic != attacker) SwapAdvancements.award(mimic, SwapAdvancements.TWO_OF_YOU);
         }
     }

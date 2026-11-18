@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.PositionMoveRotation;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.fabricmc.fabric.api.entity.FakePlayer;
@@ -66,13 +67,14 @@ public final class Swapper {
         Vec3 spot = clearOfBlocks(entity, pos);
         if (entity instanceof ServerPlayer player && !(entity instanceof FakePlayer)) {
             if (player.isSleeping()) player.stopSleepInBed(true, true);
-            player.teleportTo(player.serverLevel(), spot.x, spot.y, spot.z, yaw, pitch); // also dismounts
+            player.stopRiding();
+            player.teleportTo(player.level(), spot.x, spot.y, spot.z, Set.of(), yaw, pitch, true);
         } else if (entity instanceof FakePlayer) { // no client to tell, and its connection ignores teleports
             entity.stopRiding();
-            entity.moveTo(spot.x, spot.y, spot.z, yaw, pitch);
+            entity.snapTo(spot.x, spot.y, spot.z, yaw, pitch);
         } else {
             entity.stopRiding();
-            entity.teleportTo((ServerLevel) entity.level(), spot.x, spot.y, spot.z, Set.of(), yaw, pitch);
+            entity.teleportTo((ServerLevel) entity.level(), spot.x, spot.y, spot.z, Set.of(), yaw, pitch, true);
             if (entity instanceof LivingEntity living) living.yBodyRot = yaw;
             if (entity instanceof Mob mob) mob.getNavigation().stop();
         }
@@ -82,7 +84,8 @@ public final class Swapper {
             // Tell watchers now rather than waiting for the tracker (teleportTo already told the moved player). The tracker's
             // base is updated too, since its next relative step is sent from where it thinks watchers have the entity.
             ServerLevel level = (ServerLevel) entity.level();
-            level.getChunkSource().broadcast(entity, new ClientboundTeleportEntityPacket(entity));
+            level.getChunkSource().sendToTrackingPlayers(entity,
+                    ClientboundTeleportEntityPacket.teleport(entity.getId(), PositionMoveRotation.of(entity), Set.of(), entity.onGround()));
             if (((ChunkMapAccessor) level.getChunkSource().chunkMap).kegare$entityMap().get(entity.getId())
                     instanceof TrackedEntityAccessor tracked) {
                 ((ServerEntityAccessor) tracked.kegare$serverEntity()).kegare$positionCodec().setBase(entity.trackingPosition());

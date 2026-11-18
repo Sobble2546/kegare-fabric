@@ -1,5 +1,6 @@
 package com.cnethuka.kegare.innate_technique.puppet_manipulation;
 
+import com.cnethuka.kegare.platform.EntityCompat;
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.combat.CombatHelper;
 import com.cnethuka.kegare.innate_technique.swap.Swapper;
@@ -20,6 +21,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -70,14 +72,14 @@ public final class Possession {
     private static PuppetEntity puppetOf(ServerPlayer player, PossessionData d) {
         Refs refs = REFS.get(player.getUUID());
         if (refs != null && !refs.puppet.isRemoved()) return refs.puppet;
-        return d.puppet != null && player.serverLevel().getEntity(d.puppet) instanceof PuppetEntity p ? p : null;
+        return d.puppet != null && player.level().getEntity(d.puppet) instanceof PuppetEntity p ? p : null;
     }
 
     @Nullable
     private static PuppetShellEntity shellOf(ServerPlayer player, PossessionData d) {
         Refs refs = REFS.get(player.getUUID());
         if (refs != null && !refs.shell.isRemoved()) return refs.shell;
-        return d.shell != null && player.serverLevel().getEntity(d.shell) instanceof PuppetShellEntity s ? s : null;
+        return d.shell != null && player.level().getEntity(d.shell) instanceof PuppetShellEntity s ? s : null;
     }
 
     static void clear() {
@@ -104,7 +106,7 @@ public final class Possession {
     public static void possess(ServerPlayer player, PuppetEntity puppet) {
         if (isPossessing(player)) return;
         Strings.cut(player); // you can't hold a string from outside your body
-        ServerLevel level = player.serverLevel();
+        ServerLevel level = player.level();
         PossessionData d = data(player);
 
         // The body stays behind.
@@ -120,8 +122,12 @@ public final class Possession {
         d.dimension = level.dimension();
         d.tier = puppet.tier();
         Inventory inventory = player.getInventory();
-        d.inventory = inventory.save(new net.minecraft.nbt.ListTag());
-        d.selectedSlot = inventory.selected;
+        d.inventory = new ArrayList<>();
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            ItemStack held = inventory.getItem(i);
+            if (!held.isEmpty()) d.inventory.add(new ItemStackWithSlot(i, held.copy()));
+        }
+        d.selectedSlot = inventory.getSelectedSlot();
         player.closeContainer();
         player.stopUsingItem();
         inventory.clearContent();
@@ -158,7 +164,7 @@ public final class Possession {
     public static void release(ServerPlayer player, Return why) {
         PossessionData d = data(player);
         if (!d.active()) return;
-        ServerLevel level = player.serverLevel();
+        ServerLevel level = player.level();
         PuppetEntity puppet = puppetOf(player, d);
         PuppetShellEntity shell = shellOf(player, d);
         REFS.remove(player.getUUID());
@@ -175,8 +181,10 @@ public final class Possession {
             if (!inventory.getItem(i).isEmpty()) meanwhile.add(inventory.getItem(i).copy());
         }
         inventory.clearContent();
-        inventory.load(d.inventory);
-        inventory.selected = d.selectedSlot;
+        for (ItemStackWithSlot saved : d.inventory) {
+            if (saved.isValidInContainer(inventory.getContainerSize())) inventory.setItem(saved.slot(), saved.stack().copy());
+        }
+        inventory.setSelectedSlot(d.selectedSlot);
         meanwhile.forEach(inventory::placeItemBackInInventory);
         player.inventoryMenu.broadcastChanges();
         Vec3 bodyAt = shell != null ? shell.position() : d.bodyPos;
@@ -184,8 +192,8 @@ public final class Possession {
         if (d.dimension == null || d.dimension == level.dimension()) {
             Swapper.moveTo(player, bodyAt, bodyYaw, d.bodyPitch);
         } else { // only after a crash: the body is in another dimension
-            ServerLevel bodyLevel = player.server.getLevel(d.dimension);
-            if (bodyLevel != null) player.teleportTo(bodyLevel, bodyAt.x, bodyAt.y, bodyAt.z, bodyYaw, d.bodyPitch);
+            ServerLevel bodyLevel = player.level().getServer().getLevel(d.dimension);
+            if (bodyLevel != null) player.teleportTo(bodyLevel, bodyAt.x, bodyAt.y, bodyAt.z, java.util.Set.of(), bodyYaw, d.bodyPitch, true);
         }
         player.resetFallDistance();
         if (shell != null) shell.discard();
@@ -197,7 +205,7 @@ public final class Possession {
             if (why == Return.PUPPET_DIED) {
                 Puppets.dissolve(puppet);
             } else {
-                puppet.moveTo(leftAt.x, leftAt.y, leftAt.z, leftYaw, 0f);
+                puppet.snapTo(leftAt.x, leftAt.y, leftAt.z, leftYaw, 0f);
                 puppet.setHealth(Math.max(0.5f, Math.min(leftHealth, puppet.getMaxHealth())));
             }
         }
@@ -216,7 +224,7 @@ public final class Possession {
     /** The possessed puppet died: nausea, a brief stun and lost Malice. */
     private static void backlash(ServerPlayer player) {
         int nausea = PuppetConfig.ticks(PuppetConfig.BACKLASH_NAUSEA);
-        if (nausea > 0) player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, nausea, 0));
+        if (nausea > 0) player.addEffect(new MobEffectInstance(MobEffects.NAUSEA, nausea, 0));
         CombatHelper.stun(player, PuppetConfig.ticks(PuppetConfig.BACKLASH_STUN));
         double lose = Math.min(PuppetConfig.BACKLASH_MALICE.get(), MaliceService.get(player).current());
         if (lose > 0) MaliceService.trySpend(player, lose);
@@ -232,7 +240,7 @@ public final class Possession {
     private static void changed(ServerPlayer player) {
         PlayerSync.markDirty(player);
         PuppetHud.markDirty(player);
-        PossessionLinks.broadcast(player.server);
+        PossessionLinks.broadcast(player.level().getServer());
     }
 
     // ---------------------------------------------------------------- hooks
@@ -277,7 +285,7 @@ public final class Possession {
             PuppetAdvancements.award(owner, PuppetAdvancements.NOBODY_HOME);
         }
         release(owner, Return.SHELL_HIT);
-        owner.invulnerableTime = 0;
+        EntityCompat.setInvulnerableTime(owner, 0);
         owner.hurt(source, amount);
         return true;
     }

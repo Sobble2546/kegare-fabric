@@ -53,7 +53,7 @@ public final class Senses {
     public static List<SensedPositionsPayload.Entry> realPositions(ServerPlayer player, List<Integer> ids) {
         List<SensedPositionsPayload.Entry> entries = new ArrayList<>();
         for (int id : ids) {
-            net.minecraft.world.entity.Entity e = player.serverLevel().getEntity(id);
+            net.minecraft.world.entity.Entity e = player.level().getEntity(id);
             if (e != null && com.cnethuka.kegare.sight.DelayedSight.hidden(e) && !com.cnethuka.kegare.sight.DelayedSight.seesReal(player, e)) {
                 entries.add(new SensedPositionsPayload.Entry(id, e.position()));
             }
@@ -66,7 +66,7 @@ public final class Senses {
         if (!Severed.is(player)) return List.of();
         double range = SeveredConfig.SENSES_RANGE.get();
         if (range <= 0) return List.of();
-        List<LivingEntity> out = new ArrayList<>(player.serverLevel().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(range),
+        List<LivingEntity> out = new ArrayList<>(player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(range),
                 e -> e != player && e.isAlive() && !(e instanceof ArmorStand) && !(e instanceof Player p && p.isSpectator())
                         && e.distanceToSqr(player) <= range * range));
         out.sort((a, b) -> Double.compare(a.distanceToSqr(player), b.distanceToSqr(player)));

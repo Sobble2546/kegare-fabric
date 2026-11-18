@@ -33,7 +33,7 @@ import java.util.Optional;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -192,9 +192,9 @@ class EfficiencyTest {
                 Reads.build(p);
                 assertEquals(before + SixEyesConfig.ATTUNEMENT_READ.get(), Attunement.get(p), EPS, "a full-detail Read");
                 before = Attunement.get(p);
-                p.moveTo(0.5, 120, 0.5, 180f, 0f);
+                p.snapTo(0.5, 120, 0.5, 180f, 0f);
                 Reads.build(p);
-                p.moveTo(0.5, 120, 0.5, 0f, 0f);
+                p.snapTo(0.5, 120, 0.5, 0f, 0f);
                 Reads.build(p);
                 assertEquals(before, Attunement.get(p), EPS, "the same one again so soon counts for nothing");
 

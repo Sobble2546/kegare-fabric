@@ -49,11 +49,11 @@ public final class FrostFieldAbility extends RimeAbility {
         boolean slowTick = ctx.activeTicks() % SLOW_REFRESH_TICKS == 0;
         boolean stackTick = ctx.activeTicks() % 20 == 0;
         if (!slowTick && !stackTick) return;
-        CleanDodge.areaWentOff(player.serverLevel(), player, box -> inCone(player, box));
+        CleanDodge.areaWentOff(player.level(), player, box -> inCone(player, box));
         int amplifier = RimeConfig.FIELD_SLOWNESS_AMPLIFIER.get();
         int stacks = RimeConfig.FIELD_FREEZE_STACKS_PER_SECOND.get();
         for (LivingEntity target : targets(player)) {
-            if (slowTick) target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, SLOW_REFRESH_TICKS + 16, amplifier), player);
+            if (slowTick) target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, SLOW_REFRESH_TICKS + 16, amplifier), player);
             if (stackTick) FreezeService.addStacks(target, stacks, player);
         }
         if (ctx.activeTicks() % 10 == 0) {

@@ -23,6 +23,7 @@ import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import com.cnethuka.kegare.platform.EntityCompat;
 import com.cnethuka.kegare.platform.NeoForge;
 import com.cnethuka.kegare.platform.event.tick.ServerTickEvent;
 import com.cnethuka.kegare.platform.net.PacketDistributor;
@@ -122,15 +123,15 @@ public final class Strain {
         hold(player, Attributes.JUMP_STRENGTH);
         float damage = SixEyesConfig.COLLAPSE_DAMAGE.get().floatValue();
         if (damage > 0) {
-            int invulnerable = player.invulnerableTime;
+            int invulnerable = EntityCompat.invulnerableTime(player);
             player.hurt(source(player), damage);
-            player.invulnerableTime = invulnerable;
+            EntityCompat.setInvulnerableTime(player, invulnerable);
         }
         PacketDistributor.sendToPlayer(player, new Collapsed(ticks));
     }
 
     static DamageSource source(ServerPlayer player) {
-        return new DamageSource(player.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(COLLAPSE));
+        return new DamageSource(player.level().registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(COLLAPSE));
     }
 
     private static void hold(ServerPlayer player, net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attribute) {

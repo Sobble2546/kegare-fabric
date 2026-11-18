@@ -22,12 +22,12 @@ public final class SwapTracker {
 
     /** The caster moved {@code target} (a player or a mob) with a swap (Positions, Switchback either way, Send Off, Total Swap). */
     static void swapped(ServerPlayer caster, LivingEntity target) {
-        SWAPPED.put(target.getUUID(), new Mark(caster.getUUID(), caster.serverLevel().getGameTime()));
+        SWAPPED.put(target.getUUID(), new Mark(caster.getUUID(), caster.level().getGameTime()));
     }
 
     /** The caster traded momentum with {@code target} (a player or a mob). */
     static void momentum(ServerPlayer caster, LivingEntity target) {
-        MOMENTUM.put(target.getUUID(), new Mark(caster.getUUID(), caster.serverLevel().getGameTime()));
+        MOMENTUM.put(target.getUUID(), new Mark(caster.getUUID(), caster.level().getGameTime()));
     }
 
     /**
@@ -35,7 +35,7 @@ public final class SwapTracker {
      * earns Fall Guy / Newton's Third. Mobs are tracked (a swap can move them) but never count.
      */
     static void fellToDeath(LivingEntity victim) {
-        MinecraftServer server = victim.getServer();
+        MinecraftServer server = victim.level().getServer();
         if (server == null) return;
         if (!(victim instanceof ServerPlayer)) { // mastery advancements: player victims only (DESIGN §4)
             SWAPPED.remove(victim.getUUID());
@@ -58,7 +58,7 @@ public final class SwapTracker {
     private SwapTracker() {}
 
     static void identityCrisisStarted(ServerPlayer caster) {
-        IDENTITY_CRISIS.put(caster.getUUID(), caster.serverLevel().getGameTime());
+        IDENTITY_CRISIS.put(caster.getUUID(), caster.level().getGameTime());
     }
 
     /** Every server tick: whoever is still alive 30 s after the cast earns Identity Crisis. */

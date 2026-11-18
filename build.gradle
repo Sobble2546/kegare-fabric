@@ -35,9 +35,11 @@ sourceSets.main {
     resources {
         srcDir 'src/generated/resources'
         exclude '**/*.bbmodel'
-        exclude 'src/generated/**/.cache'
+        exclude '.cache/**'
     }
 }
+// Test-only overlay for the spellings that differ per target (the throwaway server's MinecraftServer subclass, Trinkets in tests).
+sourceSets.test.java.srcDir "targets/${targetName}/testJava"
 
 def mc = tp.getProperty('minecraft_version')
 dependencies {
@@ -61,6 +63,9 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testCompileOnly 'com.google.code.findbugs:jsr305:3.0.2' // javax.annotation.Nullable, which some tests use as well
+    // Starts Fabric's Knot class loader (mixins, mod discovery) around the JUnit run; the throwaway server is src/test's EphemeralTestServerProvider.
+    testImplementation "net.fabricmc:fabric-loader-junit:${loader_version}"
 }
 
 def javaRelease = Integer.parseInt(tp.getProperty('java_release'))
@@ -81,4 +86,34 @@ tasks.named('processResources') {
     filesMatching('fabric.mod.json') { expand props }
 }
 
-tasks.named('test', Test).configure { useJUnitPlatform() }
+// Data generation (DESIGN 3.10): `./gradlew runData` (alias of Fabric's runDatagen) writes src/generated/resources, client providers
+// (language, item models, sounds) included. It is added to the resources by the source set above, so Loom must not add it again.
+fabricApi {
+    configureDataGeneration {
+        client = true
+        modId = mod_id
+        outputDirectory = file('src/generated/resources')
+        addToResources = false
+    }
+}
+tasks.register('runData') {
+    group = 'fabric'
+    description = 'Generates src/generated/resources (the NeoForge-era name for runDatagen).'
+    dependsOn 'runDatagen'
+}
+
+tasks.named('test', Test).configure {
+    useJUnitPlatform()
+    // The integration tests run or skip by this: Gradle must not call a run without it up to date with one that had it (DESIGN 3.33).
+    inputs.property('kegareTestDatabase', System.getenv('KEGARE_TEST_DB_URL') != null)
+    // Every test player keeps a full record of all ~1,470 advancements for the life of the shared test server (measured: 413 players,
+    // about 508 MB still in use at the end); a Fabric server with its chunk system needs more room than that.
+    maxHeapSize = '3G'
+    // The game (Knot, config files, logs) runs from its own directory, not the project root (run/ is git-ignored); tests that read project files
+    // resolve them from kegare.projectDir.
+    workingDir = file('run/test')
+    doFirst { workingDir.mkdirs() }
+    systemProperty 'kegare.projectDir', project.projectDir.absolutePath
+    // AgentFilesTest reads these; without them as inputs, a change to only them would leave the tests "up to date".
+    inputs.files('CLAUDE.md', 'AGENTS.md', 'AGENT.md').withPropertyName('agentFiles').withPathSensitivity(PathSensitivity.RELATIVE)
+}

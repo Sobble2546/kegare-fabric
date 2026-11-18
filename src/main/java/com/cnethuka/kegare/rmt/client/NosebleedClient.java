@@ -7,6 +7,7 @@ import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.Entity;
@@ -103,7 +104,7 @@ public final class NosebleedClient {
             if (drop != null) {
                 drop.setParticleSpeed(0, 0, 0); // straight down, whatever the constructor made of it
                 drop.setLifetime(DROP_LIFE);
-                drop.setColor(1f, 1f, 1f); // (a block's crumb is shaded down by default)
+                if (drop instanceof SingleQuadParticle quad) quad.setColor(1f, 1f, 1f); // (a block's crumb is shaded down by default)
                 drop.scale(DROP_SCALE);
             }
         }

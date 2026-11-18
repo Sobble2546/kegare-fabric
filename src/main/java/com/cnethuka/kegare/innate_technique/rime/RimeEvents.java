@@ -49,7 +49,7 @@ public final class RimeEvents {
         if (melee) {
             int ticks = RimeConfig.ticks(RimeConfig.SHELL_ATTACKER_SLOWNESS_SECONDS);
             if (ticks > 0) ((LivingEntity) source.getEntity()).addEffect(
-                    new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, ticks, RimeConfig.SHELL_ATTACKER_SLOWNESS_AMPLIFIER.get()), player);
+                    new MobEffectInstance(MobEffects.SLOWNESS, ticks, RimeConfig.SHELL_ATTACKER_SLOWNESS_AMPLIFIER.get()), player);
         }
     }
 

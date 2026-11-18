@@ -4,11 +4,11 @@ import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.network.ProgressionToastPayload;
 import com.cnethuka.kegare.progression.Grade;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.toasts.Toast;
-import net.minecraft.client.gui.components.toasts.ToastComponent;
+import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
@@ -19,6 +19,7 @@ final class ProgressionToast implements Toast {
     private static final int W = 150;
     private static final int H = 28;
 
+    private Visibility wanted = Visibility.SHOW;
     private final Component title;
     private final Component name;
     @Nullable
@@ -59,12 +60,20 @@ final class ProgressionToast implements Toast {
     }
 
     @Override
-    public Visibility render(GuiGraphics g, ToastComponent toasts, long timeMs) {
-        Font font = toasts.getMinecraft().font;
+    public void update(ToastManager toasts, long fullyVisibleForMs) {
+        wanted = fullyVisibleForMs >= SHOWN_MS ? Visibility.HIDE : Visibility.SHOW;
+    }
+
+    @Override
+    public Visibility getWantedVisibility() {
+        return wanted;
+    }
+
+    @Override
+    public void render(GuiGraphics g, Font font, long fullyVisibleForMs) {
         GuiDraw.sprite(g, FRAME, 0, 0, W, H);
         if (ability == null || !GuiDraw.abilityIcon(g, ability, 6, 6)) GuiDraw.sprite(g, SorcererScreen.ICON_PROGRESS, 6, 6, 16, 16);
         g.drawString(font, title, 26, 5, GuiDraw.GOLD, true);
         g.drawString(font, font.substrByWidth(name, W - 26 - 5).getString(), 26, 15, GuiDraw.WHITE, true);
-        return timeMs >= SHOWN_MS ? Visibility.HIDE : Visibility.SHOW;
     }
 }

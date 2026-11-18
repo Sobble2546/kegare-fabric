@@ -71,11 +71,11 @@ public final class Sight {
     /** Every other player in the bearer's dimension. */
     public static SightPayloads.Players players(ServerPlayer bearer) {
         List<SightPayloads.Players.Dot> dots = new ArrayList<>();
-        for (ServerPlayer other : bearer.serverLevel().players()) {
+        for (ServerPlayer other : bearer.level().players()) {
             if (other == bearer || other.isSpectator() || !other.isAlive()) continue;
             MaliceData malice = MaliceService.get(other);
             int color = InnateTechniqueService.current(other).map(InnateTechnique::maliceColor).orElse(InnateTechnique.DEFAULT_MALICE_COLOR);
-            dots.add(new SightPayloads.Players.Dot(other.getUUID(), other.getId(), other.getGameProfile().getName(), other.getX(), other.getY(), other.getZ(),
+            dots.add(new SightPayloads.Players.Dot(other.getUUID(), other.getId(), other.getGameProfile().name(), other.getX(), other.getY(), other.getZ(),
                     color, malice.capacity(), malice.isSevered()));
         }
         return new SightPayloads.Players(true, dots);
@@ -84,7 +84,7 @@ public final class Sight {
     /** Every living mob loaded in the bearer's dimension. */
     public static SightPayloads.Mobs mobs(ServerPlayer bearer) {
         List<SightPayloads.Mobs.Dot> dots = new ArrayList<>();
-        for (Entity e : bearer.serverLevel().getAllEntities()) {
+        for (Entity e : bearer.level().getAllEntities()) {
             if (!(e instanceof LivingEntity living) || e instanceof Player || e instanceof ArmorStand || !living.isAlive()) continue;
             dots.add(new SightPayloads.Mobs.Dot(e.getId(), BuiltInRegistries.ENTITY_TYPE.getId(e.getType()), (float) e.getX(), (float) e.getY(),
                     (float) e.getZ(), hostile(living)));
@@ -100,7 +100,7 @@ public final class Sight {
     /** A player started a cast: every bearer in that dimension sees their outline pulse, before the cast's own tell. */
     private static void castStarted(ServerPlayer caster) {
         if (MaliceService.isSevered(caster)) return; // a void has nothing to pulse with
-        for (ServerPlayer bearer : caster.serverLevel().players()) {
+        for (ServerPlayer bearer : caster.level().players()) {
             if (bearer != caster && SixEyes.isBearer(bearer)) send(bearer, new SightPayloads.Pulse(caster.getId(), SightPayloads.Pulse.CAST));
         }
     }

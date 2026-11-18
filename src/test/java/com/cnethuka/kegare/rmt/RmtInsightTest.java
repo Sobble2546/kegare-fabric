@@ -23,7 +23,7 @@ import java.util.OptionalInt;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -40,7 +40,7 @@ class RmtInsightTest {
         TraitService.removeAll(p, Trait.RemoveReason.ADMIN);
         InnateTechniqueService.setInnateTechnique(p, Rime.RIME.get());
         Insight.reset(p);
-        p.moveTo(0.5, 120, 0.5);
+        p.snapTo(0.5, 120, 0.5);
         return p;
     }
 
@@ -76,12 +76,12 @@ class RmtInsightTest {
                 Insight.reset(p); // as if unlocked before unlocking paid anything
                 assertTrue(SharedAbilityService.isUnlocked(p, Rmt.REVERSE_MALICE_TECHNIQUE.id()), "setup: unlocked");
                 assertEquals(0, output(p), "setup: never paid");
-                net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new com.cnethuka.kegare.platform.event.entity.player.PlayerEvent.PlayerLoggedInEvent(p));
+                com.cnethuka.kegare.platform.NeoForge.EVENT_BUS.post(new com.cnethuka.kegare.platform.event.entity.player.PlayerEvent.PlayerLoggedInEvent(p));
                 assertEquals(5, output(p), "paid on login");
-                net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new com.cnethuka.kegare.platform.event.entity.player.PlayerEvent.PlayerLoggedInEvent(p));
+                com.cnethuka.kegare.platform.NeoForge.EVENT_BUS.post(new com.cnethuka.kegare.platform.event.entity.player.PlayerEvent.PlayerLoggedInEvent(p));
                 assertEquals(5, output(p), "once");
                 ServerPlayer locked = player(server, server.overworld(), "rmt_never_unlocked");
-                net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new com.cnethuka.kegare.platform.event.entity.player.PlayerEvent.PlayerLoggedInEvent(locked));
+                com.cnethuka.kegare.platform.NeoForge.EVENT_BUS.post(new com.cnethuka.kegare.platform.event.entity.player.PlayerEvent.PlayerLoggedInEvent(locked));
                 assertEquals(0, output(locked), "nothing without RMT");
             } finally {
                 TestServer.removePlayers(server);

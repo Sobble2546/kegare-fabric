@@ -19,7 +19,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
+import com.zigythebird.playeranim.accessors.IAvatarAnimationState;
+import com.zigythebird.playeranim.util.ClientUtil;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.world.entity.Avatar;
 import net.minecraft.resources.Identifier;
 
 /**
@@ -81,7 +85,7 @@ public final class PlayerAnimations {
         animations.forEach(WHILE_LEVEL::add);
     }
 
-    private static boolean keepsVanillaHands(AbstractClientPlayer player) {
+    private static boolean keepsVanillaHands(Avatar player) {
         Identifier latest = LATEST.get(player.getUUID());
         return latest != null && (VANILLA_HANDS.contains(latest) || holdsSomething(player)
                 || WHILE_LEVEL.contains(latest) && player.getXRot() > LEVEL_PITCH);
@@ -91,18 +95,28 @@ public final class PlayerAnimations {
      * Holding anything in either hand, every animation on this layer leaves your own first-person hands to vanilla, for the reason
      * in {@link #keepVanillaHands}. Only an empty-handed cast shows its gesture in your own first person.
      */
-    private static boolean holdsSomething(AbstractClientPlayer player) {
+    private static boolean holdsSomething(Avatar player) {
         return !player.getMainHandItem().isEmpty() || !player.getOffhandItem().isEmpty();
     }
 
     /**
-     * Whether PAL is drawing your own body for your own first-person view right now (an animation shown with
+     * Whether PAL is drawing {@code state}'s player as your own first-person view right now (an animation shown with
      * {@code THIRD_PERSON_MODEL}). A layer on the player's body skips it: PAL hides the head and body there and shows the arms, but a
      * layer that draws its own copy of the parts (Freeze's frost, the Rime Shell, a possessor's glow) would put a head round the
      * camera and fill the view.
      */
+    public static boolean firstPersonPass(EntityRenderState state) {
+        return state instanceof IAvatarAnimationState animated && animated.playerAnimLib$isFirstPersonPass();
+    }
+
+    /**
+     * Whether the camera is, this frame, looking through a {@code THIRD_PERSON_MODEL} animation of its own entity. PAL on Minecraft 1.21.11
+     * flags the pass per drawn player (on the render state), so a layer should ask {@link #firstPersonPass(EntityRenderState)} with the state it
+     * is drawing; this one answers for the camera's player only and says yes for every player drawn while it holds, so it is a stand-in
+     * for code that has no state to hand.
+     */
     public static boolean firstPersonPass() {
-        return FirstPersonMode.isFirstPersonPass();
+        return ClientUtil.shouldBeFirstPersonPass();
     }
 
     /** Whether this layer last started {@code animation} on the player, and it hasn't been stopped. A play-once counts until something replaces it. */

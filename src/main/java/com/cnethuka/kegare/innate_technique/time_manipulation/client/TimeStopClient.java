@@ -1,6 +1,7 @@
 package com.cnethuka.kegare.innate_technique.time_manipulation.client;
 
 import com.cnethuka.kegare.Kegare;
+import com.cnethuka.kegare.combat.CombatHelper;
 import com.cnethuka.kegare.impact.client.ImpactClient;
 import com.cnethuka.kegare.impact.client.ScreenFx;
 import com.cnethuka.kegare.innate_technique.time_manipulation.TimeNet;
@@ -10,7 +11,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.Input;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
@@ -22,7 +22,6 @@ import com.cnethuka.kegare.platform.client.event.InputEvent;
 import com.cnethuka.kegare.platform.client.event.MovementInputUpdateEvent;
 import com.cnethuka.kegare.platform.client.event.sound.PlaySoundEvent;
 import com.cnethuka.kegare.platform.NeoForge;
-import net.neoforged.neoforge.common.Tags;
 import com.cnethuka.kegare.platform.event.entity.EntityJoinLevelEvent;
 import com.cnethuka.kegare.platform.event.tick.EntityTickEvent;
 
@@ -92,7 +91,7 @@ public final class TimeStopClient {
         int id = e.getId();
         if (id == stop.caster() || FREE.contains(id)) return false;
         if (e instanceof Player p && p.isSpectator()) return false;
-        if (e.getType().is(Tags.EntityTypes.BOSSES)) return false; // never stopped (DESIGN §4)
+        if (e.getType().is(CombatHelper.BOSSES)) return false; // never stopped (DESIGN §4)
         for (Entity passenger : e.getPassengers()) if (passenger instanceof Player && !frozen(passenger)) return false;
         Integer flying = FLIGHT.get(id);
         if (flying != null && flying > 0) return false;
@@ -130,7 +129,7 @@ public final class TimeStopClient {
 
     private static void onInput(MovementInputUpdateEvent event) {
         if (!selfFrozen()) return;
-        Input in = event.getInput();
+        MovementInputUpdateEvent.Input in = event.getInput();
         in.forwardImpulse = 0f;
         in.leftImpulse = 0f;
         in.up = in.down = in.left = in.right = false;
@@ -147,7 +146,7 @@ public final class TimeStopClient {
     /** Frozen, you hear nothing but Standstill itself. */
     private static void onSound(PlaySoundEvent event) {
         if (event.getSound() == null || !selfFrozen()) return;
-        Identifier id = event.getSound().getLocation();
+        Identifier id = event.getSound().getIdentifier();
         if (id.equals(KegareSounds.TIME_STOP.getId()) || id.equals(KegareSounds.TIME_STOP_TICK.getId()) || id.equals(KegareSounds.TIME_RESUME.getId())) {
             return;
         }

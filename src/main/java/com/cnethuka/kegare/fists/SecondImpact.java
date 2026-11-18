@@ -53,7 +53,7 @@ public final class SecondImpact {
         LivingEntity target = due.target();
         ServerPlayer attacker = due.attacker();
         if (!target.isAlive() || attacker.isRemoved() || target.level() != attacker.level()) return;
-        ServerLevel level = attacker.serverLevel();
+        ServerLevel level = attacker.level();
         target.hurt(source(level, attacker), due.damage());
         Vec3 at = target.position().add(0, target.getBbHeight() * 0.6, 0);
         MeleeTell.playStrikeImpact(attacker, at);
@@ -61,7 +61,7 @@ public final class SecondImpact {
     }
 
     public static DamageSource source(ServerLevel level, ServerPlayer attacker) {
-        return new DamageSource(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(FistsIds.SECOND_IMPACT), attacker, attacker);
+        return new DamageSource(level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(FistsIds.SECOND_IMPACT), attacker, attacker);
     }
 
     static boolean isSecondImpact(DamageSource source) {

@@ -53,7 +53,7 @@ public final class PuppetManipulation {
                     if (holds(player)) return;
                     Possession.release(player, Possession.Return.TECHNIQUE_CHANGED);
                     Strings.cut(player);
-                    Puppets.dissolveAll(player.server, player.getUUID());
+                    Puppets.dissolveAll(player.level().getServer(), player.getUUID());
                 }
             });
 

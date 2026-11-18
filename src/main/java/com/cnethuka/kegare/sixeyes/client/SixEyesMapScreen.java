@@ -9,6 +9,8 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -113,11 +115,11 @@ public final class SixEyesMapScreen extends Screen {
         }
         // You, in the middle of it (or where you are, once you've looked away), pointing the way you face.
         float mx = sx(mc.player.getX()), my = sy(mc.player.getZ());
-        g.pose().pushPose();
-        g.pose().translate(mx, my, 0);
-        g.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(mc.player.getYRot() + 180f));
+        g.pose().pushMatrix();
+        g.pose().translate(mx, my);
+        g.pose().rotate((float) Math.toRadians(mc.player.getYRot() + 180f));
         GuiDraw.sprite(g, SELF, -4, -4, 9, 9);
-        g.pose().popPose();
+        g.pose().popMatrix();
 
         GuiDraw.centered(g, font, Component.translatable("gui.kegare.six_eyes.map"), width / 2, 8, 1f, 0xFFB9D8FF);
         GuiDraw.centered(g, font, Component.translatable("gui.kegare.six_eyes.map.hint"), width / 2, height - 14, 0.75f, 0xFF6B7890);
@@ -187,7 +189,7 @@ public final class SixEyesMapScreen extends Screen {
         lines.add(Component.literal(distance(d.world().distanceTo(mc.player.position()))).withStyle(net.minecraft.ChatFormatting.GRAY));
         boolean pinned = d.player() != null ? SightClient.pinned(d.player()) : SightClient.pinned(d.mob());
         lines.add(Component.translatable(pinned ? "gui.kegare.six_eyes.unpin" : "gui.kegare.six_eyes.pin").withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
-        g.renderComponentTooltip(font, lines, mouseX, mouseY);
+        g.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
     }
 
     @Override
@@ -205,7 +207,9 @@ public final class SixEyesMapScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        double mouseX = event.x(), mouseY = event.y();
+        int button = event.button();
         if (button == 1) {
             panX = panZ = 0;
             return true;
@@ -219,32 +223,32 @@ public final class SixEyesMapScreen extends Screen {
             }
             dragging = true;
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, doubleClick);
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        if (button == 0 && dragging) {
+    public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+        if (event.button() == 0 && dragging) {
             panX -= dragX * scale;
             panZ -= dragY * scale;
             return true;
         }
-        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+        return super.mouseDragged(event, dragX, dragY);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(MouseButtonEvent event) {
         dragging = false;
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(event);
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (KegareKeys.SIX_EYES_MAP.matches(keyCode, scanCode)) {
+    public boolean keyPressed(KeyEvent event) {
+        if (KegareKeys.SIX_EYES_MAP.matches(event)) {
             onClose();
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 
     @Override

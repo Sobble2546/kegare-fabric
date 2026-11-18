@@ -9,7 +9,8 @@
   "environment": "*",
   "entrypoints": {
     "main": ["com.cnethuka.kegare.Kegare"],
-    "client": ["com.cnethuka.kegare.client.KegareClient"]
+    "client": ["com.cnethuka.kegare.client.KegareClient"],
+    "fabric-datagen": ["com.cnethuka.kegare.data.KegareDataGen"]
   },
   "mixins": ["${mod_id}.mixins.json", "${mod_id}-platform.mixins.json", "${mod_id}-events.mixins.json", "${mod_id}-client-events.mixins.json"],
   "depends": {

@@ -1,24 +1,32 @@
 package com.cnethuka.kegare.data;
 
-import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.registry.KegareItems;
-import net.minecraft.data.PackOutput;
-import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.fabricmc.fabric.api.client.datagen.v1.provider.FabricModelProvider;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.minecraft.client.data.models.BlockModelGenerators;
+import net.minecraft.client.data.models.ItemModelGenerators;
+import net.minecraft.client.data.models.model.ModelTemplates;
 
-public final class KegareItemModelProvider extends ItemModelProvider {
-    public KegareItemModelProvider(PackOutput output, ExistingFileHelper files) {
-        super(output, Kegare.MODID, files);
+/**
+ * Flat item models. Since 1.21.4 this also writes each item's {@code assets/kegare/items/<id>.json} definition next to the
+ * {@code models/item/<id>.json} model.
+ */
+public final class KegareItemModelProvider extends FabricModelProvider {
+    public KegareItemModelProvider(FabricDataOutput output) {
+        super(output);
     }
 
     @Override
-    protected void registerModels() {
-        basicItem(KegareItems.PURIFICATION_TALISMAN.get());
-        basicItem(KegareItems.BLINDFOLD.get());
-        basicItem(KegareItems.SUNGLASSES.get());
+    public void generateBlockStateModels(BlockModelGenerators generators) {}
+
+    @Override
+    public void generateItemModels(ItemModelGenerators generators) {
+        generators.generateFlatItem(KegareItems.PURIFICATION_TALISMAN.get(), ModelTemplates.FLAT_ITEM);
+        generators.generateFlatItem(KegareItems.BLINDFOLD.get(), ModelTemplates.FLAT_ITEM);
+        generators.generateFlatItem(KegareItems.SUNGLASSES.get(), ModelTemplates.FLAT_ITEM);
         // Rime's projectiles in flight
-        basicItem(com.cnethuka.kegare.innate_technique.rime.RimeRegistry.FROST_SHARD_ITEM.get());
-        basicItem(com.cnethuka.kegare.innate_technique.rime.RimeRegistry.GLACIAL_LANCE_ITEM.get());
-        basicItem(com.cnethuka.kegare.innate_technique.swap.SwapRegistry.ANCHOR_ITEM.get());
+        generators.generateFlatItem(com.cnethuka.kegare.innate_technique.rime.RimeRegistry.FROST_SHARD_ITEM.get(), ModelTemplates.FLAT_ITEM);
+        generators.generateFlatItem(com.cnethuka.kegare.innate_technique.rime.RimeRegistry.GLACIAL_LANCE_ITEM.get(), ModelTemplates.FLAT_ITEM);
+        generators.generateFlatItem(com.cnethuka.kegare.innate_technique.swap.SwapRegistry.ANCHOR_ITEM.get(), ModelTemplates.FLAT_ITEM);
     }
 }

@@ -178,7 +178,7 @@ final class ProgressionCommands {
         String opponent = StringArgumentType.getString(c, "opponent");
         return forEachPlayer(c, (source, player) -> {
             // An online player counts as that player, so these mix with real fights; any other name is a made-up opponent.
-            ServerPlayer online = player.server.getPlayerList().getPlayerByName(opponent);
+            ServerPlayer online = player.level().getServer().getPlayerList().getPlayerByName(opponent);
             UUID id = online != null ? online.getUUID() : UUID.nameUUIDFromBytes(("kegare:opponent:" + opponent.toLowerCase(Locale.ROOT)).getBytes(StandardCharsets.UTF_8));
             AssessmentService.addFight(player, score, technique, id);
             say(source, "commands.kegare.assessment.add", number(score), number(technique), opponent, player.getDisplayName(), gradeName(GradeService.grade(player)));

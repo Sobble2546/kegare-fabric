@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.cnethuka.kegare.mixin.cworld",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "LivingEntityRendererInvoker"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

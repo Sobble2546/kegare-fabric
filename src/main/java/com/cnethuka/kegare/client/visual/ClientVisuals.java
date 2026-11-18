@@ -260,7 +260,7 @@ public final class ClientVisuals {
         if (clearOfOwnEyes > 0 && projectile.tickCount < TRAIL_WAIT_TICKS && projectile instanceof Projectile p) {
             Minecraft mc = Minecraft.getInstance();
             if (p.getOwner() == mc.player && mc.options.getCameraType().isFirstPerson()
-                    && mc.gameRenderer.getMainCamera().getPosition().distanceToSqr(p.position()) < clearOfOwnEyes * clearOfOwnEyes) {
+                    && mc.gameRenderer.getMainCamera().position().distanceToSqr(p.position()) < clearOfOwnEyes * clearOfOwnEyes) {
                 return false;
             }
         }
@@ -394,7 +394,7 @@ public final class ClientVisuals {
     private static boolean nearFirstPersonCamera(Vec3 pos, double distance) {
         Minecraft mc = Minecraft.getInstance();
         if (!mc.options.getCameraType().isFirstPerson()) return false;
-        return mc.gameRenderer.getMainCamera().getPosition().distanceToSqr(pos) < distance * distance;
+        return mc.gameRenderer.getMainCamera().position().distanceToSqr(pos) < distance * distance;
     }
 
     private static Vec3 anchorPos(Entity entity, Visual.Anchor anchor) {

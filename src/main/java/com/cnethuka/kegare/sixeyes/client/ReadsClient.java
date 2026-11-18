@@ -22,8 +22,10 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.RenderPipelines;
+import com.cnethuka.kegare.platform.net.ClientNet;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -39,7 +41,7 @@ import com.cnethuka.kegare.platform.bus.IEventBus;
 import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
 import com.cnethuka.kegare.platform.client.event.RegisterGuiLayersEvent;
 import com.cnethuka.kegare.platform.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import com.cnethuka.kegare.platform.client.gui.VanillaGuiLayers;
 import com.cnethuka.kegare.platform.NeoForge;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -84,7 +86,7 @@ public final class ReadsClient {
             if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_WEATHER) return;
             projection = new Matrix4f(e.getProjectionMatrix());
             view = new Matrix4f(e.getModelViewMatrix());
-            camera = e.getCamera().getPosition();
+            camera = e.getCamera().position();
         });
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> {
             GLANCES.clear();
@@ -123,7 +125,7 @@ public final class ReadsClient {
 
     private static void render(GuiGraphics g, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
-        if (!SightClient.isBearer() || mc.player == null || mc.level == null || mc.options.hideGui || mc.screen != null) return;
+        if (!ClientNet.isActive() || !SightClient.isBearer() || mc.player == null || mc.level == null || mc.options.hideGui || mc.screen != null) return;
         int w = g.guiWidth(), h = g.guiHeight();
         float partial = delta.getGameTimeDeltaPartialTick(false);
         List<Tag> tags = new ArrayList<>();
@@ -245,8 +247,6 @@ public final class ReadsClient {
             PLACED.add(new float[] {at[0] + pw / 2f, at[1], pw / 2f, ph});
             int border = 0xFF000000 | (title.color() & 0xFFFFFF);
             return () -> {
-                g.pose().pushPose();
-                g.pose().translate(0, 0, 200);
                 g.fill(at[0], at[1], at[0] + pw, at[1] + ph, PANEL_BACK);
                 g.renderOutline(at[0], at[1], pw, ph, border);
                 int y = at[1] + pad;
@@ -254,7 +254,6 @@ public final class ReadsClient {
                     drawRow(g, mc, row, at[0] + pad, y, icon, scale);
                     y += lineH;
                 }
-                g.pose().popPose();
             };
         }
         return null;
@@ -287,8 +286,7 @@ public final class ReadsClient {
     }
 
     private static void drawIcon(GuiGraphics g, Minecraft mc, Holder<MobEffect> effect, int x, int y, int size) {
-        TextureAtlasSprite sprite = mc.getMobEffectTextures().get(effect);
-        g.blit(x, y, 0, size, size, sprite);
+        g.blitSprite(RenderPipelines.GUI_TEXTURED, Gui.getMobEffectSprite(effect), x, y, size, size);
     }
 
     @Nullable
@@ -370,7 +368,7 @@ public final class ReadsClient {
 
     @Nullable
     private static Holder<MobEffect> effect(Identifier id) {
-        return BuiltInRegistries.MOB_EFFECT.getHolder(id).map(h -> (Holder<MobEffect>) h).orElse(null);
+        return BuiltInRegistries.MOB_EFFECT.get(id).map(h -> (Holder<MobEffect>) h).orElse(null);
     }
 
     private static int effectColor(@Nullable Holder<MobEffect> effect) {

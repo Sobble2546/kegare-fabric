@@ -1,22 +1,26 @@
 package com.cnethuka.kegare.innate_technique.puppet_manipulation;
 
 import com.mojang.authlib.GameProfile;
+import com.google.common.collect.ImmutableMultimap;
 import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.properties.PropertyMap;
 import java.util.EnumSet;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -29,6 +33,8 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -40,7 +46,7 @@ import net.minecraft.world.phys.Vec3;
  * Standing still, it spins ("kuru kuru"), decided here and synced ({@link #isSpinning}) so every client agrees.
  */
 public class PuppetEntity extends PathfinderMob implements Puppet {
-    private static final EntityDataAccessor<Optional<UUID>> OWNER = SynchedEntityData.defineId(PuppetEntity.class, EntityDataSerializers.OPTIONAL_UUID);
+    private static final EntityDataAccessor<Optional<EntityReference<LivingEntity>>> OWNER = SynchedEntityData.defineId(PuppetEntity.class, EntityDataSerializers.OPTIONAL_LIVING_ENTITY_REFERENCE);
     private static final EntityDataAccessor<Byte> TIER = SynchedEntityData.defineId(PuppetEntity.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Integer> COLOR = SynchedEntityData.defineId(PuppetEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> SPINNING = SynchedEntityData.defineId(PuppetEntity.class, EntityDataSerializers.BOOLEAN);
@@ -98,7 +104,7 @@ public class PuppetEntity extends PathfinderMob implements Puppet {
     /** A new puppet of {@code owner}'s, at {@code tier} (health, glow), not yet added to the level. */
     static PuppetEntity create(ServerPlayer owner, PuppetTier tier, int maliceColor, int generation) {
         PuppetEntity puppet = new PuppetEntity(PuppetRegistry.PUPPET.get(), owner.level());
-        puppet.entityData.set(OWNER, Optional.of(owner.getUUID()));
+        puppet.entityData.set(OWNER, Optional.of(EntityReference.<LivingEntity>of(owner.getUUID())));
         puppet.entityData.set(TIER, (byte) tier.ordinal());
         puppet.entityData.set(COLOR, maliceColor & 0xFFFFFF);
         puppet.setOwnerProfile(owner.getGameProfile());
@@ -156,7 +162,7 @@ public class PuppetEntity extends PathfinderMob implements Puppet {
     @Override
     @Nullable
     public UUID ownerId() {
-        return entityData.get(OWNER).orElse(null);
+        return entityData.get(OWNER).map(EntityReference::getUUID).orElse(null);
     }
 
     @Override
@@ -318,14 +324,15 @@ public class PuppetEntity extends PathfinderMob implements Puppet {
         String value = entityData.get(SKIN_VALUE);
         if (!value.isEmpty()) {
             String signature = entityData.get(SKIN_SIGNATURE);
-            profile.getProperties().put("textures", new Property("textures", value, signature.isEmpty() ? null : signature));
+            PropertyMap properties = new PropertyMap(ImmutableMultimap.of("textures", new Property("textures", value, signature.isEmpty() ? null : signature)));
+            return new GameProfile(profile.id(), profile.name(), properties);
         }
         return profile;
     }
 
     private void setOwnerProfile(GameProfile profile) {
-        entityData.set(OWNER_NAME, profile.getName());
-        Property textures = profile.getProperties().get("textures").stream().findFirst().orElse(null);
+        entityData.set(OWNER_NAME, profile.name());
+        Property textures = profile.properties().get("textures").stream().findFirst().orElse(null);
         entityData.set(SKIN_VALUE, textures == null ? "" : textures.value());
         entityData.set(SKIN_SIGNATURE, textures == null || textures.signature() == null ? "" : textures.signature());
     }
@@ -431,9 +438,9 @@ public class PuppetEntity extends PathfinderMob implements Puppet {
     }
 
     @Override
-    public boolean hurt(DamageSource source, float amount) {
-        boolean hurt = super.hurt(source, amount);
-        if (hurt && !level().isClientSide() && isStandIn() && source.getEntity() instanceof ServerPlayer attacker && !isOwnedBy(attacker)
+    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+        boolean hurt = super.hurtServer(level, source, amount);
+        if (hurt && isStandIn() && source.getEntity() instanceof ServerPlayer attacker && !isOwnedBy(attacker)
                 && owner() != null) {
             PuppetAdvancements.award(owner(), PuppetAdvancements.WHOS_REAL);
         }
@@ -441,17 +448,17 @@ public class PuppetEntity extends PathfinderMob implements Puppet {
     }
 
     @Override
-    public boolean isInvulnerableTo(DamageSource source) {
+    public boolean isInvulnerableTo(ServerLevel level, DamageSource source) {
         // While possessed, the possessor's body takes the hits; the hidden puppet takes none.
         if (isPossessed() && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) return true;
-        return super.isInvulnerableTo(source);
+        return super.isInvulnerableTo(level, source);
     }
 
     /** A puppet's punch: bosses take the damage but keep their footing (DESIGN §4: never moved by a technique). */
     @Override
-    public boolean doHurtTarget(Entity target) {
+    public boolean doHurtTarget(ServerLevel level, Entity target) {
         Vec3 before = target.getDeltaMovement();
-        boolean hit = super.doHurtTarget(target);
+        boolean hit = super.doHurtTarget(level, target);
         if (hit && com.cnethuka.kegare.combat.CombatHelper.isBoss(target)) target.setDeltaMovement(before);
         return hit;
     }
@@ -462,7 +469,7 @@ public class PuppetEntity extends PathfinderMob implements Puppet {
      * so a half-size puppet would otherwise stop just out of its own reach.
      */
     @Override
-    protected net.minecraft.world.phys.AABB getAttackBoundingBox() {
+    protected net.minecraft.world.phys.AABB getAttackBoundingBox(double vanillaReach) {
         double reach = Math.max(0.0, REACH - getBbWidth() / 2.0);
         return getBoundingBox().inflate(reach, 0.0, reach);
     }
@@ -493,7 +500,7 @@ public class PuppetEntity extends PathfinderMob implements Puppet {
     }
 
     @Override
-    protected boolean shouldDropLoot() {
+    protected boolean shouldDropLoot(ServerLevel level) {
         return false;
     }
 
@@ -535,10 +542,10 @@ public class PuppetEntity extends PathfinderMob implements Puppet {
     // ---------------------------------------------------------------- saving
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         UUID owner = ownerId();
-        if (owner != null) tag.putUUID("Owner", owner);
+        if (owner != null) tag.store("Owner", UUIDUtil.CODEC, owner);
         tag.putString("OwnerName", ownerName());
         tag.putString("SkinValue", entityData.get(SKIN_VALUE));
         tag.putString("SkinSignature", entityData.get(SKIN_SIGNATURE));
@@ -550,23 +557,24 @@ public class PuppetEntity extends PathfinderMob implements Puppet {
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
         // A Stand-In isn't saved: anything it borrowed goes (in case it was saved mid-way).
         for (net.minecraft.world.entity.EquipmentSlot slot : net.minecraft.world.entity.EquipmentSlot.values()) {
             setItemSlot(slot, net.minecraft.world.item.ItemStack.EMPTY);
         }
         setCustomName(null);
-        entityData.set(OWNER, tag.hasUUID("Owner") ? Optional.of(tag.getUUID("Owner")) : Optional.empty());
-        entityData.set(OWNER_NAME, tag.getString("OwnerName"));
-        entityData.set(SKIN_VALUE, tag.getString("SkinValue"));
-        entityData.set(SKIN_SIGNATURE, tag.getString("SkinSignature"));
-        entityData.set(TIER, tag.getByte("Tier"));
-        if (tag.contains("Color")) entityData.set(COLOR, tag.getInt("Color"));
-        generation = tag.getInt("Generation");
+        entityData.set(OWNER, tag.read("Owner", UUIDUtil.CODEC).map(EntityReference::<LivingEntity>of));
+        entityData.set(OWNER_NAME, tag.getStringOr("OwnerName", ""));
+        entityData.set(SKIN_VALUE, tag.getStringOr("SkinValue", ""));
+        entityData.set(SKIN_SIGNATURE, tag.getStringOr("SkinSignature", ""));
+        entityData.set(TIER, tag.getByteOr("Tier", (byte) 0));
+        tag.getInt("Color").ifPresent(color -> entityData.set(COLOR, color));
+        generation = tag.getIntOr("Generation", 0);
         order = PuppetOrder.FOLLOW;
-        for (PuppetOrder o : PuppetOrder.values()) if (o.serializedName().equals(tag.getString("Order"))) order = o;
-        goTarget = tag.contains("GoTarget") ? BlockPos.of(tag.getLong("GoTarget")) : null;
+        String savedOrder = tag.getStringOr("Order", "");
+        for (PuppetOrder o : PuppetOrder.values()) if (o.serializedName().equals(savedOrder)) order = o;
+        goTarget = tag.getLong("GoTarget").map(BlockPos::of).orElse(null);
     }
 
     // ---------------------------------------------------------------- goals
@@ -670,10 +678,11 @@ public class PuppetEntity extends PathfinderMob implements Puppet {
         }
     }
 
+    /** Vanilla's {@code isAlliedTo(Entity)} is final now: it asks this, then compares teams. */
     @Override
-    public boolean isAlliedTo(Entity other) {
+    protected boolean considersEntityAsAlly(Entity other) {
         if (other instanceof PuppetEntity puppet && ownerId() != null && ownerId().equals(puppet.ownerId())) return true;
         if (other instanceof LivingEntity && isOwnedBy(other)) return true;
-        return super.isAlliedTo(other);
+        return super.considersEntityAsAlly(other);
     }
 }

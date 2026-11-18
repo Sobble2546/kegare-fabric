@@ -28,7 +28,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import com.cnethuka.kegare.platform.NeoForge;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -45,10 +45,10 @@ class UnderstudyTest {
             ServerPlayer owner = PossessionTest.damageable(server, "understudy_owner");
             level.addNewPlayer(owner);
             PossessionTest.prepare(owner);
-            owner.moveTo(0.5, ground, 0.5, -90f, 0f);
+            owner.snapTo(0.5, ground, 0.5, -90f, 0f);
             List<SwapTargetEvent> seen = new ArrayList<>();
             boolean[] cancel = {false};
-            Consumer<SwapTargetEvent> listener = e -> {
+            com.cnethuka.kegare.platform.bus.Listener<SwapTargetEvent> listener = e -> {
                 seen.add(e);
                 if (cancel[0]) e.setCanceled(true);
             };
@@ -93,7 +93,7 @@ class UnderstudyTest {
             ServerPlayer owner = PossessionTest.damageable(server, "stand_in_owner");
             level.addNewPlayer(owner);
             PossessionTest.prepare(owner);
-            owner.moveTo(6.5, ground, 6.5, -90f, 0f); // well inside the loaded test chunk, whichever way puppets appear
+            owner.snapTo(6.5, ground, 6.5, -90f, 0f); // well inside the loaded test chunk, whichever way puppets appear
             owner.setYHeadRot(-90f);
             try {
                 owner.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.DIAMOND_SWORD));
@@ -120,7 +120,7 @@ class UnderstudyTest {
                 // It copies the owner's moves and look.
                 Vec3 from = puppet.position();
                 owner.setOldPosAndRot();
-                owner.moveTo(owner.getX(), ground, owner.getZ() + 1.0, 30f, 10f);
+                owner.snapTo(owner.getX(), ground, owner.getZ() + 1.0, 30f, 10f);
                 owner.setYHeadRot(30f);
                 owner.swing(InteractionHand.MAIN_HAND);
                 DirectiveTest.tick(server, puppet);

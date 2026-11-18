@@ -41,7 +41,7 @@ public final class IcePaths {
 
     /** Lays ice under the caster's feet (if the ground is close). */
     static void lay(ServerPlayer player) {
-        ServerLevel level = player.serverLevel();
+        ServerLevel level = player.level();
         Vec3 feet = player.position().add(0, 0.2, 0);
         BlockHitResult hit = level.clip(new ClipContext(feet, feet.subtract(0, MAX_HEIGHT, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, player));
         if (hit.getType() == HitResult.Type.MISS || hit.getDirection() != Direction.UP) return;
@@ -75,7 +75,7 @@ public final class IcePaths {
             for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, bounds(trail).inflate(radius, 1.0, radius),
                     e -> e.isAlive() && !e.isSpectator() && !e.getUUID().equals(entry.getKey()))) {
                 if (onTrail(target, trail, radius)) {
-                    target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, SLOW_TICKS, amplifier), owner);
+                    target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, SLOW_TICKS, amplifier), owner);
                 }
             }
         }

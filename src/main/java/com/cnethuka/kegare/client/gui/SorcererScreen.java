@@ -33,10 +33,12 @@ import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -352,20 +354,14 @@ public final class SorcererScreen extends Screen {
                 }
                 int slot = data.loadout().indexOf(Optional.of(ability.id()));
                 if (slot >= 0) {
-                    g.pose().pushPose();
-                    g.pose().translate(0, 0, 200);
                     g.drawString(font, Integer.toString(slot + 1), x + 2, ty + 1, GuiDraw.GOLD, true);
-                    g.pose().popPose();
                 }
             } else {
                 GuiDraw.greyedAbilityIcon(g, ability, x + TILE_INSET, ty + TILE_INSET); // a locked ability shows what it is, and its requirement
                 GuiDraw.sprite(g, GuiDraw.LOCK, x + (TILE - 11) / 2, ty + (TILE - 11) / 2, 11, 11);
                 if (ofTechnique) { // the level it needs, where the bar's slots have their number
                     String level = Integer.toString(ClientLoadout.lockedLevel(data, ability));
-                    g.pose().pushPose();
-                    g.pose().translate(0, 0, 200);
                     g.drawString(font, level, x + TILE - font.width(level), ty + TILE - 8, 0xFFD8D2E0, true);
-                    g.pose().popPose();
                 }
             }
             hits.add(new Hit(Kind.TILE, x, ty, TILE, TILE, i, ability.id(), unlocked));
@@ -392,14 +388,11 @@ public final class SorcererScreen extends Screen {
             if (ultimate != null) GuiDraw.greyedAbilityIcon(g, ultimate, x + TILE_INSET, ty + TILE_INSET);
             GuiDraw.sprite(g, GuiDraw.LOCK, x + (TILE - 11) / 2, ty + (TILE - 11) / 2, 11, 11);
         }
-        g.pose().pushPose();
-        g.pose().translate(0, 0, 200);
         g.drawString(font, "V", x + 2, ty + 1, unlocked ? GuiDraw.GOLD : 0xFFD8D2E0, true);
         if (ultimate != null && !unlocked) {
             String level = Integer.toString(ClientLoadout.lockedLevel(data, ultimate));
             g.drawString(font, level, x + TILE - font.width(level), ty + TILE - 8, 0xFFD8D2E0, true);
         }
-        g.pose().popPose();
         hits.add(new Hit(Kind.TILE, x, ty, TILE, TILE, -1, id, false)); // -1: the ultimate, which is only ever pinned
     }
 
@@ -864,11 +857,8 @@ public final class SorcererScreen extends Screen {
     private void renderOverlay(GuiGraphics g, @Nullable InnateTechnique technique, int mouseX, int mouseY) {
         if (technique != null && dragging && pressAbility != null) {
             AbilityLookup.find(technique, pressAbility).ifPresent(ability -> {
-                g.pose().pushPose();
-                g.pose().translate(0, 0, 400);
                 CombatPanelLayer.slotFrame(g, mouseX - TILE / 2, mouseY - TILE / 2, true);
                 GuiDraw.abilityIcon(g, ability, mouseX - TILE / 2 + TILE_INSET, mouseY - TILE / 2 + TILE_INSET);
-                g.pose().popPose();
             });
             return;
         }
@@ -879,7 +869,7 @@ public final class SorcererScreen extends Screen {
                 case VIEW -> Component.translatable(View.values()[hit.index].key);
                 default -> Component.translatable("gui.kegare.loadout.reset.desc");
             };
-            g.renderTooltip(font, label, mouseX, mouseY);
+            g.setTooltipForNextFrame(font, label, mouseX, mouseY);
             return;
         }
         for (CombatPanelLayer.SlotRect r : traySlots) {
@@ -894,7 +884,7 @@ public final class SorcererScreen extends Screen {
                     : ability != null ? "gui.kegare.loadout.ultimate_fixed" : "gui.kegare.sorcerer.ability.ultimate_locked.desc";
             lines.add(requires >= 0 ? Component.translatable("message.kegare.cast.refinement_locked", requires).withStyle(ChatFormatting.RED)
                     : Component.translatable(hint).withStyle(ChatFormatting.DARK_GRAY));
-            g.renderComponentTooltip(font, lines, mouseX, mouseY);
+            g.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
             return;
         }
     }
@@ -902,7 +892,9 @@ public final class SorcererScreen extends Screen {
     // ---------------------------------------------------------------- input
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        double mouseX = event.x(), mouseY = event.y();
+        int button = event.button();
         Hit hit = hitAt(mouseX, mouseY);
         CombatPanelLayer.SlotRect slot = slotAt(mouseX, mouseY);
         if (button == 1) {
@@ -912,7 +904,7 @@ public final class SorcererScreen extends Screen {
             bgPicked = null;
             return true;
         }
-        if (button != 0) return super.mouseClicked(mouseX, mouseY, button);
+        if (button != 0) return super.mouseClicked(event, doubleClick);
         if (hit != null) {
             switch (hit.kind) {
                 case CATEGORY -> {
@@ -961,11 +953,13 @@ public final class SorcererScreen extends Screen {
             return true;
         }
         inHand = false;
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, doubleClick);
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+    public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+        double mouseX = event.x(), mouseY = event.y();
+        int button = event.button();
         if (button == 0 && draggingSlider != 0) {
             slide(mouseX);
             return true;
@@ -974,11 +968,13 @@ public final class SorcererScreen extends Screen {
             if (!dragging && Math.hypot(mouseX - pressX, mouseY - pressY) > 3) dragging = true;
             return true;
         }
-        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+        return super.mouseDragged(event, dragX, dragY);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(MouseButtonEvent event) {
+        double mouseX = event.x(), mouseY = event.y();
+        int button = event.button();
         if (button == 0 && draggingSlider != 0) { // saved once, when it's let go
             slide(mouseX);
             draggingSlider = 0;
@@ -986,7 +982,7 @@ public final class SorcererScreen extends Screen {
             if (minecraft != null) minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1f));
             return true;
         }
-        if (button != 0 || (pressAbility == null && pressSlot < 0)) return super.mouseReleased(mouseX, mouseY, button);
+        if (button != 0 || (pressAbility == null && pressSlot < 0)) return super.mouseReleased(event);
         Identifier ability = pressAbility;
         int fromSlot = pressSlot;
         pressAbility = null;
@@ -1024,8 +1020,9 @@ public final class SorcererScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (KegareKeys.SORCERER.matches(keyCode, scanCode)) {
+    public boolean keyPressed(KeyEvent event) {
+        int keyCode = event.key();
+        if (KegareKeys.SORCERER.matches(event)) {
             onClose();
             return true;
         }
@@ -1038,7 +1035,7 @@ public final class SorcererScreen extends Screen {
             setView(views.get((Math.max(0, views.indexOf(view)) + 1) % views.size()));
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 
     @Override

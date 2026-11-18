@@ -1,6 +1,8 @@
 package com.cnethuka.kegare.innate_technique.swap.client;
 
 import com.cnethuka.kegare.client.visual.ClientVisuals;
+import com.cnethuka.kegare.client.visual.Dust;
+import com.cnethuka.kegare.client.visual.WorldTypes;
 import com.cnethuka.kegare.config.KegareClientConfig;
 import com.cnethuka.kegare.innatetechnique.visual.Visual;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -13,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -21,9 +23,14 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.world.entity.InterpolationHandler;
+import net.minecraft.world.entity.player.PlayerModelType;
+import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -46,7 +53,7 @@ import org.joml.Vector3f;
  * </ul>
  */
 public final class SwapFx {
-    static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
+    static final Identifier WHITE = WorldTypes.WHITE;
     /** Swap's teal drawn as light: its hue at full brightness. */
     static final int GLOW = 0x2EF2DA;
     static final int PALE = 0xCCFBF1;
@@ -122,9 +129,9 @@ public final class SwapFx {
     private static final float FLIP_STAGGER = 0.7f;
     private static final float FLIP_TICKS = 3f;
     /** The Vanilla-quality stand-in for Swap's drawn effects: small teal dust, gone almost at once. */
-    static final DustParticleOptions SPECK = new DustParticleOptions(new Vector3f(0.18f, 0.9f, 0.82f), 0.5f);
+    static final DustParticleOptions SPECK = Dust.of(0.18f, 0.9f, 0.82f, 0.5f);
     private static long clock;
-    @Nullable private static PlayerModel<AbstractClientPlayer> wide, slim;
+    @Nullable private static PlayerModel wide, slim;
 
     private SwapFx() {}
 
@@ -167,27 +174,34 @@ public final class SwapFx {
     // ---------------------------------------------------------------- poses
 
     /** Every player drawn: remember the pose their model was drawn in (an ability's animation included). */
-    static void remember(AbstractClientPlayer player, PlayerModel<AbstractClientPlayer> model, float partialTick) {
+    static void remember(AbstractClientPlayer player, PlayerModel model, float partialTick) {
         POSES.put(player.getId(), capture(model, player, Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot)));
     }
 
-    /** The pose to leave behind: as last drawn if that was just now, else worked out now (e.g. your own body in first person). */
+    /**
+     * The pose to leave behind: as last drawn if that was just now, else worked out now (e.g. your own body in first person): the
+     * player's render state is extracted (which tells SwapClient, which remembers the pose), or posed on a model of our own from it.
+     */
     @Nullable
     private static Pose poseOf(AbstractClientPlayer player) {
         Pose seen = POSES.get(player.getId());
         if (seen != null && clock - seen.tick() <= 2) return seen;
-        PlayerModel<AbstractClientPlayer> model = model(player.getSkin().model() == PlayerSkin.Model.SLIM);
+        EntityRenderState extracted;
+        try {
+            extracted = Minecraft.getInstance().getEntityRenderDispatcher().extractEntity(player, 1f);
+        } catch (RuntimeException odd) {
+            return null;
+        }
+        seen = POSES.get(player.getId());
+        if (seen != null && clock - seen.tick() <= 2) return seen;
+        if (!(extracted instanceof AvatarRenderState state)) return null;
+        PlayerModel model = model(state.skin.model() == PlayerModelType.SLIM);
         if (model == null) return null;
-        float limb = player.walkAnimation.position(), speed = Math.min(1f, player.walkAnimation.speed());
-        float bodyYaw = player.yBodyRot;
-        model.attackTime = 0f;
-        model.crouching = player.isCrouching();
-        model.prepareMobModel(player, limb, speed, 1f);
-        model.setupAnim(player, limb, speed, player.tickCount, player.getYHeadRot() - bodyYaw, player.getXRot());
-        return capture(model, player, bodyYaw);
+        model.setupAnim(state);
+        return capture(model, player, player.yBodyRot);
     }
 
-    private static Pose capture(PlayerModel<AbstractClientPlayer> model, AbstractClientPlayer player, float bodyYaw) {
+    private static Pose capture(PlayerModel model, AbstractClientPlayer player, float bodyYaw) {
         ModelPart[] parts = parts(model);
         PartPose[] poses = new PartPose[parts.length];
         boolean[] shown = new boolean[parts.length];
@@ -196,22 +210,22 @@ public final class SwapFx {
             shown[i] = parts[i].visible;
         }
         PlayerSkin skin = player.getSkin(); // as this client sees them: a disguise's skin and arms
-        return new Pose(poses, shown, skin.model() == PlayerSkin.Model.SLIM, skin.texture(), bodyYaw, clock);
+        return new Pose(poses, shown, skin.model() == PlayerModelType.SLIM, skin.body().texturePath(), bodyYaw, clock);
     }
 
-    private static ModelPart[] parts(PlayerModel<?> m) {
+    private static ModelPart[] parts(PlayerModel m) {
         return new ModelPart[] {m.head, m.hat, m.body, m.jacket, m.rightArm, m.rightSleeve, m.leftArm, m.leftSleeve, m.rightLeg,
                 m.rightPants, m.leftLeg, m.leftPants};
     }
 
     @Nullable
-    private static PlayerModel<AbstractClientPlayer> model(boolean slimArms) {
+    private static PlayerModel model(boolean slimArms) {
         Minecraft mc = Minecraft.getInstance();
         if (slimArms) {
-            if (slim == null) slim = new PlayerModel<>(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER_SLIM), true);
+            if (slim == null) slim = new PlayerModel(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER_SLIM), true);
             return slim;
         }
-        if (wide == null) wide = new PlayerModel<>(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER), false);
+        if (wide == null) wide = new PlayerModel(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER), false);
         return wide;
     }
 
@@ -250,15 +264,17 @@ public final class SwapFx {
                 it.remove();
                 continue;
             }
-            if (entity.isControlledByLocalInstance()) continue; // moved here already, not by a packet
-            Vec3 to = new Vec3(entity.lerpTargetX(), entity.lerpTargetY(), entity.lerpTargetZ());
+            if (entity.isLocalInstanceAuthoritative()) continue; // moved here already, not by a packet
+            InterpolationHandler slide = entity.getInterpolation();
+            if (slide == null || !slide.hasActiveInterpolation()) continue;
+            Vec3 to = slide.position();
             if (to.distanceToSqr(entity.position()) < 1.0) continue;
-            float yaw = entity.lerpTargetYRot(), pitch = entity.lerpTargetXRot();
+            float yaw = slide.yRot(), pitch = slide.xRot();
             entity.setPos(to);
             entity.setYRot(yaw);
             entity.setXRot(pitch);
             entity.yBodyRot = yaw;
-            entity.lerpTo(to.x, to.y, to.z, yaw, pitch, 0);
+            slide.cancel();
             entity.setOldPosAndRot();
             entity.yBodyRotO = yaw;
             it.remove();
@@ -300,7 +316,7 @@ public final class SwapFx {
 
     private static void renderLinks(PoseStack pose, MultiBufferSource.BufferSource buffers, Vec3 cam, float partial) {
         boolean firstPerson = Minecraft.getInstance().options.getCameraType().isFirstPerson();
-        RenderType type = RenderType.entityTranslucentEmissive(WHITE);
+        RenderType type = RenderTypes.entityTranslucentEmissive(WHITE);
         VertexConsumer out = buffers.getBuffer(type);
         Matrix4f m = pose.last().pose();
         for (Link l : LINKS) {
@@ -345,7 +361,7 @@ public final class SwapFx {
     private static void tickTransfers(ClientLevel level) {
         Minecraft mc = Minecraft.getInstance();
         boolean firstPerson = mc.options.getCameraType().isFirstPerson();
-        Vec3 cam = mc.gameRenderer.getMainCamera().getPosition();
+        Vec3 cam = mc.gameRenderer.getMainCamera().position();
         for (Transfer x : TRANSFERS) {
             long age = clock - x.born();
             if (age > x.ticks()) continue;
@@ -359,7 +375,7 @@ public final class SwapFx {
 
     private static void renderTransfers(PoseStack pose, MultiBufferSource.BufferSource buffers, Vec3 cam, float partial) {
         boolean firstPerson = Minecraft.getInstance().options.getCameraType().isFirstPerson();
-        RenderType type = RenderType.entityTranslucentEmissive(WHITE);
+        RenderType type = RenderTypes.entityTranslucentEmissive(WHITE);
         VertexConsumer out = buffers.getBuffer(type);
         Matrix4f m = pose.last().pose();
         for (Transfer x : TRANSFERS) {
@@ -397,8 +413,8 @@ public final class SwapFx {
      */
     static void totalSwap(Entity entity) {
         // Where it was sent (on this client a moved entity may still be on its way).
-        Vec3 feet = entity instanceof LivingEntity living && !living.isControlledByLocalInstance()
-                ? new Vec3(living.lerpTargetX(), living.lerpTargetY(), living.lerpTargetZ()) : entity.position();
+        InterpolationHandler slide = entity instanceof LivingEntity living && !living.isLocalInstanceAuthoritative() ? entity.getInterpolation() : null;
+        Vec3 feet = slide != null && slide.hasActiveInterpolation() ? slide.position() : entity.position();
         if (!drawn()) {
             for (int i = 0; i < 18; i++) {
                 double a = Mth.TWO_PI * i / 18.0;
@@ -459,7 +475,7 @@ public final class SwapFx {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
         boolean firstPerson = mc.options.getCameraType().isFirstPerson();
-        RenderType type = RenderType.entityTranslucentEmissive(WHITE);
+        RenderType type = RenderTypes.entityTranslucentEmissive(WHITE);
         VertexConsumer out = buffers.getBuffer(type);
         Matrix4f m = pose.last().pose();
         for (Streak s : STREAKS) {
@@ -571,7 +587,7 @@ public final class SwapFx {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
         boolean firstPerson = mc.options.getCameraType().isFirstPerson();
-        RenderType type = RenderType.entityTranslucentEmissive(WHITE);
+        RenderType type = RenderTypes.entityTranslucentEmissive(WHITE);
         VertexConsumer out = buffers.getBuffer(type);
         for (Flip f : FLIPS) {
             Entity entity = mc.level.getEntity(f.entityId());
@@ -653,7 +669,7 @@ public final class SwapFx {
     private static void renderCountdowns(PoseStack pose, MultiBufferSource.BufferSource buffers, Vec3 cam, float partial) {
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null) return;
-        RenderType type = RenderType.entityTranslucentEmissive(WHITE);
+        RenderType type = RenderTypes.entityTranslucentEmissive(WHITE);
         VertexConsumer out = buffers.getBuffer(type);
         for (Countdown c : COUNTDOWNS) {
             Entity entity = level.getEntity(c.entityId());
@@ -701,7 +717,7 @@ public final class SwapFx {
             ghost(pose, buffers, a.pose(), a.feet().subtract(cam), GHOST_ALPHA[age]);
         }
         if (!RINGS.isEmpty()) {
-            RenderType type = RenderType.entityTranslucentEmissive(WHITE);
+            RenderType type = RenderTypes.entityTranslucentEmissive(WHITE);
             VertexConsumer out = buffers.getBuffer(type);
             for (Ring r : RINGS) {
                 float t = (clock - r.born() + partial) / RING_TICKS;
@@ -718,7 +734,7 @@ public final class SwapFx {
 
     /** One afterimage: the player model's body boxes in its pose (not the outer layers), flat teal, translucent, full-bright. */
     private static void ghost(PoseStack pose, MultiBufferSource.BufferSource buffers, Pose p, Vec3 at, float alpha) {
-        PlayerModel<AbstractClientPlayer> model = model(p.slim());
+        PlayerModel model = model(p.slim());
         if (model == null) return;
         ModelPart[] parts = parts(model);
         for (int i = 0; i < parts.length; i++) {
@@ -731,7 +747,7 @@ public final class SwapFx {
         pose.scale(-1f, -1f, 1f);
         pose.scale(0.9375f, 0.9375f, 0.9375f);
         pose.translate(0f, -1.501f, 0f);
-        RenderType type = RenderType.itemEntityTranslucentCull(WHITE);
+        RenderType type = WorldTypes.ghost();
         int color = Math.round(alpha * 255) << 24 | GHOST_RGB;
         model.renderToBuffer(pose, buffers.getBuffer(type), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, color);
         buffers.endBatch(type);

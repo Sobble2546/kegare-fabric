@@ -19,7 +19,7 @@ public final class Puppets {
     private Puppets() {}
 
     public static int count(ServerPlayer owner) {
-        return PuppetSavedData.get(owner.server).count(owner.getUUID());
+        return PuppetSavedData.get(owner.level().getServer()).count(owner.getUUID());
     }
 
     /** At (or, after the config was lowered, over) the cap: Puppet Creation fizzles for free. */
@@ -29,15 +29,15 @@ public final class Puppets {
 
     /** Makes a puppet of {@code owner} at {@code tier} next to them (a free spot at their side), plays its forming. */
     public static PuppetEntity create(ServerPlayer owner, PuppetTier tier) {
-        PuppetSavedData data = PuppetSavedData.get(owner.server);
+        PuppetSavedData data = PuppetSavedData.get(owner.level().getServer());
         PuppetEntity puppet = PuppetEntity.create(owner, tier, PuppetManipulation.MALICE_COLOR, data.generation(owner.getUUID()));
         Vec3 at = spotBeside(owner, puppet);
-        puppet.moveTo(at.x, at.y, at.z, owner.getYRot(), 0f);
+        puppet.snapTo(at.x, at.y, at.z, owner.getYRot(), 0f);
         puppet.setYHeadRot(owner.getYRot());
         puppet.setYBodyRot(owner.getYRot());
         PuppetOwnerData orders = owner.getData(PuppetRegistry.OWNER.get());
         puppet.setOrder(orders.order(), orders.goTarget()); // it takes the current order
-        owner.serverLevel().addFreshEntity(puppet);
+        owner.level().addFreshEntity(puppet);
         data.add(owner.getUUID(), puppet.getUUID());
         PuppetHud.markDirty(owner);
         PuppetAdvancements.award(owner, PuppetAdvancements.PULLING_STRINGS);
@@ -109,7 +109,7 @@ public final class Puppets {
 
     /** The owner's loaded puppets in their level within {@code range} blocks, nearest first. */
     public static List<PuppetEntity> near(ServerPlayer owner, double range) {
-        List<PuppetEntity> out = new ArrayList<>(owner.serverLevel().getEntitiesOfClass(PuppetEntity.class,
+        List<PuppetEntity> out = new ArrayList<>(owner.level().getEntitiesOfClass(PuppetEntity.class,
                 owner.getBoundingBox().inflate(range), p -> p.isAlive() && !p.isPossessed() && p.isOwnedBy(owner) && p.distanceToSqr(owner) <= range * range));
         out.sort(Comparator.comparingDouble(p -> p.distanceToSqr(owner)));
         return out;
@@ -149,6 +149,6 @@ public final class Puppets {
     static void catchUp(PuppetEntity puppet, ServerPlayer owner) {
         Vec3 at = spotBeside(owner, puppet);
         puppet.getNavigation().stop();
-        puppet.moveTo(at.x, at.y, at.z, owner.getYRot(), 0f);
+        puppet.snapTo(at.x, at.y, at.z, owner.getYRot(), 0f);
     }
 }

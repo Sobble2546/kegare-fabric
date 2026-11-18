@@ -20,6 +20,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
+import com.cnethuka.kegare.platform.EntityCompat;
 import com.cnethuka.kegare.platform.net.PacketDistributor;
 import com.cnethuka.kegare.platform.net.IPayloadContext;
 
@@ -90,9 +91,9 @@ public final class Repair {
             if (damage > 0) {
                 // Past the hurt cooldown (so a real hit's cooldown never swallows it), and it leaves none behind: a repair never shields
                 // anyone from the next real hit.
-                int invulnerable = player.invulnerableTime;
+                int invulnerable = EntityCompat.invulnerableTime(player);
                 player.hurt(source(player), damage);
-                player.invulnerableTime = invulnerable;
+                EntityCompat.setInvulnerableTime(player, invulnerable);
             }
         }
         if (done) {
@@ -121,7 +122,7 @@ public final class Repair {
     }
 
     static DamageSource source(ServerPlayer player) {
-        return new DamageSource(player.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(DAMAGE));
+        return new DamageSource(player.level().registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(DAMAGE));
     }
 
     private static void refuse(ServerPlayer player, State state) {

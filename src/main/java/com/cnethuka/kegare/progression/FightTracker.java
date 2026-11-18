@@ -82,7 +82,7 @@ public final class FightTracker {
     public static void damage(ServerPlayer attacker, ServerPlayer victim, double amount) {
         if (attacker == victim || amount <= 0) return;
         Live live = open(attacker, victim);
-        live.fight.damage(attacker.getUUID(), amount, now(attacker.server));
+        live.fight.damage(attacker.getUUID(), amount, now(attacker.level().getServer()));
         LAST_ACTIVE.put(attacker.getUUID(), Pair.of(attacker.getUUID(), victim.getUUID()));
         LAST_ACTIVE.put(victim.getUUID(), Pair.of(attacker.getUUID(), victim.getUUID()));
     }
@@ -91,7 +91,7 @@ public final class FightTracker {
     public static void landed(ServerPlayer caster, ServerPlayer target, String ability, boolean special) {
         if (caster == target || !target.isAlive() || target.hasDisconnected()) return;
         Live live = open(caster, target);
-        live.fight.landed(caster.getUUID(), ability, special, now(caster.server));
+        live.fight.landed(caster.getUUID(), ability, special, now(caster.level().getServer()));
         LAST_ACTIVE.put(caster.getUUID(), Pair.of(caster.getUUID(), target.getUUID()));
     }
 
@@ -99,7 +99,7 @@ public final class FightTracker {
     public static void melee(ServerPlayer attacker, ServerPlayer victim, String move) {
         if (attacker == victim) return;
         Live live = FIGHTS.get(Pair.of(attacker.getUUID(), victim.getUUID()));
-        if (live != null) live.fight.melee(attacker.getUUID(), move, now(attacker.server));
+        if (live != null) live.fight.melee(attacker.getUUID(), move, now(attacker.level().getServer()));
     }
 
     /**
@@ -110,7 +110,7 @@ public final class FightTracker {
     public static void meleeMove(ServerPlayer player, ServerPlayer opponent, String move) {
         if (player == opponent) return;
         Pair key = Pair.of(player.getUUID(), opponent.getUUID());
-        long now = now(player.server);
+        long now = now(player.level().getServer());
         Live live = FIGHTS.get(key);
         if (live != null) {
             live.fight.melee(player.getUUID(), move, now);
@@ -131,7 +131,7 @@ public final class FightTracker {
             live.fight.spend(player.getUUID(), baseMalice);
             return;
         }
-        long now = now(player.server);
+        long now = now(player.level().getServer());
         List<Spend> pending = OPENING.computeIfAbsent(player.getUUID(), id -> new ArrayList<>());
         long grace = ProgressionConfig.ticks(ProgressionConfig.OPENING_CAST_SECONDS);
         pending.removeIf(s -> now - s.tick > grace);
@@ -142,7 +142,7 @@ public final class FightTracker {
         Pair key = Pair.of(a.getUUID(), b.getUUID());
         Live live = FIGHTS.get(key);
         if (live != null) return live;
-        long now = now(a.server);
+        long now = now(a.level().getServer());
         Fight fight = new Fight(a.getUUID(), b.getUUID(), now);
         live = new Live(fight, a, b);
         FIGHTS.put(key, live);

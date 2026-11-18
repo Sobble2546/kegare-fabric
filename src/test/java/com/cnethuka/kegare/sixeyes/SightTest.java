@@ -31,14 +31,14 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Ghast;
-import net.minecraft.world.entity.monster.Skeleton;
-import net.minecraft.world.entity.monster.Zombie;
-import net.minecraft.world.entity.animal.Cow;
+import net.minecraft.world.entity.monster.skeleton.Skeleton;
+import net.minecraft.world.entity.monster.zombie.Zombie;
+import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import com.cnethuka.kegare.platform.FakePlayerFactory;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -57,7 +57,7 @@ class SightTest {
             InnateTechniqueService.setInnateTechnique(p, Rime.RIME.get());
             MaliceService.refill(p);
         }
-        p.moveTo(x, 120, z, 0f, 0f);
+        p.snapTo(x, 120, z, 0f, 0f);
         return p;
     }
 
@@ -120,7 +120,7 @@ class SightTest {
                 assertTrue(plain.isAlive() && far.isAlive() && voidFar.isAlive());
             } finally {
                 Sight.sentHook = null;
-                if (nether != null) nether.serverLevel().removePlayerImmediately(nether, net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                if (nether != null) nether.level().removePlayerImmediately(nether, net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
                 eyes(server, bearer, false);
                 TestServer.removePlayers(server);
             }
@@ -136,8 +136,8 @@ class SightTest {
             Cow cow = new Cow(EntityType.COW, level);
             Zombie zombie = new Zombie(EntityType.ZOMBIE, level);
             try {
-                cow.moveTo(5, 120, 5, 0, 0);
-                zombie.moveTo(-5, 120, 5, 0, 0);
+                cow.snapTo(5, 120, 5, 0, 0);
+                zombie.snapTo(-5, 120, 5, 0, 0);
                 for (var m : List.of(cow, zombie)) {
                     m.setNoAi(true);
                     m.setNoGravity(true);
@@ -198,9 +198,9 @@ class SightTest {
             Skeleton skeleton = new Skeleton(EntityType.SKELETON, level);
             Ghast ghast = new Ghast(EntityType.GHAST, level);
             try {
-                creeper.moveTo(6, 120, 0, 0, 0);
-                skeleton.moveTo(-6, 120, 0, 0, 0);
-                ghast.moveTo(0, 130, 12, 0, 0);
+                creeper.snapTo(6, 120, 0, 0, 0);
+                skeleton.snapTo(-6, 120, 0, 0, 0);
+                ghast.snapTo(0, 130, 12, 0, 0);
                 for (var m : List.<net.minecraft.world.entity.Mob>of(creeper, skeleton, ghast)) {
                     m.setNoAi(true);
                     m.setNoGravity(true);

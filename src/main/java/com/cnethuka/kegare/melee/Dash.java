@@ -74,7 +74,7 @@ public final class Dash {
         state.dashDistance = clear;
         state.dashTicksLeft = Mth.ceil(clear / speed) + 1;
         CleanDodge.start(player, state);
-        MeleeImpact.DASH_BURST.fire(player.serverLevel(), from, player);
+        MeleeImpact.DASH_BURST.fire(player.level(), from, player);
         VisualService.playOnce(player, Visual.of(animation(forward, left), MeleeIds.FX_DASH_TRAIL, Visual.Anchor.FEET));
         PacketDistributor.sendToPlayer(player, new MeleeDashPayload((float) direction.x, (float) direction.z, (float) speed, (float) clear));
         MeleeLayer.syncHud(player);

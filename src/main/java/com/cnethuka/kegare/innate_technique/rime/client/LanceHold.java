@@ -1,5 +1,7 @@
 package com.cnethuka.kegare.innate_technique.rime.client;
 
+import com.cnethuka.kegare.client.render.Avatars;
+import com.cnethuka.kegare.client.visual.PlayerLayers;
 import com.cnethuka.kegare.client.visual.ClientVisuals;
 import com.cnethuka.kegare.config.KegareClientConfig;
 import com.cnethuka.kegare.innate_technique.rime.Rime;
@@ -17,14 +19,13 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.renderer.entity.player.PlayerRenderer;
-import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -104,9 +105,7 @@ public final class LanceHold {
     }
 
     static void addLayers(EntityRenderersEvent.AddLayers event) {
-        for (PlayerSkin.Model model : event.getSkins()) {
-            if (event.getSkin(model) instanceof PlayerRenderer renderer) renderer.addLayer(new Layer(renderer));
-        }
+        PlayerLayers.add(event, Layer::new);
     }
 
     /** Each chunk's size now, or null if there's no lance in this player's hand. */
@@ -132,10 +131,10 @@ public final class LanceHold {
     }
 
     /** Draws the lance in the pose's own space and remembers where that was. */
-    private static void draw(Entity player, PoseStack pose, MultiBufferSource buffers, float[] scales, int light, boolean snaps) {
-        LanceMesh.draw(pose.last(), buffers, LanceShape.PIECES, scales, light);
+    private static void draw(Entity player, PoseStack pose, SubmitNodeCollector collector, float[] scales, int light, boolean snaps) {
+        LanceMesh.draw(collector, pose, LanceShape.PIECES, scales, light);
         Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
-        Vec3 at = camera.getPosition();
+        Vec3 at = camera.position();
         Matrix4f toWorld = new Matrix4f().translation((float) at.x, (float) at.y, (float) at.z).mul(pose.last().pose());
         DRAWN.put(player.getId(), new Drawn(toWorld, scales.clone(), player.level().getGameTime()));
         int count = 0;
@@ -161,21 +160,22 @@ public final class LanceHold {
     // ---------------------------------------------------------------------------------------------- on a body
 
     /** The lance in the hand of the wind-up, for everyone who can see the body: other players, and you in third person. */
-    static final class Layer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
-        Layer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) {
+    static final class Layer extends RenderLayer<AvatarRenderState, PlayerModel> {
+        Layer(RenderLayerParent<AvatarRenderState, PlayerModel> parent) {
             super(parent);
         }
 
         @Override
-        public void render(PoseStack pose, MultiBufferSource buffers, int light, AbstractClientPlayer player, float limbSwing, float limbSwingAmount,
-                           float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
-            float[] scales = scales(player, partialTick);
+        public void submit(PoseStack pose, SubmitNodeCollector collector, int light, AvatarRenderState state, float yRot, float xRot) {
+            AbstractClientPlayer player = Avatars.player(state);
+            if (player == null) return;
+            float[] scales = scales(player, Avatars.partialTick(state, player));
             if (scales == null) return;
             boolean left = player.getMainArm() == HumanoidArm.LEFT;
             pose.pushPose();
             (left ? getParentModel().leftArm : getParentModel().rightArm).translateAndRotate(pose);
             grip(pose, left);
-            draw(player, pose, buffers, scales, light, true);
+            draw(player, pose, collector, scales, light, true);
             pose.popPose();
         }
     }
@@ -207,7 +207,7 @@ public final class LanceHold {
         PoseStack pose = event.getPoseStack();
         pose.pushPose();
         selfPose(pose, left);
-        draw(player, pose, event.getMultiBufferSource(), scales, event.getPackedLight(), false);
+        draw(player, pose, event.getSubmitNodeCollector(), scales, event.getPackedLight(), false);
         pose.popPose();
     }
 

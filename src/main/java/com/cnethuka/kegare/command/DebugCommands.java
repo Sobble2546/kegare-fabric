@@ -140,12 +140,12 @@ final class DebugCommands {
                 // The screen shader hook: a whole-screen effect for a set time (e.g. Standstill's grayscale).
                 .then(Commands.literal("screen")
                         .then(player()
-                                .then(Commands.argument("effect", net.minecraft.commands.arguments.ResourceLocationArgument.id())
+                                .then(Commands.argument("effect", net.minecraft.commands.arguments.IdentifierArgument.id())
                                         .suggests((c, b) -> net.minecraft.commands.SharedSuggestionProvider.suggestResource(
                                                 com.cnethuka.kegare.impact.ScreenEffects.ALL, b))
                                         .then(Commands.argument("seconds", DoubleArgumentType.doubleArg(0, 600))
                                                 .executes(c -> {
-                                                    var effect = net.minecraft.commands.arguments.ResourceLocationArgument.getId(c, "effect");
+                                                    var effect = net.minecraft.commands.arguments.IdentifierArgument.getId(c, "effect");
                                                     double seconds = DoubleArgumentType.getDouble(c, "seconds");
                                                     return forEachPlayer(c, (source, player) -> screen(source, player, effect, seconds));
                                                 })))))

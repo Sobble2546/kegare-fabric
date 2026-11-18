@@ -6,6 +6,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -68,7 +69,8 @@ public final class BlurDrive {
             velocity = horizontal(player.getDeltaMovement());
             return;
         }
-        float forward = player.input.forwardImpulse, left = player.input.leftImpulse;
+        Vec2 keys = player.input.getMoveVector(); // x is left, y is forward
+        float forward = keys.y, left = keys.x;
         double top = state.speed() * movementFactor(player);
         double speed = velocity.horizontalDistance();
         if (Math.abs(forward) + Math.abs(left) > 0.01f) {
@@ -96,12 +98,13 @@ public final class BlurDrive {
         float amount;
         if (player.onGround()) {
             net.minecraft.core.BlockPos below = player.getBlockPosBelowThatAffectsMyMovement();
-            float friction = player.level().getBlockState(below).getFriction(player.level(), below, player);
+            float friction = player.level().getBlockState(below).getBlock().getFriction();
             amount = player.getSpeed() * (0.21600002F / (friction * friction * friction));
         } else {
             amount = player.isSprinting() ? 0.025999999F : 0.02F;
         }
-        return inputVector(player.input.leftImpulse * 0.98F, player.input.forwardImpulse * 0.98F, amount, player.getYRot());
+        Vec2 keys = player.input.getMoveVector();
+        return inputVector(keys.x * 0.98F, keys.y * 0.98F, amount, player.getYRot());
     }
 
     /** Vanilla's {@code Entity.getInputVector} for the keys alone (no up or down), as it works it out. */

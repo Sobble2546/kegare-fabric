@@ -1,5 +1,6 @@
 package com.cnethuka.kegare.innate_technique.puppet_manipulation;
 
+import com.cnethuka.kegare.platform.EntityCompat;
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.combat.CombatHelper;
 import com.cnethuka.kegare.innatetechnique.CastManager;
@@ -166,7 +167,7 @@ public final class Strings {
         VisualService.playOnce(caster, Visual.animation(PuppetIds.ANIM_STRINGS_FIRE));
         grip(target);
         sound(caster, SoundEvents.FISHING_BOBBER_THROW, 0.8f, 1.5f);
-        StringsSync.broadcast(caster.server);
+        StringsSync.broadcast(caster.level().getServer());
         PuppetHud.refresh(caster);
     }
 
@@ -174,7 +175,7 @@ public final class Strings {
     private static void grip(LivingEntity target) {
         if (!(target.level() instanceof ServerLevel level)) return;
         VisualService.playAt(level, chest(target), Visual.effect(PuppetIds.FX_STRINGS_ATTACH, Visual.Anchor.BODY));
-        sound(target, SoundEvents.LEASH_KNOT_PLACE, 0.9f, 1.3f);
+        sound(target, SoundEvents.LEAD_TIED, 0.9f, 1.3f);
     }
 
     private static void sound(LivingEntity at, SoundEvent sound, float volume, float pitch) {
@@ -239,7 +240,7 @@ public final class Strings {
                 if (twoPlayers(a)) PuppetAdvancements.award(caster, PuppetAdvancements.WALKIES);
             }
         }
-        StringsSync.broadcast(caster.server);
+        StringsSync.broadcast(caster.level().getServer());
         PuppetHud.refresh(caster);
     }
 
@@ -324,7 +325,7 @@ public final class Strings {
                     a.phase = Phase.TETHER;
                     a.endTick = a.caster.level().getGameTime() + PuppetConfig.ticks(PuppetConfig.STRINGS_TETHER_DURATION);
                     if (twoPlayers(a)) PuppetAdvancements.award(a.caster, PuppetAdvancements.TIED_UP);
-                    StringsSync.broadcast(a.caster.server);
+                    StringsSync.broadcast(a.caster.level().getServer());
                 } else {
                     // Each covers its share of the gap, so they meet at the collision distance, not inside each other.
                     double share = (distance - collideAt) / (a.firstMoves && a.secondMoves ? 2.0 : 1.0) + 0.01;
@@ -389,7 +390,7 @@ public final class Strings {
     }
 
     public static DamageSource source(ServerPlayer caster) {
-        return new DamageSource(caster.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(TIE_COLLISION), caster);
+        return new DamageSource(caster.level().registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(TIE_COLLISION), caster);
     }
 
     /** Drags {@code e} back toward {@code other} once beyond {@code limit}: harder the further, up to the full pull. */
@@ -411,8 +412,7 @@ public final class Strings {
         Vec3 v = d.scale(Math.min(step, left) / length);
         if (e.onGround() && v.y < HOP) v = new Vec3(v.x, HOP, v.z);
         e.setDeltaMovement(v);
-        e.hasImpulse = true;
-        e.hurtMarked = true; // a player's own client does the moving: this tells it
+        EntityCompat.markHurt(e);
         e.resetFallDistance();
         if (e instanceof Mob mob) mob.getNavigation().stop();
         if (e instanceof FakePlayer) e.move(MoverType.SELF, v); // nothing else would move one
@@ -421,8 +421,7 @@ public final class Strings {
     /** A pull is over: only {@code keep} of its speed is left, so it isn't thrown past where it was going. */
     private static void land(LivingEntity e, double keep) {
         e.setDeltaMovement(e.getDeltaMovement().scale(keep));
-        e.hasImpulse = true;
-        e.hurtMarked = true;
+        EntityCompat.markHurt(e);
         e.resetFallDistance();
     }
 
@@ -443,7 +442,7 @@ public final class Strings {
         ACTIVE.remove(caster.getUUID(), a);
         if (a.phase == Phase.LEASH) slow(caster, false);
         fray(a, how);
-        StringsSync.broadcast(caster.server);
+        StringsSync.broadcast(caster.level().getServer());
         if (!caster.isAlive() || caster.isRemoved() || caster.hasDisconnected()) return;
         // A string that never got its second stage: the cooldown starts now (after one, it's already running).
         if (a.phase == Phase.ATTACHED && how != End.CUT) InnateTechniqueService.startCooldown(caster, PuppetManipulation.STRINGS);
@@ -469,7 +468,7 @@ public final class Strings {
             VisualService.playAt(level, p0, snap);
             VisualService.playAt(level, p1, snap);
             VisualService.playAt(level, p0.add(p1).scale(0.5), snap);
-            sound(end, how == End.SNAPPED ? SoundEvents.LEASH_KNOT_BREAK : SoundEvents.WOOL_BREAK, how == End.SNAPPED ? 1.0f : 0.6f, 1.2f);
+            sound(end, how == End.SNAPPED ? SoundEvents.LEAD_BREAK : SoundEvents.WOOL_BREAK, how == End.SNAPPED ? 1.0f : 0.6f, 1.2f);
         }
     }
 

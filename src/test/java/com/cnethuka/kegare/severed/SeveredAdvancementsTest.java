@@ -13,12 +13,12 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.Pig;
+import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import com.cnethuka.kegare.platform.NeoForge;
 import com.cnethuka.kegare.platform.event.entity.living.LivingUseTotemEvent;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -46,7 +46,7 @@ class SeveredAdvancementsTest {
         TestServer.onServerThread(server, () -> {
             TestServer.ensureOverworld(server);
             ServerLevel level = server.overworld();
-            server.setPvpAllowed(true);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
             List<Pig> pigs = new ArrayList<>();
             try {
                 ServerPlayer s = SeveredBodyTest.severed(server, level, "adv_cruel");
@@ -54,10 +54,10 @@ class SeveredAdvancementsTest {
                 ServerPlayer m2 = SeveredBodyTest.maliceUser(server, level, "adv_cruel_b");
                 ServerPlayer m3 = SeveredBodyTest.maliceUser(server, level, "adv_cruel_c");
                 ServerPlayer other = SeveredBodyTest.severed(server, level, "adv_cruel_severed");
-                for (ServerPlayer p : List.of(s, m1, m2, m3, other)) p.moveTo(0.5, Y, 0.5);
+                for (ServerPlayer p : List.of(s, m1, m2, m3, other)) p.snapTo(0.5, Y, 0.5);
                 for (int i = 0; i < 3; i++) {
-                    Pig pig = EntityType.PIG.create(level);
-                    pig.moveTo(2.5, Y, 2.5 + i);
+                    Pig pig = EntityType.PIG.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                    pig.snapTo(2.5, Y, 2.5 + i);
                     level.addFreshEntity(pig);
                     pigs.add(pig);
                     kill(s, pig);
@@ -95,17 +95,17 @@ class SeveredAdvancementsTest {
         TestServer.onServerThread(server, () -> {
             TestServer.ensureOverworld(server);
             ServerLevel level = server.overworld();
-            server.setPvpAllowed(true);
-            Pig pig = EntityType.PIG.create(level);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
+            Pig pig = EntityType.PIG.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             try {
                 ServerPlayer s = SeveredBodyTest.severed(server, level, "adv_started");
                 ServerPlayer m = SeveredBodyTest.maliceUser(server, level, "adv_started_m");
                 ServerPlayer bystander = SeveredBodyTest.maliceUser(server, level, "adv_started_b");
-                for (ServerPlayer p : List.of(s, m, bystander)) p.moveTo(0.5, Y, 0.5);
+                for (ServerPlayer p : List.of(s, m, bystander)) p.snapTo(0.5, Y, 0.5);
                 float low = (float) (SeveredConfig.STARTED_HEARTS.get() * 2);
 
                 // A mob bringing them low doesn't count; nor does killing someone they weren't low against.
-                pig.moveTo(2.5, Y, 2.5);
+                pig.snapTo(2.5, Y, 2.5);
                 level.addFreshEntity(pig);
                 s.setHealth(low - 1);
                 s.hurt(s.damageSources().mobAttack(pig), 1f);
@@ -129,8 +129,8 @@ class SeveredAdvancementsTest {
                 // A totem in that fight disqualifies it.
                 ServerPlayer s2 = SeveredBodyTest.severed(server, level, "adv_started_totem");
                 ServerPlayer m2 = SeveredBodyTest.maliceUser(server, level, "adv_started_m2");
-                s2.moveTo(0.5, Y, 0.5);
-                m2.moveTo(0.5, Y, 0.5);
+                s2.snapTo(0.5, Y, 0.5);
+                m2.snapTo(0.5, Y, 0.5);
                 m2.hurt(m2.damageSources().playerAttack(s2), 1f);
                 s2.setHealth(low + 2);
                 s2.invulnerableTime = 0;
@@ -143,8 +143,8 @@ class SeveredAdvancementsTest {
                 // The fight over before the kill: no.
                 ServerPlayer s3 = SeveredBodyTest.severed(server, level, "adv_started_late");
                 ServerPlayer m3 = SeveredBodyTest.maliceUser(server, level, "adv_started_m3");
-                s3.moveTo(0.5, Y, 0.5);
-                m3.moveTo(0.5, Y, 0.5);
+                s3.snapTo(0.5, Y, 0.5);
+                m3.snapTo(0.5, Y, 0.5);
                 m3.hurt(m3.damageSources().playerAttack(s3), 1f);
                 s3.setHealth(low + 2);
                 s3.invulnerableTime = 0;
@@ -156,7 +156,7 @@ class SeveredAdvancementsTest {
 
                 // A Malice user never earns it.
                 ServerPlayer m4 = SeveredBodyTest.maliceUser(server, level, "adv_started_m4");
-                m4.moveTo(0.5, Y, 0.5);
+                m4.snapTo(0.5, Y, 0.5);
                 bystander.hurt(bystander.damageSources().playerAttack(m4), 1f);
                 m4.setHealth(low + 2);
                 m4.invulnerableTime = 0;

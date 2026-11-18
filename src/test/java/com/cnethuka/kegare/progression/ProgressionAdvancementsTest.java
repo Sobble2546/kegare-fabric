@@ -17,7 +17,7 @@ import java.util.Set;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,7 +43,7 @@ class ProgressionAdvancementsTest {
     }
 
     private static boolean earned(ServerPlayer p, Identifier id) {
-        return p.getAdvancements().getOrStartProgress(p.server.getAdvancements().get(id)).isDone();
+        return p.getAdvancements().getOrStartProgress(p.level().getServer().getAdvancements().get(id)).isDone();
     }
 
     @Test

@@ -3,7 +3,7 @@ package com.cnethuka.kegare.trait;
 import com.cnethuka.kegare.registry.KegareRegistries;
 import java.util.function.DoubleSupplier;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;

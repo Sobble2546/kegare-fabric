@@ -15,14 +15,12 @@ import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.critereon.ImpossibleTrigger;
+import net.minecraft.advancements.criterion.ImpossibleTrigger;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
-import net.neoforged.neoforge.common.data.AdvancementProvider;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 /**
  * All Kegare advancements use {@code minecraft:impossible} and are granted from code. Every tab has its own root:
@@ -34,13 +32,12 @@ import net.neoforged.neoforge.common.data.ExistingFileHelper;
  * Secret-identity rule: any ID in {@link KegareAdvancements#SECRET_IDENTITY} is forced hidden and never announced
  * to chat, and generation fails if one slips through.
  */
-public final class KegareAdvancementGenerator implements AdvancementProvider.AdvancementGenerator {
+public final class KegareAdvancementGenerator {
     private static final Identifier BASE_BACKGROUND = Identifier.withDefaultNamespace("textures/block/obsidian.png");
     private static final Identifier SIX_EYES_BACKGROUND = Identifier.withDefaultNamespace("textures/block/amethyst_block.png");
     private static final Identifier INNATE_TECHNIQUE_BACKGROUND = Identifier.withDefaultNamespace("textures/block/black_concrete.png");
 
-    @Override
-    public void generate(HolderLookup.Provider registries, Consumer<AdvancementHolder> output, ExistingFileHelper files) {
+    public void generate(HolderLookup.Provider registries, Consumer<AdvancementHolder> output) {
         Consumer<AdvancementHolder> saver = holder -> {
             enforceSecretIdentityRule(holder);
             output.accept(holder);

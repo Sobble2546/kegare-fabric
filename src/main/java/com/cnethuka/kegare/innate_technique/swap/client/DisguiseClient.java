@@ -1,8 +1,6 @@
 package com.cnethuka.kegare.innate_technique.swap.client;
 
 import com.cnethuka.kegare.innate_technique.swap.Disguises;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -11,11 +9,19 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.resources.DefaultPlayerSkin;
-import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.AbstractSkullBlock;
 import com.cnethuka.kegare.platform.bus.EventPriority;
 import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
 import com.cnethuka.kegare.platform.client.event.RenderNameTagEvent;
@@ -31,15 +37,11 @@ import com.cnethuka.kegare.platform.NeoForge;
 public final class DisguiseClient {
     /** Set while resolving the face behind a disguise, so a two-way swap doesn't chase itself. Client thread only. */
     private static boolean resolving;
-    /** Equipment lent for one render: entity ID -> its own armor (4), main hand, off hand. */
-    private static final Map<Integer, ItemStack[]> LENT = new HashMap<>();
-
     private DisguiseClient() {}
 
     static void init() {
         NeoForge.EVENT_BUS.addListener(DisguiseClient::onNameTag);
-        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, DisguiseClient::onRenderPre);
-        NeoForge.EVENT_BUS.addListener(DisguiseClient::onRenderPost);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, DisguiseClient::onRenderPost);
         NeoForge.EVENT_BUS.addListener(DisguiseClient::onLogout);
     }
 
@@ -98,39 +100,61 @@ public final class DisguiseClient {
         Player face = mc.level == null ? null : mc.level.getPlayerByUUID(as);
         if (face != null) return face.getDisplayName();
         PlayerInfo info = mc.getConnection() == null ? null : mc.getConnection().getPlayerInfo(as);
-        return Component.literal(info != null ? info.getProfile().getName() : "?");
+        return Component.literal(info != null ? info.getProfile().name() : "?");
     }
 
     // ---------------------------------------------------------------- armor and held items
 
-    private static void onRenderPre(RenderPlayerEvent.Pre event) {
+    /**
+     * The disguised player's render state has just been read off them: swap what it holds for the face's visible gear, or for nothing if
+     * this client can't see the face (better bare than the wearer's own). On 1.21.11 armor, held items and the head item are read into the
+     * state when it's extracted, so writing the face's into the state is all it takes: nothing of the wearer's own is touched.
+     */
+    private static void onRenderPost(RenderPlayerEvent.Post event) {
         Player player = event.getEntity();
         UUID as = shownAs(player.getUUID());
         if (as == null) return;
         Minecraft mc = Minecraft.getInstance();
         Player face = mc.level == null ? null : mc.level.getPlayerByUUID(as);
-        Inventory inv = player.getInventory();
-        int hand = Inventory.isHotbarSlot(inv.selected) ? inv.selected : 0;
-        LENT.put(player.getId(), new ItemStack[] {inv.armor.get(0), inv.armor.get(1), inv.armor.get(2), inv.armor.get(3),
-                inv.items.get(hand), inv.offhand.get(0)});
-        // The face's visible gear, or nothing if this client can't see the face (better bare than the wearer's own).
-        for (int i = 0; i < 4; i++) inv.armor.set(i, face != null ? face.getInventory().armor.get(i) : ItemStack.EMPTY);
-        inv.items.set(hand, face != null ? face.getMainHandItem() : ItemStack.EMPTY);
-        inv.offhand.set(0, face != null ? face.getOffhandItem() : ItemStack.EMPTY);
+        AvatarRenderState state = event.getRenderState();
+        state.headEquipment = worn(face, EquipmentSlot.HEAD);
+        state.chestEquipment = worn(face, EquipmentSlot.CHEST);
+        state.legsEquipment = worn(face, EquipmentSlot.LEGS);
+        state.feetEquipment = worn(face, EquipmentSlot.FEET);
+        // A head item that isn't armor (a pumpkin, a skull) goes through the head item layer.
+        state.headItem.clear();
+        state.wornHeadType = null;
+        state.wornHeadProfile = null;
+        if (!HumanoidArmorLayer.shouldRender(state.headEquipment, EquipmentSlot.HEAD)) {
+            mc.getItemModelResolver().updateForLiving(state.headItem, state.headEquipment, ItemDisplayContext.HEAD, player);
+            if (state.headEquipment.getItem() instanceof BlockItem block && block.getBlock() instanceof AbstractSkullBlock skull) {
+                state.wornHeadType = skull.getType();
+                state.wornHeadProfile = state.headEquipment.get(DataComponents.PROFILE);
+            }
+        }
+        // Hands: the face's main hand and off hand, on the wearer's arms as they hold theirs.
+        ItemStack main = face != null ? face.getMainHandItem() : ItemStack.EMPTY, off = face != null ? face.getOffhandItem() : ItemStack.EMPTY;
+        boolean rightMain = state.mainArm == HumanoidArm.RIGHT;
+        state.rightHandItemStack = rightMain ? main : off;
+        state.leftHandItemStack = rightMain ? off : main;
+        mc.getItemModelResolver().updateForLiving(state.rightHandItemState, state.rightHandItemStack, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, player);
+        mc.getItemModelResolver().updateForLiving(state.leftHandItemState, state.leftHandItemStack, ItemDisplayContext.THIRD_PERSON_LEFT_HAND, player);
+        // The arms follow what's held: bare if the face holds nothing there, held out if it holds something (a bow or a shield the wearer was
+        // using keeps its pose: that is the wearer's own action).
+        state.rightArmPose = armPose(state.rightArmPose, state.rightHandItemStack);
+        state.leftArmPose = armPose(state.leftArmPose, state.leftHandItemStack);
     }
 
-    private static void onRenderPost(RenderPlayerEvent.Post event) {
-        ItemStack[] own = LENT.remove(event.getEntity().getId());
-        if (own == null) return;
-        Inventory inv = event.getEntity().getInventory();
-        int hand = Inventory.isHotbarSlot(inv.selected) ? inv.selected : 0;
-        for (int i = 0; i < 4; i++) inv.armor.set(i, own[i]);
-        inv.items.set(hand, own[4]);
-        inv.offhand.set(0, own[5]);
+    private static ItemStack worn(Player face, EquipmentSlot slot) {
+        return face != null ? face.getItemBySlot(slot) : ItemStack.EMPTY;
+    }
+
+    private static HumanoidModel.ArmPose armPose(HumanoidModel.ArmPose own, ItemStack held) {
+        if (held.isEmpty()) return HumanoidModel.ArmPose.EMPTY;
+        return own == HumanoidModel.ArmPose.EMPTY ? HumanoidModel.ArmPose.ITEM : own;
     }
 
     private static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
         Disguises.clearClient();
-        LENT.clear();
     }
 }

@@ -12,8 +12,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.monster.Zombie;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import net.minecraft.world.entity.monster.zombie.Zombie;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -53,7 +53,7 @@ class SixEyesAdvancementsTest {
     @Test
     void stealingAKillAndWhatIsnt(MinecraftServer server) throws Exception {
         TestServer.onServerThread(server, () -> {
-            server.setPvpAllowed(true);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
             try {
                 ServerPlayer worker = SightTest.player(server, "bush_worker", 1000, 0.5, 0.5);
 
@@ -103,7 +103,7 @@ class SixEyesAdvancementsTest {
 
                 // A mob's blow steals nothing, and a mob as the victim counts for nothing.
                 Zombie zombie = new Zombie(EntityType.ZOMBIE, server.overworld());
-                zombie.moveTo(16, 120, 0, 0, 0);
+                zombie.snapTo(16, 120, 0, 0, 0);
                 zombie.setNoAi(true);
                 zombie.setNoGravity(true);
                 server.overworld().addFreshEntity(zombie);
@@ -126,10 +126,10 @@ class SixEyesAdvancementsTest {
                 ServerPlayer plain = SightTest.player(server, "missing_plain", 1000, 0.5, 6.5);
                 ServerPlayer severed = SightTest.player(server, "missing_void", 0, -8.5, 0.5);
                 SightTest.eyes(server, bearer, true);
-                bearer.moveTo(0.5, 120, 0.5, 0f, 0f); // at the plain one
+                bearer.snapTo(0.5, 120, 0.5, 0f, 0f); // at the plain one
                 Reads.build(bearer);
                 assertFalse(has(server, bearer, KegareAdvancements.SOMETHINGS_MISSING), "someone's there");
-                bearer.moveTo(0.5, 120, 0.5, 90f, 0f); // at the void
+                bearer.snapTo(0.5, 120, 0.5, 90f, 0f); // at the void
                 Reads.build(bearer);
                 assertTrue(has(server, bearer, KegareAdvancements.SOMETHINGS_MISSING), "nothing there");
 

@@ -3,9 +3,10 @@ package com.cnethuka.kegare.reinforcement.client;
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.config.KegareClientConfig;
 import com.cnethuka.kegare.config.KegareClientConfig.VfxQuality;
+import com.cnethuka.kegare.client.visual.Dust;
+import com.cnethuka.kegare.client.visual.GuiBlit;
 import com.cnethuka.kegare.melee.MeleeTell;
 import com.cnethuka.kegare.reinforcement.AuraPayload;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.ArrayList;
@@ -20,7 +21,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.resources.Identifier;
@@ -33,7 +33,7 @@ import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
 import com.cnethuka.kegare.platform.client.event.ClientTickEvent;
 import com.cnethuka.kegare.platform.client.event.RegisterGuiLayersEvent;
 import com.cnethuka.kegare.platform.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import com.cnethuka.kegare.platform.client.gui.VanillaGuiLayers;
 import com.cnethuka.kegare.platform.NeoForge;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -188,7 +188,7 @@ public final class AuraClient {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
         if (level == null || mc.isPaused()) return;
-        Vec3 cam = mc.gameRenderer.getMainCamera().getPosition();
+        Vec3 cam = mc.gameRenderer.getMainCamera().position();
         for (Iterator<Map.Entry<Integer, Entry>> it = SHOWN.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<Integer, Entry> e = it.next();
             Entry entry = e.getValue();
@@ -254,7 +254,7 @@ public final class AuraClient {
         double x = player.getX() + (RANDOM.nextDouble() - 0.5) * 2 * w, z = player.getZ() + (RANDOM.nextDouble() - 0.5) * 2 * w;
         double y = player.getY() + 0.1 + RANDOM.nextDouble() * player.getBbHeight();
         if (quality() == VfxQuality.VANILLA) {
-            level.addParticle(new DustParticleOptions(new Vector3f(0.31f, 0.85f, 0.45f), 0.5f), x, y, z, 0, 0.2, 0);
+            level.addParticle(Dust.of(0.31f, 0.85f, 0.45f, 0.5f), x, y, z, 0, 0.2, 0);
             return;
         }
         Wisp glint = new Wisp(new Vec3(x, y, z), new Vec3(0, 0.01 + RANDOM.nextDouble() * 0.01, 0), SHIMMER_RGB, 12 + RANDOM.nextInt(8),
@@ -266,8 +266,7 @@ public final class AuraClient {
     /** Vanilla: dust in the Malice color rising round the body. */
     private static void dust(ClientLevel level, Player player, Entry entry, int rgb) {
         int count = entry.calm() ? (RANDOM.nextInt(3) == 0 ? 1 : 0) : entry.fight > 0.5f ? 3 : 2;
-        Vector3f color = new Vector3f((rgb >> 16 & 0xFF) / 255f, (rgb >> 8 & 0xFF) / 255f, (rgb & 0xFF) / 255f);
-        DustParticleOptions dust = new DustParticleOptions(color, entry.calm() ? 0.7f : 1.0f);
+        DustParticleOptions dust = Dust.ofRgb(rgb, entry.calm() ? 0.7f : 1.0f);
         double w = player.getBbWidth() * 0.5 + 0.2;
         for (int i = 0; i < count; i++) {
             double a = RANDOM.nextDouble() * Math.PI * 2;
@@ -284,7 +283,7 @@ public final class AuraClient {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
         if (level == null || quality() == VfxQuality.VANILLA) return;
-        Vec3 cam = camera.getPosition();
+        Vec3 cam = camera.position();
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
         PoseStack pose = new PoseStack();
         boolean simple = quality() == VfxQuality.REDUCED;
@@ -295,7 +294,7 @@ public final class AuraClient {
             body(pose, buffers, entry, player, cam, partial, simple);
         }
         if (!WISPS.isEmpty()) {
-            Vector3f right = new Vector3f(camera.getLeftVector()).negate(), up = new Vector3f(camera.getUpVector());
+            Vector3f right = new Vector3f(camera.leftVector()).negate(), up = new Vector3f(camera.upVector());
             for (boolean glints : new boolean[] {false, true}) {
                 VertexConsumer out = buffers.getBuffer(AuraRenderTypes.SMOOTH.apply(glints ? SHIMMER : WISP));
                 for (Wisp w : WISPS) {
@@ -362,36 +361,36 @@ public final class AuraClient {
         int w = g.guiWidth(), h = g.guiHeight();
         int rgb = MeleeTell.bright(entry.payload.color()) & 0xFFFFFF;
         float alpha = entry.calm() ? EDGE_ALPHA_CALM : EDGE_ALPHA * (1f + 0.3f * entry.fight);
-        mc.getTextureManager().getTexture(EDGE).setFilter(true, false);
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor((rgb >> 16 & 0xFF) / 255f, (rgb >> 8 & 0xFF) / 255f, (rgb & 0xFF) / 255f, alpha);
         int edge = Math.round(w * EDGE_SHARE), arm = Math.round(w * EDGE_ARM_SHARE);
-        edgeStrip(g, frame, 0, 0, edge, h, false, 1f, 1f);
-        edgeStrip(g, frame, w - edge, 0, edge, h, true, 1f, 1f);
+        edgeStrip(g, frame, 0, 0, edge, h, false, 1f, 1f, rgb, alpha);
+        edgeStrip(g, frame, w - edge, 0, edge, h, true, 1f, 1f, rgb, alpha);
         // round your arm: low on the right, fading in from nothing at its top
-        edgeStrip(g, (frame + FRAMES / 2) % FRAMES, w - arm, h * 2 / 5, arm, h - h * 2 / 5, true, 0f, 0.7f);
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-        RenderSystem.disableBlend();
+        edgeStrip(g, (frame + FRAMES / 2) % FRAMES, w - arm, h * 2 / 5, arm, h - h * 2 / 5, true, 0f, 0.7f, rgb, alpha);
     }
 
-    /** One strip of the edge flow: the texture's screen edge at the left, or mirrored to the right. */
-    private static void edgeStrip(GuiGraphics g, int frame, int x, int y, int width, int height, boolean mirrored, float topAlpha, float bottomAlpha) {
+    /** Bands a strip's top-to-bottom fade is drawn in (the HUD tints a quad one colour, so a gradient is a stack of them). */
+    private static final int FADE_BANDS = 10;
+
+    /**
+     * One strip of the edge flow: the texture's screen edge at the left, or mirrored to the right. Its opacity runs from
+     * {@code topAlpha} to {@code bottomAlpha} (times {@code alpha}), drawn smooth-filtered in the Malice colour.
+     */
+    private static void edgeStrip(GuiGraphics g, int frame, int x, int y, int width, int height, boolean mirrored, float topAlpha, float bottomAlpha,
+                                  int rgb, float alpha) {
         float u0 = frame / (float) FRAMES, u1 = (frame + 1) / (float) FRAMES;
         if (mirrored) {
             float t = u0;
             u0 = u1;
             u1 = t;
         }
-        RenderSystem.setShader(net.minecraft.client.renderer.GameRenderer::getPositionTexColorShader);
-        RenderSystem.setShaderTexture(0, EDGE);
-        Matrix4f m = g.pose().last().pose();
-        com.mojang.blaze3d.vertex.BufferBuilder b = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(
-                com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS, com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_TEX_COLOR);
-        b.addVertex(m, x, y, 0).setUv(u0, 0f).setColor(1f, 1f, 1f, topAlpha);
-        b.addVertex(m, x, y + height, 0).setUv(u0, 1f).setColor(1f, 1f, 1f, bottomAlpha);
-        b.addVertex(m, x + width, y + height, 0).setUv(u1, 1f).setColor(1f, 1f, 1f, bottomAlpha);
-        b.addVertex(m, x + width, y, 0).setUv(u1, 0f).setColor(1f, 1f, 1f, topAlpha);
-        com.mojang.blaze3d.vertex.BufferUploader.drawWithShader(b.buildOrThrow());
+        int bands = topAlpha == bottomAlpha ? 1 : FADE_BANDS;
+        for (int i = 0; i < bands; i++) {
+            int y0 = y + height * i / bands, y1 = y + height * (i + 1) / bands;
+            if (y1 <= y0) continue;
+            float mid = bands == 1 ? 0f : (i + 0.5f) / bands;
+            int a = Mth.clamp(Math.round(alpha * Mth.lerp(mid, topAlpha, bottomAlpha) * 255f), 0, 255);
+            if (a == 0) continue;
+            GuiBlit.blit(g, EDGE, x, y0, x + width, y1, u0, u1, (y0 - y) / (float) height, (y1 - y) / (float) height, a << 24 | rgb, true);
+        }
     }
 }

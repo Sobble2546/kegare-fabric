@@ -6,6 +6,7 @@ import com.cnethuka.kegare.config.KegareServerConfig;
 import com.cnethuka.kegare.innatetechnique.InnateTechnique;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueRarity;
 import com.cnethuka.kegare.malice.MaliceTier;
+import com.cnethuka.kegare.platform.registry.KRegistry;
 import com.cnethuka.kegare.registry.KegareRegistries;
 import com.cnethuka.kegare.trait.Trait;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -31,10 +32,11 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.selector.EntitySelector;
-import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permission;
+import net.minecraft.server.permissions.Permissions;
 
 /**
  * What every {@code /kegare} command shares: the permission, player arguments (selectors work, and a last {@code [player]}
@@ -69,7 +71,19 @@ final class CommandArgs {
 
     /** A branch of {@code /kegare} that takes {@link #PERMISSION}. */
     static LiteralArgumentBuilder<CommandSourceStack> system(String name) {
-        return Commands.literal(name).requires(source -> source.hasPermission(PERMISSION));
+        return Commands.literal(name).requires(source -> allowed(source, PERMISSION));
+    }
+
+    /** Whether the sender holds vanilla permission level {@code level} (0 anyone, 2 game master as for {@link #PERMISSION}, up to 4 owner). */
+    static boolean allowed(CommandSourceStack source, int level) {
+        if (level <= 0) return true;
+        Permission needed = switch (level) {
+            case 1 -> Permissions.COMMANDS_MODERATOR;
+            case 2 -> Permissions.COMMANDS_GAMEMASTER;
+            case 3 -> Permissions.COMMANDS_ADMIN;
+            default -> Permissions.COMMANDS_OWNER;
+        };
+        return source.permissions().hasPermission(needed);
     }
 
     /** {@code <player>} with more arguments after it. Read it with {@link #forEachPlayer}. */
@@ -127,7 +141,7 @@ final class CommandArgs {
     }
 
     /** The entry with this short name. Should two mods use the same one, Kegare's wins. */
-    private static <T> Optional<T> byShortName(Registry<T> registry, String name) {
+    private static <T> Optional<T> byShortName(KRegistry<T> registry, String name) {
         String wanted = name.toLowerCase(Locale.ROOT);
         return registry.keySet().stream()
                 .filter(id -> id.getPath().equals(wanted))

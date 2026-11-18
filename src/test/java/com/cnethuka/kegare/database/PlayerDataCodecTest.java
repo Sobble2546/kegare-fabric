@@ -27,7 +27,7 @@ import net.minecraft.server.level.ServerPlayer;
 import com.cnethuka.kegare.platform.attachment.AttachmentHolder;
 import com.cnethuka.kegare.platform.attachment.AttachmentType;
 import com.cnethuka.kegare.platform.registry.NeoForgeRegistries;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 

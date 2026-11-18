@@ -32,10 +32,10 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -51,7 +51,7 @@ class ReadsTest {
                 ServerPlayer aside = SightTest.player(server, "reads_aside", 800, 12.5, 0.5);
                 ServerPlayer severed = SightTest.player(server, "reads_void", 0, -12.5, 0.5);
                 SightTest.eyes(server, bearer, true);
-                bearer.moveTo(0.5, 120, 0.5, 0f, 0f);
+                bearer.snapTo(0.5, 120, 0.5, 0f, 0f);
                 bearer.setYHeadRot(0f);
 
                 ReadsPayload reads = Reads.build(bearer);
@@ -84,12 +84,12 @@ class ReadsTest {
                 CastManager.stopAll(target, EndReason.CANCELLED);
 
                 // Turn to the void: their Read is empty.
-                bearer.moveTo(0.5, 120, 0.5, 90f, 0f); // yaw 90 faces -x
+                bearer.snapTo(0.5, 120, 0.5, 90f, 0f); // yaw 90 faces -x
                 assertSame(severed, Reads.focus(bearer));
                 ReadsPayload.Focus voidRead = Reads.detail(severed);
                 assertTrue(voidRead.severed() && voidRead.body().isEmpty(), "Void, and nothing else: no health, no effects, nothing");
 
-                bearer.moveTo(0.5, 120, 0.5, 180f, 0f);
+                bearer.snapTo(0.5, 120, 0.5, 180f, 0f);
                 assertNull(Reads.focus(bearer), "nobody at the crosshair: no focus");
                 assertTrue(aside.isAlive());
             } finally {
@@ -122,15 +122,15 @@ class ReadsTest {
             try {
                 ServerPlayer target = SightTest.player(server, "reads_body", 3000, 0.5, 6.5);
                 SightTest.eyes(server, bearer, true);
-                bearer.moveTo(0.5, 120, 0.5, 0f, 0f);
+                bearer.snapTo(0.5, 120, 0.5, 0f, 0f);
                 // Gear, and its modifiers on the attributes as an equipment change puts them (a test's fake player never ticks to do it).
                 for (EquipmentSlot slot : new EquipmentSlot[] {EquipmentSlot.CHEST, EquipmentSlot.MAINHAND}) {
                     ItemStack stack = new ItemStack(slot == EquipmentSlot.CHEST ? Items.IRON_CHESTPLATE : Items.IRON_SWORD);
                     target.setItemSlot(slot, stack);
                     stack.forEachModifier(slot, (attribute, modifier) -> target.getAttribute(attribute).addOrUpdateTransientModifier(modifier));
                 }
-                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 600, 1));
-                target.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, -1, 0));
+                target.addEffect(new MobEffectInstance(MobEffects.SPEED, 600, 1));
+                target.addEffect(new MobEffectInstance(MobEffects.STRENGTH, -1, 0));
                 target.addEffect(new MobEffectInstance(MobEffects.POISON, 80, 0, false, false, false)); // hidden: the eyes see it anyway
                 target.setHealth(14f);
                 target.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 600, 0)); // 4 absorption
@@ -193,15 +193,15 @@ class ReadsTest {
     void aMobIsReadAtAGlanceAndInFull(MinecraftServer server) throws Exception {
         TestServer.onServerThread(server, () -> {
             ServerPlayer bearer = SightTest.player(server, "reads_mob_bearer", 1000, 0.5, 0.5);
-            Zombie zombie = EntityType.ZOMBIE.create(server.overworld());
-            Zombie behind = EntityType.ZOMBIE.create(server.overworld());
+            Zombie zombie = EntityType.ZOMBIE.create(server.overworld(), net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            Zombie behind = EntityType.ZOMBIE.create(server.overworld(), net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             try {
                 SightTest.eyes(server, bearer, true);
-                bearer.moveTo(0.5, 120, 0.5, 0f, 0f);
-                zombie.moveTo(0.5, 119, 8.5, 0f, 0f);
+                bearer.snapTo(0.5, 120, 0.5, 0f, 0f);
+                zombie.snapTo(0.5, 119, 8.5, 0f, 0f);
                 zombie.setNoAi(true);
                 server.overworld().addFreshEntity(zombie);
-                behind.moveTo(0.5, 119, -8.5, 0f, 0f);
+                behind.snapTo(0.5, 119, -8.5, 0f, 0f);
                 behind.setNoAi(true);
                 server.overworld().addFreshEntity(behind);
                 zombie.hurt(server.overworld().damageSources().generic(), 3f);
@@ -239,7 +239,7 @@ class ReadsTest {
                 ServerPlayer wearer = SightTest.player(server, "reads_wearer", 3000, 0.5, 6.5);
                 ServerPlayer face = SightTest.player(server, "reads_face", 900, 30.5, 0.5);
                 SightTest.eyes(server, bearer, true);
-                bearer.moveTo(0.5, 120, 0.5, 0f, 0f);
+                bearer.snapTo(0.5, 120, 0.5, 0f, 0f);
                 InnateTechniqueService.setInnateTechnique(face, com.cnethuka.kegare.innate_technique.swap.Swap.SWAP.get());
                 wearer.setHealth(11f);
                 face.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 200, 2));

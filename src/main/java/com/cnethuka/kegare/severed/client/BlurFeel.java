@@ -3,11 +3,9 @@ package com.cnethuka.kegare.severed.client;
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.config.KegareClientConfig;
 import com.cnethuka.kegare.config.KegareClientConfig.VfxQuality;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -15,9 +13,8 @@ import net.minecraft.world.phys.Vec3;
 import com.cnethuka.kegare.platform.bus.IEventBus;
 import com.cnethuka.kegare.platform.client.event.RegisterGuiLayersEvent;
 import com.cnethuka.kegare.platform.client.event.ViewportEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import com.cnethuka.kegare.platform.client.gui.VanillaGuiLayers;
 import com.cnethuka.kegare.platform.NeoForge;
-import org.joml.Matrix4f;
 
 /**
  * Blur from inside it (DESIGN §3.27), like a dash's feel but held for as long as you're moving fast: the view opens a little wider the
@@ -94,8 +91,6 @@ final class BlurFeel {
         // A new set every tick, each sliding outward over the tick: a steady rush past the edges.
         long tick = mc.level.getGameTime();
         float slide = partial;
-        Matrix4f pose = g.pose().last().pose();
-        VertexConsumer out = g.bufferSource().getBuffer(RenderType.gui());
         RandomSource random = RandomSource.create(tick * 7919L);
         int streaks = quality >= 1f ? STREAKS_FULL : STREAKS_REDUCED;
         float strength = Math.min(1f, level) * quality;
@@ -111,16 +106,39 @@ final class BlurFeel {
             dy /= norm;
             float shift = height * 0.12f * (flow > 0f ? slide : 1f - slide);
             float x0 = x + dx * shift, y0 = y + dy * shift, x1 = x0 + dx * length, y1 = y0 + dy * length;
-            float px = -dy * thick, py = dx * thick;
             int inner = alpha(strength, x0, y0, cx, cy), outer = alpha(strength, x1, y1, cx, cy);
             if (inner == 0 && outer == 0) continue;
-            vertex(out, pose, x0, y0, inner);
-            vertex(out, pose, x1 + px, y1 + py, outer);
-            vertex(out, pose, x1 - px, y1 - py, outer);
-            vertex(out, pose, x0, y0, inner);
+            needle(g, x0, y0, dx, dy, length, thick, inner, outer);
         }
-        g.flush();
     }
+
+    /** Pieces a needle is cut into along its length: its width grows a step at a time from the point (the HUD fills rectangles, not triangles). */
+    private static final int NEEDLE_STEPS = 3;
+
+    /**
+     * A needle from {@code (x0, y0)} out along {@code (dx, dy)} for {@code length}: a point at the inner end widening to {@code 2 * thick}
+     * at the outer, its opacity running from {@code inner} to {@code outer} (0 to 255). Drawn as a few turned rectangles with a fade each.
+     */
+    private static void needle(GuiGraphics g, float x0, float y0, float dx, float dy, float length, float thick, int inner, int outer) {
+        float angle = (float) Math.atan2(-dx, dy); // turns the HUD's down (+y) onto the needle's way
+        g.pose().pushMatrix();
+        g.pose().translate(x0, y0);
+        g.pose().rotate(angle);
+        for (int i = 0; i < NEEDLE_STEPS; i++) {
+            int from = Math.round(length * i / NEEDLE_STEPS), to = Math.round(length * (i + 1) / NEEDLE_STEPS);
+            if (to <= from) continue;
+            float half = thick * (i + 0.5f) / NEEDLE_STEPS;
+            int a0 = Math.round(Mth.lerp(i / (float) NEEDLE_STEPS, (float) inner, (float) outer));
+            int a1 = Math.round(Mth.lerp((i + 1) / (float) NEEDLE_STEPS, (float) inner, (float) outer));
+            g.pose().pushMatrix();
+            g.pose().scale(half, 1f);
+            g.fillGradient(-1, from, 1, to, a0 << 24 | NEEDLE_RGB, a1 << 24 | NEEDLE_RGB);
+            g.pose().popMatrix();
+        }
+        g.pose().popMatrix();
+    }
+
+    private static final int NEEDLE_RGB = 0xF2EEE6;
 
     private static int alpha(float strength, float x, float y, float cx, float cy) {
         float ex = (x - cx) / cx, ey = (y - cy) / cy;
@@ -131,9 +149,5 @@ final class BlurFeel {
     static float edgeFade(float radius) {
         float t = (radius - CLEAR_RADIUS) / (FULL_RADIUS - CLEAR_RADIUS);
         return t <= 0f ? 0f : t >= 1f ? 1f : t * t * (3f - 2f * t);
-    }
-
-    private static void vertex(VertexConsumer out, Matrix4f pose, float x, float y, int alpha) {
-        out.addVertex(pose, x, y, 0f).setColor(0xF2, 0xEE, 0xE6, alpha);
     }
 }

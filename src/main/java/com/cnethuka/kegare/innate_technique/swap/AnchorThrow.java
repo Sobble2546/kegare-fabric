@@ -58,7 +58,7 @@ final class AnchorThrow {
         Flight now = fly(token, from, aim, maxTicks);
         if (now.landed() != old.landed() || now.at().distanceTo(old.at()) > SAME_SPOT) return;
 
-        token.moveTo(from.x, from.y, from.z, token.getYRot(), token.getXRot());
+        token.snapTo(from.x, from.y, from.z, token.getYRot(), token.getXRot());
         token.shoot(aim.x, aim.y, aim.z, (float) speed, 0f); // no spread: it's already in the velocity
     }
 

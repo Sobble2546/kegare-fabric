@@ -30,14 +30,14 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
-import net.minecraft.world.entity.monster.Zombie;
-import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.entity.monster.zombie.Zombie;
+import net.minecraft.world.entity.projectile.arrow.Arrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -58,7 +58,7 @@ class DelayedSightTest {
 
     private static ServerPlayer blurring(MinecraftServer server, ServerLevel level, String name) {
         ServerPlayer s = player(server, level, name, 0);
-        s.moveTo(0.5, Y, 0.5, -90f, 0f);
+        s.snapTo(0.5, Y, 0.5, -90f, 0f);
         Severed.toggleBlur(s);
         assertTrue(Severed.blurring(s), "setup: Blurring");
         return s;
@@ -68,7 +68,7 @@ class DelayedSightTest {
         ServerPlayer p = player(server, level, name, 3000);
         InnateTechniqueService.setInnateTechnique(p, TimeManipulation.TIME_MANIPULATION.get());
         MaliceService.refill(p);
-        p.moveTo(0.5, Y, 0.5, -90f, 0f);
+        p.snapTo(0.5, Y, 0.5, -90f, 0f);
         InnateTechniqueService.select(p, 1);
         CastManager.handleIntent(p, CastIntent.CAST_PRESS);
         assertTrue(TimeManipulation.ACCELERATE.isActive(p), "setup: Accelerating");
@@ -98,9 +98,9 @@ class DelayedSightTest {
                 com.cnethuka.kegare.trait.TraitSuccession.release(server, KegareTraits.SIX_EYES.get()); // unique: free it first
                 assertEquals(TraitService.AddResult.ADDED, TraitService.add(six, KegareTraits.SIX_EYES.get(), Trait.AddReason.ADMIN), "setup: Six Eyes");
                 ServerPlayer senser = player(server, level, "sight_senser", 0);
-                viewer.moveTo(0.5, Y, 10.5);
-                six.moveTo(0.5, Y, 12.5);
-                senser.moveTo(0.5, Y, 14.5);
+                viewer.snapTo(0.5, Y, 10.5);
+                six.snapTo(0.5, Y, 12.5);
+                senser.snapTo(0.5, Y, 14.5);
 
                 run(server, s, BLUR_SPEED, 20);
                 assertTrue(DelayedSight.hidden(s));
@@ -124,7 +124,7 @@ class DelayedSightTest {
 
                 // Faster is further behind: Accelerate is 100 ms, at its own speed.
                 ServerPlayer a = accelerating(server, level, "sight_accel");
-                a.moveTo(0.5, Y, 4.5);
+                a.snapTo(0.5, Y, 4.5);
                 run(server, a, ACCELERATE_SPEED, 20);
                 double aBehind = SightConfig.ACCELERATE_DELAY.get() / 50.0 * ACCELERATE_SPEED;
                 assertEquals(a.getX() - aBehind, DelayedSight.seenAt(viewer, a).x, 1.0e-6, "Accelerate: 100 ms behind");
@@ -145,8 +145,8 @@ class DelayedSightTest {
             try {
                 ServerPlayer walker = player(server, level, "sight_walker", 1000);
                 ServerPlayer viewer = player(server, level, "sight_viewer2", 1000);
-                viewer.moveTo(0.5, Y, 10.5);
-                walker.moveTo(0.5, Y, 4.5);
+                viewer.snapTo(0.5, Y, 10.5);
+                walker.snapTo(0.5, Y, 4.5);
                 run(server, walker, 0.28, 10); // a sprint, neither state on
                 assertFalse(DelayedSight.hidden(walker), "nothing delayed");
                 assertEquals(walker.position(), DelayedSight.seenAt(viewer, walker));
@@ -186,19 +186,19 @@ class DelayedSightTest {
             for (int x = -4; x <= 24; x++) {
                 for (int z = -6; z <= 10; z++) level.setBlock(BlockPos.containing(x, Y - 1, z), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
             }
-            server.setPvpAllowed(true);
-            Zombie zombie = EntityType.ZOMBIE.create(level);
-            WitherBoss wither = EntityType.WITHER.create(level);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
+            Zombie zombie = EntityType.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            WitherBoss wither = EntityType.WITHER.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             try {
                 ServerPlayer s = blurring(server, level, "sight_mobs");
-                s.moveTo(0.5, ground, 0.5);
+                s.snapTo(0.5, ground, 0.5);
                 run(server, s, BLUR_SPEED, 20);
                 Vec3 image = DelayedSight.seenAt(zombie, s);
                 assertTrue(image.distanceTo(s.position()) > 2.0, "setup: the image is well behind");
                 for (var mob : List.of(zombie, wither)) {
                     mob.setNoAi(true);
                     mob.setNoGravity(true);
-                    mob.moveTo(image.x, ground, image.z + 6);
+                    mob.snapTo(image.x, ground, image.z + 6);
                     mob.setOnGround(true); // a ground mob only paths from the ground
                     level.addFreshEntity(mob);
                 }
@@ -217,12 +217,12 @@ class DelayedSightTest {
                 assertEquals(s.getX(), wither.getLookControl().getWantedX(), 1.0e-6);
 
                 // Next to the image: it swings, and misses, since they've gone. Next to them: it doesn't swing at all.
-                zombie.moveTo(image.x, ground, image.z + 0.9);
+                zombie.snapTo(image.x, ground, image.z + 0.9);
                 assertTrue(zombie.isWithinMeleeAttackRange(s), "in reach of where it sees them");
                 float health = s.getHealth();
-                assertFalse(zombie.doHurtTarget(s), "the swing at where they were misses");
+                assertFalse(zombie.doHurtTarget((net.minecraft.server.level.ServerLevel) zombie.level(), s), "the swing at where they were misses");
                 assertEquals(health, s.getHealth(), 1.0e-6);
-                zombie.moveTo(s.getX(), ground, s.getZ() + 0.9);
+                zombie.snapTo(s.getX(), ground, s.getZ() + 0.9);
                 assertFalse(zombie.isWithinMeleeAttackRange(s), "right by the real one, it sees nothing to swing at");
             } finally {
                 for (int x = -4; x <= 24; x++) {
@@ -245,7 +245,7 @@ class DelayedSightTest {
         TestServer.onServerThread(server, () -> {
             TestServer.ensureOverworld(server);
             ServerLevel level = server.overworld();
-            server.setPvpAllowed(true);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
             StringBuilder report = new StringBuilder("Hits on the image:\n");
             try {
                 ServerPlayer attacker = player(server, level, "sight_attacker", 1000);
@@ -263,12 +263,12 @@ class DelayedSightTest {
                                 case "away" -> new Vec3(0, 0, 1);
                                 default -> new Vec3(0, 0, -1);
                             };
-                            attacker.moveTo(0.5, Y, 0.5, 0f, 0f);
+                            attacker.snapTo(0.5, Y, 0.5, 0f, 0f);
                             Vec3 eye = attacker.getEyePosition();
                             AABB imageBox = new AABB(-0.3, 0, -0.3, 0.3, 1.8, 0.3).move(0.5, Y, 0.5 + d); // d blocks apart, feet to feet
                             AABB realBox = imageBox.move(run.scale(lag));
                             boolean canSwing = imageBox.distanceToSqr(eye) < attacker.entityInteractionRange() * attacker.entityInteractionRange();
-                            boolean lands = canSwing && attacker.canInteractWithEntity(realBox, 1.0);
+                            boolean lands = canSwing && attacker.isWithinEntityInteractionRange(realBox, 1.0);
                             report.append(String.format(Locale.ROOT, "  %s, melee at the image %.0f blocks, running %s: %s%n", who, d, way,
                                     !canSwing ? "out of reach (can't swing)" : lands ? "lands" : "misses (the real body is out of reach)"));
                         }
@@ -276,11 +276,11 @@ class DelayedSightTest {
                     // Arrows: a full-power shot from 12 blocks across their run, at the image's chest, and one led ahead.
                     for (boolean led : new boolean[] {false, true}) {
                         DelayedSight.clear();
-                        mover.moveTo(0.5, Y, 20.5, -90f, 0f);
+                        mover.snapTo(0.5, Y, 20.5, -90f, 0f);
                         mover.setHealth(mover.getMaxHealth());
                         mover.invulnerableTime = 0;
                         run(server, mover, speed, 12); // up to speed, the image eased in
-                        attacker.moveTo(mover.getX() + 4, Y, 8.5, 0f, 0f);
+                        attacker.snapTo(mover.getX() + 4, Y, 8.5, 0f, 0f);
                         Vec3 aim = DelayedSight.seenAt(attacker, mover).add(0, 1.2, 0);
                         double travel = aim.distanceTo(attacker.getEyePosition()) / 3.0;
                         if (led) aim = aim.add(speed * (lag / speed + travel), 0, 0);

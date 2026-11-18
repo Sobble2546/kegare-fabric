@@ -1,14 +1,16 @@
 package com.cnethuka.kegare.innate_technique.rime;
 
+import com.cnethuka.kegare.platform.EntityCompat;
 import com.cnethuka.kegare.innatetechnique.Ability;
 import javax.annotation.Nullable;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 /**
  * One of Splinter's three shards. Shards of the same cast skip the target's hurt cooldown left by a sibling, so all
@@ -23,7 +25,7 @@ public class SplinterShardEntity extends RimeProjectile {
     }
 
     SplinterShardEntity(Level level, LivingEntity caster, int cast) {
-        super(RimeRegistry.SPLINTER_SHARD.get(), caster, level);
+        super(RimeRegistry.SPLINTER_SHARD.get(), caster, level, RimeRegistry.FROST_SHARD_ITEM.get());
         this.cast = cast;
         this.damage = RimeConfig.SPLINTER_DAMAGE.get().floatValue();
         this.lifetime = Math.max(1, RimeConfig.ticks(RimeConfig.SPLINTER_RANGE_SECONDS));
@@ -52,7 +54,7 @@ public class SplinterShardEntity extends RimeProjectile {
     @Override
     protected void beforeHurt(LivingEntity target, @Nullable ServerPlayer caster) {
         // A sibling shard just hit this target: its hurt cooldown would swallow this one.
-        if (caster != null && caster.getData(RimeRegistry.TRACKER).splinterHits(cast, target.getUUID()) > 0) target.invulnerableTime = 0;
+        if (caster != null && caster.getData(RimeRegistry.TRACKER).splinterHits(cast, target.getUUID()) > 0) EntityCompat.setInvulnerableTime(target, 0);
     }
 
     @Override
@@ -67,14 +69,14 @@ public class SplinterShardEntity extends RimeProjectile {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("Cast", cast);
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        cast = tag.getInt("Cast");
+        cast = tag.getIntOr("Cast", 0);
     }
 }

@@ -1,5 +1,6 @@
 package com.cnethuka.kegare.fists.client;
 
+import com.cnethuka.kegare.client.visual.Dust;
 import com.cnethuka.kegare.config.KegareClientConfig;
 import com.cnethuka.kegare.config.KegareClientConfig.VfxQuality;
 import com.cnethuka.kegare.fists.BlackSparkPayload;
@@ -12,7 +13,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -37,7 +39,10 @@ import org.joml.Vector3f;
  */
 public final class BlackSparkClient {
     private static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
-    private static final RenderType TYPE = RenderType.entityTranslucentEmissive(WHITE);
+    private static RenderType type() {
+        return RenderTypes.entityTranslucentEmissive(WHITE);
+    }
+
     private static final int BLACK = 0x050307;
     /** How big it is, in blocks: the arcs' reach. */
     private static final float SIZE = 1.0f;
@@ -68,7 +73,7 @@ public final class BlackSparkClient {
             return;
         }
         float size = SIZE;
-        double d = mc.gameRenderer.getMainCamera().getPosition().distanceTo(p.at());
+        double d = mc.gameRenderer.getMainCamera().position().distanceTo(p.at());
         if (firstPerson && d < 0.6) return;
         if (d < 2.5) size *= (float) Math.max(0.4, d / 2.5);
         boolean reduced = quality == VfxQuality.REDUCED;
@@ -78,8 +83,8 @@ public final class BlackSparkClient {
 
     private static void vanilla(ClientLevel level, Vec3 at, Vec3 dir, int rgb) {
         RandomSource r = level.getRandom();
-        DustParticleOptions black = new DustParticleOptions(new Vector3f(0.02f, 0.02f, 0.03f), 1.2f);
-        DustParticleOptions color = new DustParticleOptions(new Vector3f((rgb >> 16 & 0xFF) / 255f, (rgb >> 8 & 0xFF) / 255f, (rgb & 0xFF) / 255f), 0.9f);
+        DustParticleOptions black = Dust.of(0.02f, 0.02f, 0.03f, 1.2f);
+        DustParticleOptions color = Dust.ofRgb(rgb, 0.9f);
         for (int i = 0; i < 16; i++) {
             Vec3 v = out(r, dir).scale(0.15 + 0.25 * r.nextDouble());
             level.addParticle(i % 3 == 2 ? color : black, at.x, at.y, at.z, v.x, v.y, v.z);
@@ -115,15 +120,15 @@ public final class BlackSparkClient {
         float now = level.getGameTime() + event.getPartialTick().getGameTimeDeltaPartialTick(false);
         Camera camera = event.getCamera();
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
-        VertexConsumer out = buffers.getBuffer(TYPE);
+        VertexConsumer out = buffers.getBuffer(type());
         Matrix4f m = event.getPoseStack().last().pose();
-        Vec3 cam = camera.getPosition();
+        Vec3 cam = camera.position();
         for (Burst b : BURSTS) {
             float t = (now - b.born) / b.life;
             if (t < 0 || t >= 1) continue;
             draw(out, m, b, t, (long) Math.floor(now), cam);
         }
-        buffers.endBatch(TYPE);
+        buffers.endBatch(type());
     }
 
     private static void draw(VertexConsumer out, Matrix4f m, Burst b, float t, long tick, Vec3 cam) {

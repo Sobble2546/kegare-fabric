@@ -39,6 +39,6 @@ public final class ClientGuiHooks {
     }
 
     public static void onProgressionToast(com.cnethuka.kegare.network.ProgressionToastPayload payload) {
-        net.minecraft.client.Minecraft.getInstance().getToasts().addToast(ProgressionToast.of(payload));
+        net.minecraft.client.Minecraft.getInstance().getToastManager().addToast(ProgressionToast.of(payload));
     }
 }

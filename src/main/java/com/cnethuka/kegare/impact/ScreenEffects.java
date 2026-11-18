@@ -33,10 +33,10 @@ public final class ScreenEffects {
         public static final Type<Payload> TYPE = new Type<>(Kegare.id("screen_effect"));
         public static final StreamCodec<FriendlyByteBuf, Payload> STREAM_CODEC = StreamCodec.ofMember(
                 (p, buf) -> {
-                    buf.writeResourceLocation(p.effect);
+                    buf.writeIdentifier(p.effect);
                     buf.writeVarInt(p.ticks);
                 },
-                buf -> new Payload(buf.readResourceLocation(), buf.readVarInt()));
+                buf -> new Payload(buf.readIdentifier(), buf.readVarInt()));
 
         /** Set by the client entry point; null on a dedicated server. */
         private static Consumer<Payload> clientHandler;

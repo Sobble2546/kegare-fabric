@@ -35,7 +35,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -60,7 +60,7 @@ class RepairTest {
         TraitService.removeAll(p, Trait.RemoveReason.ADMIN);
         InnateTechniqueService.setInnateTechnique(p, technique);
         MaliceService.refill(p);
-        p.moveTo(0.5, 120, 0.5, 0f, 0f);
+        p.snapTo(0.5, 120, 0.5, 0f, 0f);
         p.setHealth(p.getMaxHealth());
         SharedAbilityService.unlock(p, Rmt.REVERSE_MALICE_TECHNIQUE);
         assertEquals(LoadoutResult.OK, LoadoutService.edit(p, LoadoutService.Action.SET, 1, 0, Optional.of(RmtIds.ABILITY)));
@@ -450,7 +450,7 @@ class RepairTest {
                 assertEquals(50 - RmtConfig.BRAIN_HEAL_PER_SECOND.get(), BrainDamage.get(p), EPS, "brainHealPerSecond out of one");
 
                 p.startSleeping(BlockPos.containing(p.position()));
-                BrainDamage.nightSlept(p.serverLevel());
+                BrainDamage.nightSlept(p.level());
                 assertEquals(0, BrainDamage.get(p), EPS, "a night's sleep clears it");
                 p.stopSleeping();
             } finally {

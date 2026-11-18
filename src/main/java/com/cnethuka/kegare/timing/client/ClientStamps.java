@@ -11,6 +11,8 @@ import com.mojang.blaze3d.platform.InputConstants;
 import java.util.List;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.input.KeyEvent;
+import com.cnethuka.kegare.platform.net.ClientNet;
 import net.minecraft.world.phys.EntityHitResult;
 import com.cnethuka.kegare.platform.client.event.InputEvent;
 import com.cnethuka.kegare.platform.NeoForge;
@@ -37,7 +39,7 @@ public final class ClientStamps {
     }
 
     private static void onKey(InputEvent.Key event) {
-        if (event.getAction() == GLFW.GLFW_PRESS) pressed(InputConstants.getKey(event.getKey(), event.getScanCode()));
+        if (event.getAction() == GLFW.GLFW_PRESS) pressed(InputConstants.getKey(new KeyEvent(event.getKey(), event.getScanCode(), event.getModifiers())));
     }
 
     private static void onMouse(InputEvent.MouseButton.Pre event) {
@@ -46,7 +48,7 @@ public final class ClientStamps {
 
     private static void pressed(InputConstants.Key key) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.getConnection() == null || mc.screen != null) return;
+        if (!ClientNet.isActive() || mc.player == null || mc.getConnection() == null || mc.screen != null) return;
         long now = nowMs();
         // An attack on whatever's under the crosshair now; if the button turns out to do something else, the stamp goes unused.
         if (matches(mc.options.keyAttack, key) && mc.hitResult instanceof EntityHitResult) send(TimedInput.ATTACK, now);

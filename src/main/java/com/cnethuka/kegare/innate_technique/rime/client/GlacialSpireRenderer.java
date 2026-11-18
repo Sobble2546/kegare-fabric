@@ -9,11 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.Identifier;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -24,10 +25,35 @@ import net.minecraft.world.phys.Vec3;
  * ground, SpireClient). The ground hides what is still under it. Seen from inside (someone launched off its point), its faces are
  * culled, so it never fills that player's screen.
  */
-public class GlacialSpireRenderer extends EntityRenderer<GlacialSpireEntity> {
+public class GlacialSpireRenderer extends EntityRenderer<GlacialSpireEntity, GlacialSpireRenderer.State> {
+    /** What the spike looks like this frame, read off the entity when its state is extracted. */
+    public static final class State extends EntityRenderState {
+        /** Not drawn: no spike loop yet, or the first-person camera is inside it. */
+        boolean hidden = true;
+        /** Ticks into the spike loop. */
+        float ticks;
+        float charge;
+        int id;
+    }
+
     public GlacialSpireRenderer(EntityRendererProvider.Context context) {
         super(context);
         shadowRadius = 0f;
+    }
+
+    @Override
+    public State createRenderState() {
+        return new State();
+    }
+
+    @Override
+    public void extractRenderState(GlacialSpireEntity spire, State state, float partialTick) {
+        super.extractRenderState(spire, state, partialTick);
+        ClientVisuals.LoopTime time = ClientVisuals.loopTime(spire, RimeIds.SPIRE_SPIKE_KEY, partialTick);
+        state.charge = spire.charge();
+        state.id = spire.getId();
+        state.ticks = time == null ? 0f : time.ticks();
+        state.hidden = time == null || cameraInside(spire, SpireShape.width(state.charge), SpireShape.height(state.charge));
     }
 
     @Override
@@ -38,14 +64,12 @@ public class GlacialSpireRenderer extends EntityRenderer<GlacialSpireEntity> {
     }
 
     @Override
-    public void render(GlacialSpireEntity spire, float yaw, float partialTick, PoseStack pose, MultiBufferSource buffers, int light) {
-        ClientVisuals.LoopTime time = ClientVisuals.loopTime(spire, RimeIds.SPIRE_SPIKE_KEY, partialTick);
-        if (time == null) return;
-        float t = time.ticks();
-        float charge = spire.charge();
+    public void submit(State state, PoseStack pose, SubmitNodeCollector collector, CameraRenderState camera) {
+        if (state.hidden) return;
+        float t = state.ticks;
+        float charge = state.charge;
         float height = SpireShape.height(charge), width = SpireShape.width(charge);
-        if (cameraInside(spire, width, height)) return;
-        float turn = (spire.getId() * 137.508f) % 360f; // each spike its own way round
+        float turn = (state.id * 137.508f) % 360f; // each spike its own way round
         float quiver = SpireShape.quiver(t);
         List<PoseStack.Pose> poses = new ArrayList<>();
         List<String> names = new ArrayList<>();
@@ -63,7 +87,7 @@ public class GlacialSpireRenderer extends EntityRenderer<GlacialSpireEntity> {
             names.add(SpireShape.PIECES.get(i));
             pose.popPose();
         }
-        if (!names.isEmpty()) LanceMesh.SPIRE.draw(buffers, poses, names, light);
+        if (!names.isEmpty()) LanceMesh.SPIRE.draw(collector, poses, names, state.lightCoords);
     }
 
     /**
@@ -73,14 +97,9 @@ public class GlacialSpireRenderer extends EntityRenderer<GlacialSpireEntity> {
     private static boolean cameraInside(GlacialSpireEntity spire, float width, float height) {
         Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
         if (camera.isDetached()) return false;
-        Vec3 c = camera.getPosition();
+        Vec3 c = camera.position();
         double dx = c.x - spire.getX(), dz = c.z - spire.getZ(), dy = c.y - spire.getY();
         double across = 1.4 * width;
         return dx * dx + dz * dz < across * across && dy > -0.5 && dy < 3.6 * height;
-    }
-
-    @Override
-    public Identifier getTextureLocation(GlacialSpireEntity spire) {
-        return LanceMesh.SPIRE.texture;
     }
 }

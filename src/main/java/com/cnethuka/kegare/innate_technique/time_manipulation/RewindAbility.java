@@ -1,5 +1,6 @@
 package com.cnethuka.kegare.innate_technique.time_manipulation;
 
+import com.cnethuka.kegare.platform.EntityCompat;
 import com.cnethuka.kegare.impact.ImpactKind;
 import com.cnethuka.kegare.impact.Impacts;
 import com.cnethuka.kegare.innate_technique.swap.Swapper;
@@ -92,7 +93,7 @@ public final class RewindAbility extends TimeAbility.Special {
         TimeManipulation.sound(target, KegareSounds.TIME_REVERSE_TICK, 1f, 1f);
         Swapper.moveTo(target, then, target.getYRot(), target.getXRot());
         target.setDeltaMovement(Vec3.ZERO);
-        target.hurtMarked = true;
+        EntityCompat.markHurt(target);
         target.resetFallDistance();
         TimeStops.moved(target); // if held in a Standstill, it's held here now
         TimeManipulation.sound(target, KegareSounds.TIME_REVERSE_TICK, 1f, 0.85f);

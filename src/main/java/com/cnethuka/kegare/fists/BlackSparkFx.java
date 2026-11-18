@@ -21,7 +21,7 @@ public final class BlackSparkFx {
     private BlackSparkFx() {}
 
     static void play(ServerPlayer attacker, LivingEntity target) {
-        ServerLevel level = attacker.serverLevel();
+        ServerLevel level = attacker.level();
         Vec3 from = attacker.getEyePosition();
         AABB box = target.getBoundingBox();
         Vec3 centre = box.getCenter();

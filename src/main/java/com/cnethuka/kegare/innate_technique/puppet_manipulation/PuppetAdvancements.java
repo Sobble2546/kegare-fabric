@@ -77,7 +77,7 @@ public final class PuppetAdvancements {
     static void puppetKilled(PuppetEntity puppet, ServerPlayer killer) {
         UUID ownerId = puppet.ownerId();
         if (ownerId == null || killer.getUUID().equals(ownerId)) return;
-        ServerPlayer owner = online(killer.server, ownerId);
+        ServerPlayer owner = online(killer.level().getServer(), ownerId);
         if (owner == null) return;
         boolean far = owner.level() != puppet.level() || owner.distanceToSqr(puppet) > DECOY_DISTANCE * DECOY_DISTANCE;
         if (far) award(owner, DECOY);

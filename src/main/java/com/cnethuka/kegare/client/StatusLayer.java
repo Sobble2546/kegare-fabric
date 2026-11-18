@@ -8,10 +8,11 @@ import com.cnethuka.kegare.innatetechnique.CastType;
 import com.cnethuka.kegare.innatetechnique.InnateTechnique;
 import com.cnethuka.kegare.loadout.AbilityLookup;
 import com.cnethuka.kegare.network.SyncPayload;
+import com.cnethuka.kegare.platform.net.ClientNet;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.LayeredDraw;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -21,7 +22,7 @@ import net.minecraft.util.Mth;
  * Freeze stacks while there are any ("Frozen!" while frozen; Severed players too), and the charge/channel line for a cast still
  * held after Technique Mode ended. Innate techniques can add lines that show in Technique Mode too ({@link #addExtra}).
  */
-public final class StatusLayer implements LayeredDraw.Layer {
+public final class StatusLayer implements HudElement {
     public static final Identifier ID = Kegare.id("status");
 
     /**
@@ -42,7 +43,7 @@ public final class StatusLayer implements LayeredDraw.Layer {
     @Override
     public void render(GuiGraphics g, DeltaTracker deltaTracker) {
         Minecraft mc = Minecraft.getInstance();
-        if (!KegareClientConfig.HUD_ENABLED.get() || mc.options.hideGui || mc.player == null || mc.level == null) return;
+        if (!ClientNet.isActive() || !KegareClientConfig.HUD_ENABLED.get() || mc.options.hideGui || mc.player == null || mc.level == null) return;
         if (mc.player.isSpectator()) return;
         int extraY = g.guiHeight() / 2 + (CombatPanelLayer.shown() ? 10 : 40);
         for (Extra extra : EXTRAS) extraY = extra.render(g, mc, g.guiWidth() / 2, extraY);

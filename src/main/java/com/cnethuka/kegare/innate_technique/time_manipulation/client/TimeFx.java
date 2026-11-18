@@ -1,11 +1,13 @@
 package com.cnethuka.kegare.innate_technique.time_manipulation.client;
 
+import com.cnethuka.kegare.client.visual.Dust;
+import com.cnethuka.kegare.client.visual.FlatBodies;
+import com.cnethuka.kegare.client.visual.WorldTypes;
 import com.cnethuka.kegare.config.KegareClientConfig;
 import com.cnethuka.kegare.config.KegareClientConfig.VfxQuality;
 import com.cnethuka.kegare.innate_technique.time_manipulation.TimeNet;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,13 +19,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -46,10 +49,10 @@ import org.joml.Vector3f;
  * Reduced draws fewer afterimages and a coarser dome; Vanilla draws none of it and puts small bronze and silver dust in its place.
  */
 public final class TimeFx {
-    static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
+    static final Identifier WHITE = WorldTypes.WHITE;
     static final int BRONZE = 0xB08D57, BRONZE_DARK = 0x7A6038, BRONZE_PALE = 0xD9BC8A, SILVER = 0xE9E6DF, BRIGHT = 0xFFFCF2;
-    static final DustParticleOptions BRONZE_DUST = new DustParticleOptions(new Vector3f(0.69f, 0.55f, 0.34f), 0.6f);
-    static final DustParticleOptions SILVER_DUST = new DustParticleOptions(new Vector3f(0.91f, 0.9f, 0.87f), 0.5f);
+    static final DustParticleOptions BRONZE_DUST = Dust.of(0.69f, 0.55f, 0.34f, 0.6f);
+    static final DustParticleOptions SILVER_DUST = Dust.of(0.91f, 0.9f, 0.87f, 0.5f);
     /** An afterimage this close to your first-person camera isn't drawn (you're standing in it). */
     private static final double CLEAR_OF_CAMERA = 1.4;
     private static final int SEGMENTS = 48;
@@ -148,12 +151,13 @@ public final class TimeFx {
 
     /** A moved entity drawn where it was sent at once, not sliding there over three ticks as vanilla draws a teleport. */
     private static void snap(Entity entity) {
-        if (entity == Minecraft.getInstance().player || entity.isControlledByLocalInstance()) return;
-        Vec3 to = new Vec3(entity.lerpTargetX(), entity.lerpTargetY(), entity.lerpTargetZ());
+        if (entity == Minecraft.getInstance().player || entity.isLocalInstanceAuthoritative()) return;
+        InterpolationHandler slide = entity.getInterpolation();
+        if (slide == null || !slide.hasActiveInterpolation()) return;
+        Vec3 to = slide.position();
         if (to.distanceToSqr(entity.position()) < 0.25) return;
-        float yaw = entity.lerpTargetYRot(), pitch = entity.lerpTargetXRot();
-        entity.setPos(to);
-        entity.lerpTo(to.x, to.y, to.z, yaw, pitch, 0);
+        entity.snapTo(to.x, to.y, to.z, slide.yRot(), slide.xRot());
+        slide.cancel();
         entity.setOldPosAndRot();
     }
 
@@ -230,7 +234,7 @@ public final class TimeFx {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
         if (level == null) return;
-        Vec3 cam = camera.getPosition();
+        Vec3 cam = camera.position();
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
         boolean firstPerson = mc.options.getCameraType().isFirstPerson();
         for (Ghost g : GHOSTS) {
@@ -240,9 +244,9 @@ public final class TimeFx {
             if (e == null) continue;
             if (firstPerson && g.feet().add(0, 1.0, 0).distanceTo(cam) < CLEAR_OF_CAMERA) continue;
             float t = Mth.clamp((age + partial) / g.life(), 0f, 1f);
-            ghost(pose, buffers, e, g.feet().subtract(cam), g.alpha() * (1f - t), g.rgb(), partial);
+            ghost(buffers, e, g.feet().subtract(cam), g.alpha() * (1f - t), g.rgb(), partial);
         }
-        RenderType type = RenderType.entityTranslucentEmissive(WHITE);
+        RenderType type = RenderTypes.entityTranslucentEmissive(WHITE);
         VertexConsumer out = buffers.getBuffer(type);
         for (Dial d : DIALS) {
             Entity e = level.getEntity(d.entityId());
@@ -262,55 +266,12 @@ public final class TimeFx {
     }
 
     /** The entity drawn again at {@code at} (from the camera): every part of it in one colour, see-through, fully lit. */
-    private static void ghost(PoseStack pose, MultiBufferSource.BufferSource buffers, Entity e, Vec3 at, float alpha, int rgb, float partial) {
+    private static void ghost(MultiBufferSource.BufferSource buffers, Entity e, Vec3 at, float alpha, int rgb, float partial) {
         if (alpha <= 0.01f) return;
-        EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
-        RenderType type = RenderType.itemEntityTranslucentCull(WHITE);
+        RenderType type = WorldTypes.ghost();
         int a = Math.round(Mth.clamp(alpha, 0f, 1f) * 255);
-        MultiBufferSource tinted = t -> drawsGhost(t) ? new Tint(buffers.getBuffer(type), rgb, a) : NOTHING;
-        dispatcher.setRenderShadow(false);
-        try {
-            com.cnethuka.kegare.client.visual.BodyCopies.draw(
-                    () -> dispatcher.render(e, at.x, at.y, at.z, e.getYRot(), partial, pose, tinted, LightTexture.FULL_BRIGHT));
-        } catch (RuntimeException ignored) {
-            // An odd renderer: no afterimage of it, rather than a crash.
-        } finally {
-            dispatcher.setRenderShadow(true);
-        }
+        FlatBodies.draw(e, at, partial, buffers.getBuffer(type), new FlatBodies.Look(rgb, a, LightTexture.FULL_BRIGHT, true));
         buffers.endBatch(type);
-    }
-
-    /** The body's own quads go into the afterimage; its name, glint, lines and strips don't. */
-    private static boolean drawsGhost(RenderType t) {
-        if (t.mode() != VertexFormat.Mode.QUADS) return false;
-        String s = t.toString();
-        String name = s.startsWith("RenderType[") ? s.substring(11, Math.max(11, s.indexOf(':'))) : s;
-        return !name.startsWith("text") && !name.contains("glint") && !name.contains("shadow") && !name.contains("outline");
-    }
-
-    private static final VertexConsumer NOTHING = new VertexConsumer() {
-        @Override public VertexConsumer addVertex(float x, float y, float z) { return this; }
-        @Override public VertexConsumer setColor(int r, int g, int b, int a) { return this; }
-        @Override public VertexConsumer setUv(float u, float v) { return this; }
-        @Override public VertexConsumer setUv1(int u, int v) { return this; }
-        @Override public VertexConsumer setUv2(int u, int v) { return this; }
-        @Override public VertexConsumer setNormal(float x, float y, float z) { return this; }
-    };
-
-    /** Writes each vertex whole, in one colour, the moment it's started; whatever the renderer sets after is ignored. */
-    private record Tint(VertexConsumer out, int rgb, int alpha) implements VertexConsumer {
-        @Override
-        public VertexConsumer addVertex(float x, float y, float z) {
-            out.addVertex(x, y, z).setColor(rgb >> 16 & 0xFF, rgb >> 8 & 0xFF, rgb & 0xFF, alpha).setUv(0.5f, 0.5f)
-                    .setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(0f, 1f, 0f);
-            return this;
-        }
-
-        @Override public VertexConsumer setColor(int r, int g, int b, int a) { return this; }
-        @Override public VertexConsumer setUv(float u, float v) { return this; }
-        @Override public VertexConsumer setUv1(int u, int v) { return this; }
-        @Override public VertexConsumer setUv2(int u, int v) { return this; }
-        @Override public VertexConsumer setNormal(float x, float y, float z) { return this; }
     }
 
     // ---------------------------------------------------------------- dials

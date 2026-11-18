@@ -56,7 +56,7 @@ public final class UnderstudyAbility extends PuppetAbility {
             CastManager.fizzleKeepingCost(owner);
             return;
         }
-        ServerLevel level = owner.serverLevel();
+        ServerLevel level = owner.level();
         Vec3 ownerAt = owner.position();
         Vec3 puppetAt = puppet.position();
         float ownerYaw = owner.getYRot();

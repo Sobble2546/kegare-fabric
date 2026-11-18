@@ -31,7 +31,7 @@ public final class ChainBurstAbility extends PuppetAbility.Special {
 
     private static boolean anyNear(ServerPlayer owner, LivingEntity target) {
         double r = PuppetConfig.CHAIN_RADIUS.get();
-        return !owner.serverLevel().getEntitiesOfClass(PuppetEntity.class, target.getBoundingBox().inflate(r),
+        return !owner.level().getEntitiesOfClass(PuppetEntity.class, target.getBoundingBox().inflate(r),
                 p -> p.isAlive() && !p.isPossessed() && p.isOwnedBy(owner) && p.distanceToSqr(target) <= r * r).isEmpty();
     }
 

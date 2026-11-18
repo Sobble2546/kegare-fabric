@@ -58,7 +58,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -114,7 +114,7 @@ class KegareCommandTest {
     }
 
     private static CommandSourceStack source(MinecraftServer server, Sender out, @Nullable ServerPlayer sender, int level) {
-        return new CommandSourceStack(out, Vec3.ZERO, Vec2.ZERO, server.overworld(), level, "tester", Component.literal("tester"), server, sender);
+        return new CommandSourceStack(out, Vec3.ZERO, Vec2.ZERO, server.overworld(), net.minecraft.server.permissions.LevelBasedPermissionSet.forLevel(net.minecraft.server.permissions.PermissionLevel.byId(level)), "tester", Component.literal("tester"), server, sender);
     }
 
     private static Ran run(MinecraftServer server, @Nullable ServerPlayer sender, int level, String command) {

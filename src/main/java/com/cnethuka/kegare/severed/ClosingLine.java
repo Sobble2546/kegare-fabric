@@ -6,6 +6,7 @@ import com.cnethuka.kegare.melee.MeleeHits;
 import com.cnethuka.kegare.progression.Attribution;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
+import com.cnethuka.kegare.platform.EntityCompat;
 import com.cnethuka.kegare.platform.event.entity.living.LivingIncomingDamageEvent;
 import com.cnethuka.kegare.innatetechnique.CastIntent;
 import java.util.Optional;
@@ -110,7 +111,7 @@ public final class ClosingLine {
         Vec3 start = player.position(), end = start.add(direction.scale(distance + 1));
         double w = player.getBbWidth() / 2, h = player.getBbHeight();
         double best = distance;
-        for (LivingEntity e : player.serverLevel().getEntitiesOfClass(LivingEntity.class, swept,
+        for (LivingEntity e : player.level().getEntitiesOfClass(LivingEntity.class, swept,
                 e -> e != player && e != target && e.isAlive() && !e.isSpectator() && !(e instanceof ArmorStand))) {
             if (e.position().subtract(start).dot(direction) <= 0) continue; // behind them
             // Their feet anywhere in its box grown by theirs puts the two boxes together.
@@ -133,7 +134,7 @@ public final class ClosingLine {
             cancel(player, state);
             return;
         }
-        for (LivingEntity e : player.serverLevel().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(0.35),
+        for (LivingEntity e : player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(0.35),
                 e -> e != player && e.isAlive() && !e.isSpectator() && !(e instanceof ArmorStand))) {
             arrive(player, state, state.rushSpeed); // something living in the way: stopped there
             return;
@@ -188,7 +189,7 @@ public final class ClosingLine {
         double knockback = SeveredConfig.CLOSING_CARRY.get() * speed;
         if (!CombatHelper.isBoss(target) && knockback > 0) {
             target.knockback(knockback, attacker.getX() - target.getX(), attacker.getZ() - target.getZ());
-            target.hurtMarked = true;
+            EntityCompat.markHurt(target);
         }
         Impacts.charge(target, Math.min(1.0, speed / SeveredConfig.CLOSING_SPEED.get()));
     }

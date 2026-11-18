@@ -1,0 +1,8 @@
+{
+  "order": 5,
+  "amount": 1,
+  "icon": "kegare:slot/eyes",
+  "validator_predicates": [
+    "trinkets:tag"
+  ]
+}

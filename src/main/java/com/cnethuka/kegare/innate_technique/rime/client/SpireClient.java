@@ -1,6 +1,7 @@
 package com.cnethuka.kegare.innate_technique.rime.client;
 
 import com.cnethuka.kegare.client.visual.ClientVisuals;
+import com.cnethuka.kegare.client.visual.PlayerLayers;
 import com.cnethuka.kegare.config.KegareClientConfig;
 import com.cnethuka.kegare.config.KegareClientConfig.VfxQuality;
 import com.cnethuka.kegare.innate_technique.rime.GlacialSpireEntity;
@@ -17,14 +18,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.renderer.entity.player.PlayerRenderer;
-import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -210,26 +210,25 @@ public final class SpireClient {
     // ---------------------------------------------------------------------------------------------- the raised fist
 
     static void addLayers(EntityRenderersEvent.AddLayers event) {
-        for (PlayerSkin.Model skin : event.getSkins()) {
-            if (event.getSkin(skin) instanceof PlayerRenderer renderer) renderer.addLayer(new Layer(renderer));
-        }
+        PlayerLayers.add(event, Layer::new);
     }
 
     /** Remembers where a charging player's fist is drawn (others, and you in third person): the frost gathers there. */
-    static final class Layer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
-        Layer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) {
+    static final class Layer extends RenderLayer<AvatarRenderState, PlayerModel> {
+        Layer(RenderLayerParent<AvatarRenderState, PlayerModel> parent) {
             super(parent);
         }
 
         @Override
-        public void render(PoseStack pose, MultiBufferSource buffers, int light, AbstractClientPlayer player, float limbSwing, float limbSwingAmount,
-                           float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
-            if (ClientVisuals.loopTime(player, CHARGE, partialTick) == null) return;
-            boolean left = player.getMainArm() == HumanoidArm.LEFT;
+        public void submit(PoseStack pose, SubmitNodeCollector collector, int light, AvatarRenderState state, float yRot, float xRot) {
+            Minecraft mc = Minecraft.getInstance();
+            if (!(PlayerLayers.entity(state) instanceof AbstractClientPlayer player)) return;
+            if (ClientVisuals.loopTime(player, CHARGE, mc.getDeltaTracker().getGameTimeDeltaPartialTick(false)) == null) return;
+            boolean left = state.mainArm == HumanoidArm.LEFT;
             pose.pushPose();
             (left ? getParentModel().leftArm : getParentModel().rightArm).translateAndRotate(pose);
             pose.translate((left ? 1f : -1f) / 16f, 11f / 16f, 0f); // the fist, at the end of the arm
-            Vec3 cam = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+            Vec3 cam = mc.gameRenderer.getMainCamera().position();
             Vector3f p = new Matrix4f().translation((float) cam.x, (float) cam.y, (float) cam.z).mul(pose.last().pose())
                     .transformPosition(new Vector3f());
             pose.popPose();

@@ -27,7 +27,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -60,7 +60,7 @@ class StandstillHitsTest {
         InnateTechniqueService.setInnateTechnique(p, TimeManipulation.TIME_MANIPULATION.get());
         MaliceService.refill(p);
         p.setHealth(p.getMaxHealth());
-        p.moveTo(0.5, Y, 0.5, -90f, 0f); // facing +X
+        p.snapTo(0.5, Y, 0.5, -90f, 0f); // facing +X
         p.setOnGround(true);
         ItemStack sword = new ItemStack(Items.IRON_SWORD);
         p.setItemInHand(InteractionHand.MAIN_HAND, sword);
@@ -69,8 +69,8 @@ class StandstillHitsTest {
     }
 
     private static Mob mob(ServerLevel level, EntityType<? extends Mob> type, double x, double z, List<Mob> all) {
-        Mob m = type.create(level);
-        m.moveTo(x, Y, z, 90f, 0f);
+        Mob m = type.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        m.snapTo(x, Y, z, 90f, 0f);
         m.setNoGravity(true);
         m.setNoAi(true);
         level.addFreshEntity(m);
@@ -103,7 +103,7 @@ class StandstillHitsTest {
                 for (int i = 0; i < mobs.size(); i++) {
                     Mob m = mobs.get(i);
                     before[i] = m.getHealth();
-                    caster.moveTo(0.5, Y, m.getZ(), -90f, 0f);
+                    caster.snapTo(0.5, Y, m.getZ(), -90f, 0f);
                     charged(caster);
                     caster.attack(m); // full charge
                     caster.attack(m); // straight after: partial
@@ -148,7 +148,7 @@ class StandstillHitsTest {
                 float mainBefore = main.getHealth(), besideBefore = beside.getHealth();
                 charged(caster);
                 String why = "ground " + caster.onGround() + " sprint " + caster.isSprinting() + " charge " + caster.getAttackStrengthScale(0.5f)
-                        + " walk " + (caster.walkDist - caster.walkDistO) + " fall " + caster.fallDistance + " stop " + TimeStops.active(level)
+                        + " fall " + caster.fallDistance + " stop " + TimeStops.active(level)
                         + " frozen " + TimeStops.frozen(main) + "/" + TimeStops.frozen(beside);
                 caster.attack(main); // on the ground, fully charged, a sword: a sweep
                 assertEquals(besideBefore, beside.getHealth(), 1.0e-4, "held, not dealt");
@@ -207,13 +207,13 @@ class StandstillHitsTest {
                 net.minecraft.world.entity.monster.MagmaCube cube = (net.minecraft.world.entity.monster.MagmaCube) mob(level, EntityType.MAGMA_CUBE, 0.5, 1.6, all);
                 cube.setSize(2, true);
                 cube.setNoAi(false); // a slime only hurts what it touches with its AI on
-                cube.moveTo(0.5, Y, 1.6, 0f, 0f);
+                cube.snapTo(0.5, Y, 1.6, 0f, 0f);
                 net.minecraft.world.entity.monster.EnderMan enderman = (net.minecraft.world.entity.monster.EnderMan) mob(level, EntityType.ENDERMAN, 4.5, 4.5, all);
                 CastManager.handleIntent(caster, CastIntent.ULTIMATE_PRESS);
                 assertTrue(TimeStops.frozen(zombie), "setup: frozen");
                 float health = caster.getHealth();
-                assertFalse(caster.hurt(caster.damageSources().mobAttack(zombie), 3f), "its blow, mid-swing as time stopped: nothing");
-                assertFalse(caster.hurt(caster.damageSources().thorns(zombie), 2f), "the thorns on its armour: nothing");
+                assertFalse(caster.hurtServer((net.minecraft.server.level.ServerLevel) caster.level(), caster.damageSources().mobAttack(zombie), 3f), "its blow, mid-swing as time stopped: nothing");
+                assertFalse(caster.hurtServer((net.minecraft.server.level.ServerLevel) caster.level(), caster.damageSources().thorns(zombie), 2f), "the thorns on its armour: nothing");
                 cube.playerTouch(caster);
                 assertEquals(health, caster.getHealth(), 1.0e-4, "the caster untouched, even walking into a frozen magma cube");
                 assertTrue(com.cnethuka.kegare.platform.event.EventHooks.onEnderTeleport(enderman, 20.5, Y, 20.5).isCanceled(), "a frozen enderman never teleports");
@@ -225,7 +225,7 @@ class StandstillHitsTest {
                 cube.playerTouch(caster);
                 assertTrue(caster.getHealth() < now, "the same touch hurts once time runs again (so the check above meant something)");
                 caster.invulnerableTime = 0;
-                assertTrue(caster.hurt(caster.damageSources().mobAttack(zombie), 3f), "and so does its blow");
+                assertTrue(caster.hurtServer((net.minecraft.server.level.ServerLevel) caster.level(), caster.damageSources().mobAttack(zombie), 3f), "and so does its blow");
             } finally {
                 all.forEach(Mob::discard);
                 TimeStops.clear();

@@ -1,5 +1,6 @@
 package com.cnethuka.kegare.innate_technique.time_manipulation;
 
+import com.cnethuka.kegare.platform.EntityCompat;
 import com.cnethuka.kegare.sound.KegareSounds;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -64,7 +65,7 @@ public final class StasisFields {
     private StasisFields() {}
 
     static Field open(ServerPlayer caster, Vec3 centre, double radius, int ticks) {
-        ServerLevel level = caster.serverLevel();
+        ServerLevel level = caster.level();
         Field field = new Field(nextId++, level, centre, radius, level.getGameTime() + ticks, caster);
         FIELDS.add(field);
         PacketDistributor.sendToPlayersNear(level, null, centre.x, centre.y, centre.z, 96,
@@ -87,7 +88,7 @@ public final class StasisFields {
             AABB box = new AABB(f.centre, f.centre).inflate(f.radius);
             for (Entity e : level.getEntities((Entity) null, box, e -> e.isAlive() && f.contains(e.getBoundingBox().getCenter()))) {
                 if (e instanceof LivingEntity living && !TimeTargeting.immune(living) && !e.isSpectator()) {
-                    living.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, SLOW_TICKS, TimeConfig.STASIS_SLOWNESS.get(),
+                    living.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, SLOW_TICKS, TimeConfig.STASIS_SLOWNESS.get(),
                             true, false, true), f.caster);
                 } else if (e instanceof Projectile p && !SLOWED.containsKey(p) && p.getDeltaMovement().lengthSqr() > 1.0e-4) {
                     SLOWED.put(p, p.getDeltaMovement());
@@ -111,8 +112,7 @@ public final class StasisFields {
             boolean inside = false;
             for (Field f : FIELDS) if (f.level == level && f.contains(p.position())) inside = true;
             p.setDeltaMovement(inside ? e.getValue().scale(TimeConfig.STASIS_PROJECTILE_SPEED.get()) : e.getValue());
-            p.hasImpulse = true;
-            p.hurtMarked = true;
+            EntityCompat.markHurt(p);
             if (!inside) it.remove();
         }
     }

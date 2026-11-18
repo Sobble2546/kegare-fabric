@@ -22,12 +22,12 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.Pig;
+import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -72,19 +72,19 @@ class SeveredBodyTest {
         TestServer.onServerThread(server, () -> {
             TestServer.ensureOverworld(server);
             ServerLevel level = server.overworld();
-            server.setPvpAllowed(true);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
             try {
                 ServerPlayer s = severed(server, level, "sev_body");
                 ServerPlayer m = maliceUser(server, level, "sev_body_other");
-                s.moveTo(0.5, Y, 0.5);
-                m.moveTo(2.5, Y, 0.5);
+                s.snapTo(0.5, Y, 0.5);
+                m.snapTo(2.5, Y, 0.5);
                 assertTrue(Severed.is(s) && !Severed.is(m), "setup");
                 float strength = SeveredConfig.MELEE_DAMAGE.get().floatValue();
 
                 // Strength: a Severed hand hits harder; a Malice user's doesn't; a technique source isn't melee.
                 assertEquals(4f * strength, took(m, s.damageSources().playerAttack(s), 4f), EPS, "Severed melee");
                 ServerPlayer m2 = maliceUser(server, level, "sev_body_third");
-                m2.moveTo(4.5, Y, 0.5);
+                m2.snapTo(4.5, Y, 0.5);
                 assertEquals(4f, took(m, m.damageSources().playerAttack(m2), 4f), EPS, "a Malice user's hit is plain");
 
                 // Toughness: physical, technique and falls each have their share; the void, /kill and starving are untouched.
@@ -109,30 +109,30 @@ class SeveredBodyTest {
         TestServer.onServerThread(server, () -> {
             TestServer.ensureOverworld(server);
             ServerLevel level = server.overworld();
-            boolean regen = level.getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION);
+            boolean regen = level.getGameRules().get(GameRules.NATURAL_HEALTH_REGENERATION);
             try {
                 ServerPlayer s = severed(server, level, "sev_stamina");
                 ServerPlayer m = maliceUser(server, level, "sev_stamina_other");
                 float share = SeveredConfig.EXHAUSTION.get().floatValue();
-                for (ServerPlayer p : List.of(s, m)) p.getFoodData().setExhaustion(0f);
+                for (ServerPlayer p : List.of(s, m)) TestServer.setExhaustion(p.getFoodData(), 0f);
                 s.causeFoodExhaustion(1f);
                 m.causeFoodExhaustion(1f);
-                assertEquals(share, s.getFoodData().getExhaustionLevel(), EPS, "sprinting, jumping, attacking, mining: less");
-                assertEquals(1f, m.getFoodData().getExhaustionLevel(), EPS, "a Malice user feels it all");
+                assertEquals(share, TestServer.exhaustion(s.getFoodData()), EPS, "sprinting, jumping, attacking, mining: less");
+                assertEquals(1f, TestServer.exhaustion(m.getFoodData()), EPS, "a Malice user feels it all");
 
                 // Healing from a full food bar: the saturation it burns costs them less too.
-                level.getGameRules().getRule(GameRules.RULE_NATURAL_REGENERATION).set(true, server);
+                level.getGameRules().set(GameRules.NATURAL_HEALTH_REGENERATION, true, server);
                 for (ServerPlayer p : List.of(s, m)) {
                     p.getFoodData().setFoodLevel(20);
                     p.getFoodData().setSaturation(5f);
-                    p.getFoodData().setExhaustion(0f);
+                    TestServer.setExhaustion(p.getFoodData(), 0f);
                     p.setHealth(10f);
                     for (int i = 0; i < 10; i++) p.getFoodData().tick(p);
                 }
                 assertTrue(s.getHealth() > 10f && m.getHealth() > 10f, "both healed: healing stays vanilla");
-                assertEquals(m.getFoodData().getExhaustionLevel() * share, s.getFoodData().getExhaustionLevel(), EPS, "healing's drain, cut");
+                assertEquals(TestServer.exhaustion(m.getFoodData()) * share, TestServer.exhaustion(s.getFoodData()), EPS, "healing's drain, cut");
             } finally {
-                level.getGameRules().getRule(GameRules.RULE_NATURAL_REGENERATION).set(regen, server);
+                level.getGameRules().set(GameRules.NATURAL_HEALTH_REGENERATION, regen, server);
                 TestServer.removePlayers(server);
             }
         });
@@ -144,22 +144,22 @@ class SeveredBodyTest {
             TestServer.ensureOverworld(server);
             ServerLevel level = server.overworld();
             level.getHeight(Heightmap.Types.MOTION_BLOCKING, 0, 0);
-            Pig near = EntityType.PIG.create(level), hidden = EntityType.PIG.create(level), far = EntityType.PIG.create(level);
-            ArmorStand stand = EntityType.ARMOR_STAND.create(level);
+            Pig near = EntityType.PIG.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND), hidden = EntityType.PIG.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND), far = EntityType.PIG.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            ArmorStand stand = EntityType.ARMOR_STAND.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             try {
                 ServerPlayer s = severed(server, level, "sev_senses");
                 ServerPlayer m = maliceUser(server, level, "sev_senses_other");
                 ServerPlayer watcher = maliceUser(server, level, "sev_senses_spectator");
                 double range = SeveredConfig.SENSES_RANGE.get();
-                s.moveTo(0.5, Y, 0.5);
-                m.moveTo(6.5, Y, 0.5);
-                watcher.moveTo(3.5, Y, 3.5);
+                s.snapTo(0.5, Y, 0.5);
+                m.snapTo(6.5, Y, 0.5);
+                watcher.snapTo(3.5, Y, 3.5);
                 watcher.setGameMode(GameType.SPECTATOR);
-                near.moveTo(0.5, Y, 8.5);
-                hidden.moveTo(7.5, Y, 7.5);
+                near.snapTo(0.5, Y, 8.5);
+                hidden.snapTo(7.5, Y, 7.5);
                 hidden.setInvisible(true); // what Invisibility sets (the world doesn't tick here to set it)
-                far.moveTo(0.5, Y, 0.5 + range + 2);
-                stand.moveTo(2.5, Y, 2.5);
+                far.snapTo(0.5, Y, 0.5 + range + 2);
+                stand.snapTo(2.5, Y, 2.5);
                 for (Entity e : List.of(near, hidden, far, stand)) {
                     e.setNoGravity(true);
                     level.addFreshEntity(e);
@@ -174,9 +174,9 @@ class SeveredBodyTest {
                 assertFalse(sensed.contains(s), "not themself");
                 assertEquals(m, sensed.get(0), "nearest first");
 
-                near.moveTo(0.5, Y, 12.5); // moving: still there
+                near.snapTo(0.5, Y, 12.5); // moving: still there
                 assertTrue(Senses.sensed(s).contains(near), "moving");
-                near.moveTo(0.5, Y, 0.5 + range + 4);
+                near.snapTo(0.5, Y, 0.5 + range + 4);
                 assertFalse(Senses.sensed(s).contains(near), "gone out of range");
 
                 assertTrue(Senses.sensed(m).isEmpty(), "never for a Malice user");

@@ -1,10 +1,10 @@
 package com.cnethuka.kegare.client.gui;
 
 import com.cnethuka.kegare.Kegare;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -27,14 +27,12 @@ public final class InkButton extends Button {
     }
 
     @Override
-    protected void renderWidget(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+    protected void renderContents(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         boolean lit = active && isHoveredOrFocused();
-        g.setColor(1f, 1f, 1f, alpha);
-        RenderSystem.enableBlend();
-        RenderSystem.enableDepthTest();
-        g.blitSprite(!active ? DISABLED : lit ? HIGHLIGHTED : NORMAL, getX(), getY(), getWidth(), getHeight());
-        g.setColor(1f, 1f, 1f, 1f);
+        g.blitSprite(RenderPipelines.GUI_TEXTURED, !active ? DISABLED : lit ? HIGHLIGHTED : NORMAL, getX(), getY(), getWidth(), getHeight(),
+                GuiDraw.fade(alpha));
         int rgb = !active ? TEXT_DISABLED : lit ? TEXT_HIGHLIGHTED : TEXT;
-        renderString(g, Minecraft.getInstance().font, rgb | Mth.ceil(alpha * 255f) << 24);
+        g.drawCenteredString(Minecraft.getInstance().font, getMessage(), getX() + getWidth() / 2, getY() + (getHeight() - 8) / 2,
+                rgb | Mth.ceil(alpha * 255f) << 24);
     }
 }

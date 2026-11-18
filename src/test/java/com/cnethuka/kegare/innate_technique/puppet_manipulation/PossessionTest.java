@@ -28,13 +28,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import com.cnethuka.kegare.platform.NeoForge;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 import com.cnethuka.kegare.platform.event.entity.EntityTravelToDimensionEvent;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -80,7 +80,7 @@ class PossessionTest {
                 assertEquals(3f, p.getHealth(), EPS, "a puppet doesn't heal");
 
                 // R returns: everything back.
-                p.moveTo(p.getX() + 3, Y, p.getZ(), p.getYRot(), 0f);
+                p.snapTo(p.getX() + 3, Y, p.getZ(), p.getYRot(), 0f);
                 Vec3 leftAt = p.position();
                 p.setHealth(2f);
                 CastManager.handleIntent(p, CastIntent.SPECIAL_PRESS);
@@ -138,10 +138,10 @@ class PossessionTest {
         TestServer.onServerThread(server, () -> {
             ServerLevel level = setUp(server);
             ServerPlayer p = owner(server, level, "possess_push");
-            net.minecraft.world.entity.animal.Cow cow = new net.minecraft.world.entity.animal.Cow(net.minecraft.world.entity.EntityType.COW, level);
+            net.minecraft.world.entity.animal.cow.Cow cow = new net.minecraft.world.entity.animal.cow.Cow(net.minecraft.world.entity.EntityType.COW, level);
             try {
                 PuppetEntity puppet = puppetInFront(server, p, PuppetConfig.ticks(PuppetConfig.CREATION_HALF_CHARGE));
-                cow.moveTo(puppet.getX() + 0.2, puppet.getY(), puppet.getZ(), 0f, 0f);
+                cow.snapTo(puppet.getX() + 0.2, puppet.getY(), puppet.getZ(), 0f, 0f);
                 level.addFreshEntity(cow);
 
                 Possession.possess(p, puppet);
@@ -153,7 +153,7 @@ class PossessionTest {
 
                 Possession.release(p, Possession.Return.RETURNED);
                 assertFalse(puppet.isPossessed(), "setup: out again");
-                cow.moveTo(puppet.getX() + 0.2, puppet.getY(), puppet.getZ(), 0f, 0f);
+                cow.snapTo(puppet.getX() + 0.2, puppet.getY(), puppet.getZ(), 0f, 0f);
                 cow.setDeltaMovement(Vec3.ZERO);
                 puppet.pushEntities();
                 assertTrue(cow.getDeltaMovement().horizontalDistance() > 0, "back out, it's a body like any other");
@@ -168,7 +168,7 @@ class PossessionTest {
     void snapBacks(MinecraftServer server) throws Exception {
         TestServer.onServerThread(server, () -> {
             ServerLevel level = setUp(server);
-            server.setPvpAllowed(true);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
             ServerPlayer p = damageable(server, "possess_snap");
             level.addNewPlayer(p);
             prepare(p);
@@ -181,7 +181,7 @@ class PossessionTest {
                 CastManager.handleIntent(p, CastIntent.SPECIAL_PRESS);
                 assertTrue(Possession.isPossessing(p));
                 PuppetShellEntity shell = shellOf(level, p);
-                assertTrue(shell.hurt(level.damageSources().playerAttack(attacker), 3f), "the hit landed");
+                assertTrue(shell.hurtServer((net.minecraft.server.level.ServerLevel) shell.level(), level.damageSources().playerAttack(attacker), 3f), "the hit landed");
                 assertFalse(Possession.isPossessing(p), "snapped back");
                 assertEquals(12f, p.getHealth(), EPS, "and took the hit");
                 assertTrue(puppet.isAlive(), "the puppet is fine");
@@ -200,7 +200,7 @@ class PossessionTest {
                 assertFalse(Possession.isPossessing(p), "snapped back");
                 assertEquals(12f, p.getHealth(), EPS, "with their real health");
                 assertTrue(puppet.isRemoved(), "the puppet is destroyed");
-                assertTrue(p.hasEffect(MobEffects.CONFUSION), "backlash: nausea");
+                assertTrue(p.hasEffect(MobEffects.NAUSEA), "backlash: nausea");
                 assertTrue(CombatHelper.isStunned(p), "a stun");
                 assertEquals(malice - PuppetConfig.BACKLASH_MALICE.get(), PuppetTest.malice(p), EPS, "and Malice lost");
                 CombatHelper.clearStun(p);
@@ -212,14 +212,14 @@ class PossessionTest {
                 InnateTechniqueService.clearCooldowns(p);
                 CastManager.handleIntent(p, CastIntent.SPECIAL_PRESS);
                 assertTrue(Possession.isPossessing(p));
-                p.moveTo(p.getX() + PuppetConfig.POSSESS_MAX_DISTANCE.get() + 2, Y, p.getZ());
+                p.snapTo(p.getX() + PuppetConfig.POSSESS_MAX_DISTANCE.get() + 2, Y, p.getZ());
                 Possession.tick(p);
                 assertFalse(Possession.isPossessing(p), "too far: snapped back");
                 assertTrue(second.isAlive(), "no harm done to the puppet");
 
                 // A dimension change: back in the body first.
                 InnateTechniqueService.clearCooldowns(p);
-                second.moveTo(p.getX() + 4, Y, p.getZ(), 90f, 0f); // it was left where they wandered off to
+                second.snapTo(p.getX() + 4, Y, p.getZ(), 90f, 0f); // it was left where they wandered off to
                 aimAt(p, second);
                 CastManager.handleIntent(p, CastIntent.SPECIAL_PRESS);
                 assertTrue(Possession.isPossessing(p));
@@ -249,9 +249,8 @@ class PossessionTest {
             ServerPlayer p = damageable(server, "possess_death");
             level.addNewPlayer(p);
             prepare(p);
-            GameRules.BooleanValue keep = server.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY);
-            boolean kept = keep.get();
-            keep.set(true, server);
+            boolean kept = server.overworld().getGameRules().get(GameRules.KEEP_INVENTORY);
+            server.overworld().getGameRules().set(GameRules.KEEP_INVENTORY, true, server);
             try {
                 // A crash mid-possession: the shell and the puppet's hiding are gone, only the saved record is left.
                 p.getInventory().add(new ItemStack(Items.APPLE, 5));
@@ -278,7 +277,7 @@ class PossessionTest {
                 assertTrue(p.isDeadOrDying(), "and died");
                 assertEquals(5, count(p, Items.APPLE), "with their own inventory (keepInventory here)");
             } finally {
-                keep.set(kept, server);
+                server.overworld().getGameRules().set(GameRules.KEEP_INVENTORY, kept, server);
                 cleanUp(server, level, p);
             }
         });
@@ -302,7 +301,7 @@ class PossessionTest {
         BirthService.rebirth(p, OptionalInt.of(1000));
         InnateTechniqueService.setInnateTechnique(p, PuppetManipulation.PUPPET_MANIPULATION.get());
         InnateTechniqueService.select(p, 0);
-        p.moveTo(0.5, Y, 0.5, -90f, 0f);
+        p.snapTo(0.5, Y, 0.5, -90f, 0f);
         p.setYHeadRot(-90f);
         MaliceService.refill(p);
     }
@@ -312,7 +311,7 @@ class PossessionTest {
         PuppetEntity puppet = PuppetTest.create(server, p, chargeTicks);
         InnateTechniqueService.clearCooldowns(p);
         MaliceService.refill(p);
-        puppet.moveTo(p.getX() + 4, p.getY(), p.getZ(), 90f, 0f);
+        puppet.snapTo(p.getX() + 4, p.getY(), p.getZ(), 90f, 0f);
         aimAt(p, puppet);
         return puppet;
     }

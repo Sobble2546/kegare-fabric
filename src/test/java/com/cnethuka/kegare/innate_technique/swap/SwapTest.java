@@ -25,10 +25,10 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.Pig;
+import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -79,7 +79,7 @@ class SwapTest {
 
             // Nobody in sight: fizzle, nothing paid, no cooldown.
             InnateTechniqueService.clearCooldowns(caster);
-            caster.moveTo(caster.getX(), caster.getY(), caster.getZ(), caster.getYRot() + 90f, 0f);
+            caster.snapTo(caster.getX(), caster.getY(), caster.getZ(), caster.getYRot() + 90f, 0f);
             caster.setYHeadRot(caster.getYRot());
             before = malice(caster);
             CastManager.handleIntent(caster, CastIntent.CAST_PRESS);
@@ -314,7 +314,7 @@ class SwapTest {
 
             // Nothing to swap: free fizzle. Infinite effects never count.
             face(caster, target);
-            caster.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, MobEffectInstance.INFINITE_DURATION, 3));
+            caster.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, MobEffectInstance.INFINITE_DURATION, 3));
             double before = malice(caster);
             CastManager.handleIntent(caster, CastIntent.CAST_PRESS);
             assertEquals(before, malice(caster), EPS, "nothing to swap: free");
@@ -324,18 +324,18 @@ class SwapTest {
             // The caster's worst negative goes; the target's strongest positive comes back (level and time kept).
             caster.addEffect(new MobEffectInstance(MobEffects.POISON, 200, 1));
             caster.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 400, 0));
-            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 300, 0));
-            target.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 100, 2));
+            target.addEffect(new MobEffectInstance(MobEffects.SPEED, 300, 0));
+            target.addEffect(new MobEffectInstance(MobEffects.STRENGTH, 100, 2));
             CastManager.handleIntent(caster, CastIntent.CAST_PRESS);
             assertEquals(before - SwapConfig.EXCHANGE_COST.get(), malice(caster), EPS, "cost");
             assertFalse(caster.hasEffect(MobEffects.POISON), "gave Poison away");
             assertTrue(caster.hasEffect(MobEffects.WEAKNESS), "kept the lesser negative");
             assertEquals(1, target.getEffect(MobEffects.POISON).getAmplifier(), "Poison II carried over");
             assertEquals(200, target.getEffect(MobEffects.POISON).getDuration(), "duration carried over");
-            assertFalse(target.hasEffect(MobEffects.DAMAGE_BOOST), "Strength taken");
-            assertTrue(target.hasEffect(MobEffects.MOVEMENT_SPEED), "the lesser positive stays");
-            assertEquals(2, caster.getEffect(MobEffects.DAMAGE_BOOST).getAmplifier(), "Strength III carried over");
-            assertEquals(100, caster.getEffect(MobEffects.DAMAGE_BOOST).getDuration());
+            assertFalse(target.hasEffect(MobEffects.STRENGTH), "Strength taken");
+            assertTrue(target.hasEffect(MobEffects.SPEED), "the lesser positive stays");
+            assertEquals(2, caster.getEffect(MobEffects.STRENGTH).getAmplifier(), "Strength III carried over");
+            assertEquals(100, caster.getEffect(MobEffects.STRENGTH).getDuration());
 
             // Momentum Exchange: velocities and fall distances trade; nobody moves.
             InnateTechniqueService.clearCooldowns(caster);
@@ -377,7 +377,7 @@ class SwapTest {
 
             // Too close: free fizzle.
             face(caster, target);
-            target.moveTo(caster.getX() + 2, caster.getY(), caster.getZ(), 90f, 0f);
+            target.snapTo(caster.getX() + 2, caster.getY(), caster.getZ(), 90f, 0f);
             double before = malice(caster);
             CastManager.handleIntent(caster, CastIntent.ULTIMATE_PRESS);
             assertEquals(before, malice(caster), EPS, "too close: free");
@@ -436,12 +436,12 @@ class SwapTest {
             level.addNewPlayer(caster);
             level.addNewPlayer(target);
             level.addNewPlayer(third);
-            boolean pvp = server.isPvpAllowed();
-            server.setPvpAllowed(true); // the hits below are player against player
+            boolean pvp = server.overworld().getGameRules().get(net.minecraft.world.level.gamerules.GameRules.PVP);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server); // the hits below are player against player
             try {
             BirthService.rebirth(caster, OptionalInt.of(5000));
             InnateTechniqueService.setInnateTechnique(caster, Swap.SWAP.get());
-            third.moveTo(4.5, Y, 6.5, 0f, 0f); // off to the side, out of the line of sight
+            third.snapTo(4.5, Y, 6.5, 0f, 0f); // off to the side, out of the line of sight
 
             // Switcheroo: a position swap with a player.
             InnateTechniqueService.select(caster, 0);
@@ -517,7 +517,7 @@ class SwapTest {
             assertTrue(TestServer.hasAdvancement(server, caster, SwapAdvancements.IDENTITY_CRISIS), "identity crisis");
             Disguises.endInvolving(caster);
             } finally {
-                server.setPvpAllowed(pvp);
+                server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, pvp, server);
                 for (ServerPlayer p : new ServerPlayer[] {caster, target, third}) level.removePlayerImmediately(p, Entity.RemovalReason.DISCARDED);
             }
         });
@@ -533,15 +533,15 @@ class SwapTest {
             ServerPlayer player = damageable(server, "swap_mob_player");
             level.addNewPlayer(caster);
             level.addNewPlayer(player);
-            Pig pig = EntityType.PIG.create(level);
-            boolean pvp = server.isPvpAllowed();
-            server.setPvpAllowed(true);
+            Pig pig = EntityType.PIG.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            boolean pvp = server.overworld().getGameRules().get(net.minecraft.world.level.gamerules.GameRules.PVP);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
             try {
             BirthService.rebirth(caster, OptionalInt.of(5000));
             InnateTechniqueService.setInnateTechnique(caster, Swap.SWAP.get());
-            player.moveTo(30.5, Y, 30.5, 0f, 0f); // out of the way
+            player.snapTo(30.5, Y, 30.5, 0f, 0f); // out of the way
             pig.setNoAi(true);
-            pig.moveTo(8.5, Y, 0.5, 90f, 0f);
+            pig.snapTo(8.5, Y, 0.5, 90f, 0f);
             level.addFreshEntity(pig);
 
             // Positions takes a mob: places and facing trade, the pig's fall distance resets; Switcheroo counts it.
@@ -574,7 +574,7 @@ class SwapTest {
             CastManager.handleIntent(caster, CastIntent.SPECIAL_PRESS);
             assertTrue(Switchback.isPending(caster), "switchback on a mob");
             pig.invulnerableTime = 0;
-            assertTrue(pig.hurt(caster.damageSources().playerAttack(caster), 1f), "setup: hit the pig");
+            assertTrue(pig.hurtServer((net.minecraft.server.level.ServerLevel) pig.level(), caster.damageSources().playerAttack(caster), 1f), "setup: hit the pig");
             assertFalse(TestServer.hasAdvancement(server, caster, SwapAdvancements.ROUND_TRIP), "round trip (mastery): hitting a mob doesn't count");
             TestServer.advanceGameTime(server, SwapConfig.ticks(SwapConfig.SWITCHBACK_DELAY));
             Switchback.tick(server);
@@ -595,10 +595,10 @@ class SwapTest {
             caster.removeAllEffects();
             pig.removeAllEffects();
             caster.addEffect(new MobEffectInstance(MobEffects.POISON, 200, 0));
-            pig.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 200, 1));
+            pig.addEffect(new MobEffectInstance(MobEffects.SPEED, 200, 1));
             CastManager.handleIntent(caster, CastIntent.CAST_PRESS);
             assertTrue(pig.hasEffect(MobEffects.POISON), "the pig got the Poison");
-            assertTrue(caster.hasEffect(MobEffects.MOVEMENT_SPEED), "the caster got the pig's Speed");
+            assertTrue(caster.hasEffect(MobEffects.SPEED), "the caster got the pig's Speed");
             InnateTechniqueService.clearCooldowns(caster);
             facePig(caster, pig);
             pig.setDeltaMovement(new Vec3(0, -1.2, 0));
@@ -637,9 +637,9 @@ class SwapTest {
             assertFalse(Disguises.isDisguised(caster));
 
             // Wrong Target and There Are Two of You are mastery: a MOB hitting the disguised player doesn't count.
-            pig.moveTo(8.5, Y, 6.5, 0f, 0f); // out of the line of sight
-            player.moveTo(8.5, Y, 0.5, 90f, 0f);
-            caster.moveTo(0.5, Y, 0.5, -90f, 0f);
+            pig.snapTo(8.5, Y, 6.5, 0f, 0f); // out of the line of sight
+            player.snapTo(8.5, Y, 0.5, 90f, 0f);
+            caster.snapTo(0.5, Y, 0.5, -90f, 0f);
             caster.setYHeadRot(-90f);
             MaliceService.refill(caster);
             CastManager.handleIntent(caster, CastIntent.CAST_PRESS); // Awareness with the player
@@ -656,11 +656,11 @@ class SwapTest {
             Disguises.endInvolving(caster);
 
             // Never targets: bosses and armor stands.
-            assertFalse(SwapTargeting.swappableMob(EntityType.WITHER.create(level)), "bosses");
-            assertFalse(SwapTargeting.swappableMob(EntityType.ARMOR_STAND.create(level)), "armor stands");
+            assertFalse(SwapTargeting.swappableMob(EntityType.WITHER.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND)), "bosses");
+            assertFalse(SwapTargeting.swappableMob(EntityType.ARMOR_STAND.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND)), "armor stands");
             assertTrue(SwapTargeting.swappableMob(pig));
             } finally {
-                server.setPvpAllowed(pvp);
+                server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, pvp, server);
                 pig.discard();
                 for (ServerPlayer p : new ServerPlayer[] {caster, player}) level.removePlayerImmediately(p, Entity.RemovalReason.DISCARDED);
             }
@@ -672,43 +672,27 @@ class SwapTest {
         clearSpawnProtection(victim);
         victim.invulnerableTime = 0;
         victim.setHealth(victim.getMaxHealth());
-        assertTrue(victim.hurt(attacker.damageSources().mobAttack(attacker), 1f), "setup: the mob's hit landed");
+        assertTrue(victim.hurtServer((net.minecraft.server.level.ServerLevel) victim.level(), attacker.damageSources().mobAttack(attacker), 1f), "setup: the mob's hit landed");
     }
 
     /** The caster 8 blocks from the pig, looking down at it (a level look from eye height passes over a pig). */
     static void facePig(ServerPlayer caster, Pig pig) {
-        caster.moveTo(0.5, Y, 0.5, -90f, 10f);
+        caster.snapTo(0.5, Y, 0.5, -90f, 10f);
         caster.setYHeadRot(-90f);
-        pig.moveTo(8.5, Y, 0.5, 90f, 0f);
+        pig.snapTo(8.5, Y, 0.5, 90f, 0f);
         MaliceService.refill(caster);
     }
 
-    /** A test player with real advancements that can be hurt (NeoForge's fake players can't). */
+    /** A test player with real advancements that can be hurt (Fabric API's fake players can't). */
     static ServerPlayer damageable(MinecraftServer server, String name) {
-        UUID uuid = UUID.nameUUIDFromBytes(("kegare-test:" + name).getBytes(StandardCharsets.UTF_8));
-        return new FakePlayer(server.overworld(), new GameProfile(uuid, name)) {
-            @Override
-            public boolean isFakePlayer() {
-                return false;
-            }
-
-            @Override
-            public boolean isInvulnerableTo(DamageSource source) {
-                return false;
-            }
-
-            @Override
-            public boolean canHarmPlayer(net.minecraft.world.entity.player.Player other) {
-                return true; // FakePlayer refuses all PvP; these stand in for real players
-            }
-        };
+        return TestServer.damageable(server, name);
     }
 
     static void hit(ServerPlayer attacker, ServerPlayer victim) {
         clearSpawnProtection(victim);
         victim.invulnerableTime = 0;
         victim.setHealth(victim.getMaxHealth());
-        assertTrue(victim.hurt(attacker.damageSources().playerAttack(attacker), 1f), "setup: the hit landed");
+        assertTrue(victim.hurtServer((net.minecraft.server.level.ServerLevel) victim.level(), attacker.damageSources().playerAttack(attacker), 1f), "setup: the hit landed");
     }
 
     /** A new player is spawn-protected for 3 s, and tests never tick it down. */
@@ -717,6 +701,8 @@ class SwapTest {
             java.lang.reflect.Field spawnProtection = ServerPlayer.class.getDeclaredField("spawnInvulnerableTime");
             spawnProtection.setAccessible(true);
             spawnProtection.setInt(victim, 0);
+        } catch (NoSuchFieldException e) {
+            // 1.21.11 has no spawn protection field on ServerPlayer any more: nothing to clear.
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException(e);
         }
@@ -729,8 +715,8 @@ class SwapTest {
 
     /** Puts the two players 8 blocks apart in the air, the caster looking straight at the target. */
     static void face(ServerPlayer caster, ServerPlayer target) {
-        caster.moveTo(0.5, Y, 0.5, -90f, 0f); // facing +X
-        target.moveTo(8.5, Y, 0.5, 90f, 0f);  // facing -X
+        caster.snapTo(0.5, Y, 0.5, -90f, 0f); // facing +X
+        target.snapTo(8.5, Y, 0.5, 90f, 0f);  // facing -X
         caster.setYHeadRot(-90f); // a living entity looks where its head points
         target.setYHeadRot(90f);
         MaliceService.refill(caster);

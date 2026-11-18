@@ -15,7 +15,6 @@ import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetOrder;
 import com.cnethuka.kegare.innate_technique.puppet_manipulation.StringsVariation;
 import com.cnethuka.kegare.innatetechnique.Ability;
 import com.cnethuka.kegare.network.SyncPayload;
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -114,21 +113,17 @@ final class PuppetHudClient {
         if (!hud.holds()) return;
         if (ability == PuppetManipulation.STRINGS && hud.strings().stage() == 1) {
             // A string out: the slot shows what its number key would do now, with R's variation in the corner.
-            RenderSystem.enableBlend();
-            g.blit(icon(hud.strings().cast()), x + 2, y + 2, 0f, 0f, 16, 16, 16, 16);
+            GuiDraw.blit(g, icon(hud.strings().cast()), x + 2, y + 2, 0f, 0f, 16, 16, 16, 16);
             g.renderOutline(x + 1, y + 1, size - 2, size - 2, LAVENDER);
-            g.pose().pushPose();
-            g.pose().translate(x - 1, y - 2, 0);
-            g.pose().scale(0.5f, 0.5f, 1f);
-            g.blit(icon(hud.strings().special()), 0, 0, 0f, 0f, 16, 16, 16, 16);
-            g.pose().popPose();
+            g.pose().pushMatrix();
+            g.pose().translate(x - 1, y - 2);
+            g.pose().scale(0.5f, 0.5f);
+            GuiDraw.blit(g, icon(hud.strings().special()), 0, 0, 0f, 0f, 16, 16, 16, 16);
+            g.pose().popMatrix();
         } else if (ability == PuppetManipulation.DIRECTIVE) {
-            RenderSystem.enableBlend();
             Identifier glyph = glyph(PuppetOrder.byId(hud.order()));
-            g.setColor(0f, 0f, 0f, 0.85f); // a drop shadow, so it reads over the icon
-            g.blit(glyph, x + 1, y, 0f, 0f, 7, 7, 7, 7);
-            g.setColor(1f, 1f, 1f, 1f);
-            g.blit(glyph, x, y - 1, 0f, 0f, 7, 7, 7, 7);
+            GuiDraw.blit(g, glyph, x + 1, y, 0f, 0f, 7, 7, 7, 7, GuiDraw.argb(0x000000, 0.85f)); // a drop shadow, so it reads over the icon
+            GuiDraw.blit(g, glyph, x, y - 1, 0f, 0f, 7, 7, 7, 7);
         }
     }
 }

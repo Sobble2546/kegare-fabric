@@ -14,7 +14,9 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import org.joml.Vector3f;
@@ -94,11 +96,11 @@ public final class LanceMesh {
         }
 
         public RenderType body() {
-            return RenderType.entitySolid(texture);
+            return RenderTypes.entitySolid(texture);
         }
 
         public RenderType glow() {
-            return RenderType.entityCutout(glowTexture);
+            return RenderTypes.entityCutout(glowTexture);
         }
 
         /** Draws pieces into both passes, each about the origin by its own {@code scales} entry (0 skips it). */
@@ -114,6 +116,50 @@ public final class LanceMesh {
                 Piece piece = scales[i] > 0f ? piece(names.get(i)) : null;
                 if (piece != null) emit(pose, glow, piece, scales[i], LightTexture.FULL_BRIGHT, true);
             }
+        }
+
+        /**
+         * The same, for a renderer that submits (1.21.11 draws entities from a queue): both passes are queued as geometry and drawn when the
+         * frame's entities are. The pose stack's current pose is where the pieces are about the origin.
+         */
+        public void draw(SubmitNodeCollector collector, PoseStack stack, List<String> names, float[] scales, int light) {
+            float[] sizes = scales.clone();
+            List<String> pieces = List.copyOf(names);
+            int lit = light(light);
+            collector.submitCustomGeometry(stack, body(), (pose, out) -> {
+                for (int i = 0; i < pieces.size(); i++) {
+                    Piece piece = sizes[i] > 0f ? piece(pieces.get(i)) : null;
+                    if (piece != null) emit(pose, out, piece, sizes[i], lit, false);
+                }
+            });
+            collector.submitCustomGeometry(stack, glow(), (pose, out) -> {
+                for (int i = 0; i < pieces.size(); i++) {
+                    Piece piece = sizes[i] > 0f ? piece(pieces.get(i)) : null;
+                    if (piece != null) emit(pose, out, piece, sizes[i], LightTexture.FULL_BRIGHT, true);
+                }
+            });
+        }
+
+        /**
+         * Pieces each in its own pose, both passes, queued (see above). The poses are copies already in the space of the frame's entities
+         * (the camera's position taken off, its turn not applied), so nothing more is added to them.
+         */
+        public void draw(SubmitNodeCollector collector, List<PoseStack.Pose> poses, List<String> names, int light) {
+            List<PoseStack.Pose> placed = List.copyOf(poses);
+            List<String> pieces = List.copyOf(names);
+            int lit = light(light);
+            collector.submitCustomGeometry(new PoseStack(), body(), (ignored, out) -> {
+                for (int i = 0; i < pieces.size(); i++) {
+                    Piece piece = piece(pieces.get(i));
+                    if (piece != null) emit(placed.get(i), out, piece, 1f, lit, false);
+                }
+            });
+            collector.submitCustomGeometry(new PoseStack(), glow(), (ignored, out) -> {
+                for (int i = 0; i < pieces.size(); i++) {
+                    Piece piece = piece(pieces.get(i));
+                    if (piece != null) emit(placed.get(i), out, piece, 1f, LightTexture.FULL_BRIGHT, true);
+                }
+            });
         }
 
         /** Draws pieces each in its own pose (moved, turned, scaled), both passes, with the same world light. */
@@ -261,6 +307,11 @@ public final class LanceMesh {
      */
     public static void draw(PoseStack.Pose pose, MultiBufferSource buffers, List<String> names, float[] scales, int light) {
         LANCE.draw(pose, buffers, names, scales, light);
+    }
+
+    /** The lance, submitted (see {@link Model#draw(SubmitNodeCollector, PoseStack, List, float[], int)}). */
+    public static void draw(SubmitNodeCollector collector, PoseStack stack, List<String> names, float[] scales, int light) {
+        LANCE.draw(collector, stack, names, scales, light);
     }
 
     /** One piece into one pass. Triangles go out as quads with the last corner twice, which is what an entity render type takes. */

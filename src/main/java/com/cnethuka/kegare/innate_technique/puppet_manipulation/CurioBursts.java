@@ -1,5 +1,6 @@
 package com.cnethuka.kegare.innate_technique.puppet_manipulation;
 
+import com.cnethuka.kegare.platform.EntityCompat;
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.combat.CombatHelper;
 import com.cnethuka.kegare.innatetechnique.visual.Visual;
@@ -43,7 +44,7 @@ public final class CurioBursts {
     private CurioBursts() {}
 
     public static DamageSource source(Level level, Entity puppet, @Nullable Entity owner) {
-        return new DamageSource(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(CURIO_BURST), puppet, owner);
+        return new DamageSource(level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(CURIO_BURST), puppet, owner);
     }
 
     /** The explosion effect, one size per tier. */
@@ -87,13 +88,13 @@ public final class CurioBursts {
             double d = target.position().add(0, target.getBbHeight() / 2, 0).distanceTo(center);
             if (d > radius) continue;
             float scaled = (float) (damage * (1.0 - 0.5 * d / radius));
-            if (!target.hurt(source, scaled)) continue;
+            if (!target.hurtOrSimulate(source, scaled)) continue;
             hurt.add(target);
             com.cnethuka.kegare.impact.Impacts.charge(target, tier.ordinal() / 2.0); // the puppet's charge: Tap 0, Half 0.5, Full 1
             com.cnethuka.kegare.impact.Impacts.malice(target, PuppetConfig.TIER_COST[tier.ordinal()].get()); // and the Malice it was made of
             if (!CombatHelper.isBoss(target) && knockback > 0) { // bosses: damaged, never moved
                 target.knockback(knockback * (1.0 - d / radius) + 0.1, center.x - target.getX(), center.z - target.getZ());
-                target.hurtMarked = true;
+                EntityCompat.markHurt(target);
             }
         }
         return hurt;
@@ -111,7 +112,7 @@ public final class CurioBursts {
      */
     public static int chain(ServerPlayer owner, Entity target) {
         double radius = PuppetConfig.CHAIN_RADIUS.get();
-        List<PuppetEntity> puppets = new ArrayList<>(owner.serverLevel().getEntitiesOfClass(PuppetEntity.class,
+        List<PuppetEntity> puppets = new ArrayList<>(owner.level().getEntitiesOfClass(PuppetEntity.class,
                 target.getBoundingBox().inflate(radius), p -> p.isAlive() && !p.isPossessed() && p.isOwnedBy(owner)
                         && p.distanceToSqr(target) <= radius * radius));
         puppets.sort(Comparator.comparingDouble(p -> p.distanceToSqr(target)));

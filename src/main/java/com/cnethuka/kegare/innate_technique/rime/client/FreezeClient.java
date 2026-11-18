@@ -3,12 +3,12 @@ package com.cnethuka.kegare.innate_technique.rime.client;
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.client.visual.ClientVisuals;
 import com.cnethuka.kegare.client.visual.PlayerAnimations;
+import com.cnethuka.kegare.client.visual.PlayerLayers;
 import com.cnethuka.kegare.innate_technique.rime.RimeConfig;
 import com.cnethuka.kegare.innate_technique.rime.RimeIds;
 import com.cnethuka.kegare.innatetechnique.visual.Visual;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -17,21 +17,23 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.geom.EntityModelSet;
+import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -105,9 +107,7 @@ public final class FreezeClient {
     }
 
     static void addLayers(EntityRenderersEvent.AddLayers event) {
-        for (PlayerSkin.Model model : event.getSkins()) {
-            if (event.getSkin(model) instanceof PlayerRenderer renderer) renderer.addLayer(new Layer(renderer));
-        }
+        PlayerLayers.addWithModels(event, (parent, models, slim) -> new Layer(parent, models, slim));
     }
 
     static int argb(int a, int r, int g, int b) {
@@ -195,12 +195,12 @@ public final class FreezeClient {
         for (int y = 0; y < 64; y++) {
             for (int x = 0; x < 64; x++) {
                 int c = px[y * 64 + x];
-                // NativeImage keeps ABGR.
-                image.setPixelRGBA(x, y, (c & 0xFF00FF00) | (c & 0xFF) << 16 | (c >> 16) & 0xFF);
+                // The image takes ABGR.
+                image.setPixelABGR(x, y, (c & 0xFF00FF00) | (c & 0xFF) << 16 | (c >> 16) & 0xFF);
             }
         }
         id = Kegare.id("dynamic/freeze_frost_" + key);
-        Minecraft.getInstance().getTextureManager().register(id, new DynamicTexture(image));
+        Minecraft.getInstance().getTextureManager().register(id, new DynamicTexture(() -> "kegare freeze frost " + key, image));
         TEXTURES.put(key, id);
         return id;
     }
@@ -212,13 +212,12 @@ public final class FreezeClient {
                 InputStream o = manager.getResourceOrThrow(ORDER[layout]).open();
                 NativeImage ai = NativeImage.read(a); NativeImage oi = NativeImage.read(o)) {
             int[] argb = new int[64 * 64], order = new int[64 * 64];
-            for (int y = 0; y < 64; y++) {
-                for (int x = 0; x < 64; x++) {
-                    int abgr = ai.getPixelRGBA(x, y);
-                    int alpha = abgr >>> 24;
-                    argb[y * 64 + x] = alpha == 0 ? 0 : alpha << 24 | (abgr & 0xFF) << 16 | (abgr >> 8 & 0xFF) << 8 | (abgr >> 16 & 0xFF);
-                    order[y * 64 + x] = oi.getPixelRGBA(x, y) & 0xFF;
-                }
+            int[] art = ai.getPixelsABGR(), steps = oi.getPixelsABGR();
+            for (int i = 0; i < 64 * 64; i++) {
+                int abgr = art[i];
+                int alpha = abgr >>> 24;
+                argb[i] = alpha == 0 ? 0 : alpha << 24 | (abgr & 0xFF) << 16 | (abgr >> 8 & 0xFF) << 8 | (abgr >> 16 & 0xFF);
+                order[i] = steps[i] & 0xFF;
             }
             LOADED[layout] = new Art(argb, order);
         } catch (IOException | RuntimeException e) {
@@ -254,8 +253,9 @@ public final class FreezeClient {
     private static ModelPart overArmourPart(boolean slim, int part, float armour) {
         float inflation = meshInflation(part, armour);
         return OVER.computeIfAbsent(slim + "/" + inflation + "/" + part, k -> {
+            // (the outer layer is nested in the inner part it sits on, so it is looked up by name through the whole tree)
             ModelPart p = LayerDefinition.create(PlayerModel.createMesh(new CubeDeformation(inflation), slim), 64, 64).bakeRoot()
-                    .getChild(OUTER[part]);
+                    .createPartLookup().apply(OUTER[part]);
             p.loadPose(PartPose.ZERO);
             return p;
         });
@@ -269,46 +269,61 @@ public final class FreezeClient {
         return new float[] {right ? 1f + out : -1f - out, (4f + 2f * out) / (3f + 2f * out)};
     }
 
-    static final class Layer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
-        Layer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) {
-            super(parent);
+    /**
+     * The player's own model, posed and shown the way the frost wants: no inner layer (its own cubes are skipped, the outer layer is a child
+     * of it and still drawn), and each part of the outer layer shown where no armour stands over it. It is posed when the frame is drawn
+     * (a submitted model is), so it asks for the armour then, from the entity the state came from.
+     */
+    private static final class FrostModel extends PlayerModel {
+        FrostModel(ModelPart root, boolean slim) {
+            super(root, slim);
         }
 
         @Override
-        public void render(PoseStack pose, MultiBufferSource buffers, int light, AbstractClientPlayer player, float limbSwing,
-                           float limbSwingAmount, float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
-            Float cover = COVER.get(player.getId());
-            if (cover == null || cover <= 0f || player.isInvisible()) return;
-            if (PlayerAnimations.firstPersonPass()) return; // your own arms in first person: the hat's frost would be round the camera
-            boolean slim = player.getSkin().model() == PlayerSkin.Model.SLIM;
+        public void setupAnim(AvatarRenderState state) {
+            super.setupAnim(state);
+            float[] armour = PlayerLayers.entity(state) instanceof AbstractClientPlayer player ? ArmourReach.of(player) : new float[6];
+            ModelPart[] inner = {head, body, rightArm, leftArm, rightLeg, leftLeg};
+            ModelPart[] outer = {hat, jacket, rightSleeve, leftSleeve, rightPants, leftPants};
+            for (int i = 0; i < 6; i++) {
+                inner[i].visible = true;
+                inner[i].skipDraw = true;
+                outer[i].visible = armour[i] == 0f; // where there's none, the skin's own outer layer, whatever the skin's settings
+            }
+        }
+    }
+
+    static final class Layer extends RenderLayer<AvatarRenderState, PlayerModel> {
+        private final FrostModel frost;
+        private final boolean slim;
+
+        Layer(RenderLayerParent<AvatarRenderState, PlayerModel> parent, EntityModelSet models, boolean slim) {
+            super(parent);
+            this.slim = slim;
+            this.frost = new FrostModel(models.bakeLayer(slim ? ModelLayers.PLAYER_SLIM : ModelLayers.PLAYER), slim);
+        }
+
+        @Override
+        public void submit(PoseStack pose, SubmitNodeCollector collector, int light, AvatarRenderState state, float yRot, float xRot) {
+            Float cover = COVER.get(state.id);
+            if (cover == null || cover <= 0f || state.isInvisible) return;
+            if (PlayerAnimations.firstPersonPass(state)) return; // your own arms in first person: the hat's frost would be round the camera
+            if (!(PlayerLayers.entity(state) instanceof AbstractClientPlayer player)) return;
             Identifier texture = texture(slim, quantize(cover), frozen(player));
             if (texture == null) return;
-            PlayerModel<AbstractClientPlayer> model = getParentModel();
-            VertexConsumer out = buffers.getBuffer(RenderType.entityTranslucent(texture));
+            RenderType type = RenderTypes.entityTranslucent(texture);
             int lit = BlockMarks.lit(light, GLOW);
-            float[] armour = ArmourReach.of(player);
-            // Where there's no armour, the skin's own outer layer, shown whatever the skin's settings: the frost lies over everything.
+            // The body: its outer layer in frost where there's no armour.
+            collector.submitModel(frost, state, pose, type, lit, OverlayTexture.NO_OVERLAY, -1, null, state.outlineColor, null);
+            // Over armour, the same frost on the outer layer's boxes out past it, posed by the same parts as the armour.
+            PlayerModel model = getParentModel();
             ModelPart[] inner = {model.head, model.body, model.rightArm, model.leftArm, model.rightLeg, model.leftLeg};
             ModelPart[] outer = {model.hat, model.jacket, model.rightSleeve, model.leftSleeve, model.rightPants, model.leftPants};
-            boolean[] was = new boolean[12];
-            for (int i = 0; i < 6; i++) {
-                was[i] = inner[i].visible;
-                was[i + 6] = outer[i].visible;
-                inner[i].visible = false;
-                outer[i].visible = armour[i] == 0f;
-            }
-            try {
-                model.renderToBuffer(pose, out, lit, OverlayTexture.NO_OVERLAY, -1);
-            } finally {
-                for (int i = 0; i < 6; i++) {
-                    inner[i].visible = was[i];
-                    outer[i].visible = was[i + 6];
-                }
-            }
-            // Over armour, the same frost on the outer layer's boxes out past it, posed by the same parts as the armour.
+            float[] armour = ArmourReach.of(player);
             for (int i = 0; i < 6; i++) {
                 if (armour[i] == 0f) continue;
                 pose.pushPose();
+                inner[i].translateAndRotate(pose); // the outer layer is a child of the part under it: that part's pose first
                 outer[i].translateAndRotate(pose);
                 if (slim && (i == ArmourReach.RIGHT_ARM || i == ArmourReach.LEFT_ARM)) {
                     float[] w = widen(i == ArmourReach.RIGHT_ARM, overArmour(armour[i]));
@@ -316,7 +331,7 @@ public final class FreezeClient {
                     pose.scale(w[1], 1f, 1f);
                     pose.translate(-w[0] / 16f, 0f, 0f);
                 }
-                overArmourPart(slim, i, armour[i]).render(pose, out, lit, OverlayTexture.NO_OVERLAY);
+                collector.submitModelPart(overArmourPart(slim, i, armour[i]), pose, type, lit, OverlayTexture.NO_OVERLAY, null);
                 pose.popPose();
             }
         }

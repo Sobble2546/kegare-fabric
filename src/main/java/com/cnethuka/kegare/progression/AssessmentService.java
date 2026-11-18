@@ -93,7 +93,7 @@ public final class AssessmentService {
 
     /** Records a scored fight (admin: any numbers, any opponent) and promotes if that was the last thing needed. */
     public static void addFight(ServerPlayer player, double score, double technique, UUID opponent) {
-        get(player).add(new AssessmentRules.Entry(clamp(score), clamp(technique), opponent, player.server.overworld().getGameTime()));
+        get(player).add(new AssessmentRules.Entry(clamp(score), clamp(technique), opponent, player.level().getServer().overworld().getGameTime()));
         GradeService.tryPromote(player);
         PlayerSync.markDirty(player);
     }

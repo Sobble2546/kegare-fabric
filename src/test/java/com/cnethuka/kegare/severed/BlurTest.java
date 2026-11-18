@@ -15,7 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -67,7 +67,7 @@ class BlurTest {
             level.getHeight(Heightmap.Types.MOTION_BLOCKING, 0, 0);
             try {
                 ServerPlayer s = SeveredBodyTest.severed(server, level, "blur_moved");
-                s.moveTo(0.5, Y, 0.5);
+                s.snapTo(0.5, Y, 0.5);
                 Severed.toggleBlur(s);
                 run(server, s, SeveredConfig.BLUR_SPEED.get(), 10);
                 SeveredState state = Severed.state(s);
@@ -96,7 +96,7 @@ class BlurTest {
             try {
                 ServerPlayer s = SeveredBodyTest.severed(server, level, "blur_drain");
                 ServerPlayer m = SeveredBodyTest.maliceUser(server, level, "blur_other");
-                s.moveTo(0.5, Y, 0.5);
+                s.snapTo(0.5, Y, 0.5);
                 Severed.toggleBlur(m);
                 assertFalse(Severed.blurring(m), "a Malice user's G never reaches here as Blur");
                 Severed.toggleBlur(s);
@@ -105,21 +105,21 @@ class BlurTest {
                 // Running at Blur speed burns hunger by the distance; Stamina doesn't cut it. A walk burns none of it.
                 s.getFoodData().setFoodLevel(20);
                 s.getFoodData().setSaturation(20f);
-                s.getFoodData().setExhaustion(0f);
+                TestServer.setExhaustion(s.getFoodData(), 0f);
                 double speed = SeveredConfig.BLUR_SPEED.get();
                 run(server, s, speed, 1); // the first tick only sets where they were
-                s.getFoodData().setExhaustion(0f);
+                TestServer.setExhaustion(s.getFoodData(), 0f);
                 run(server, s, speed, 10);
-                assertEquals(10 * speed * SeveredConfig.BLUR_EXHAUSTION.get(), s.getFoodData().getExhaustionLevel(), 1.0e-3, "by the distance");
-                s.getFoodData().setExhaustion(0f);
+                assertEquals(10 * speed * SeveredConfig.BLUR_EXHAUSTION.get(), TestServer.exhaustion(s.getFoodData()), 1.0e-3, "by the distance");
+                TestServer.setExhaustion(s.getFoodData(), 0f);
                 run(server, s, 0.2, 10);
-                assertEquals(0f, s.getFoodData().getExhaustionLevel(), 1.0e-6, "a walk costs Blur nothing");
+                assertEquals(0f, TestServer.exhaustion(s.getFoodData()), 1.0e-6, "a walk costs Blur nothing");
 
                 // At the floor it crashes off: winded, slowed, and refused until food is above it again.
                 s.getFoodData().setFoodLevel(SeveredConfig.BLUR_FOOD_FLOOR.get());
                 run(server, s, speed, 1);
                 assertFalse(Severed.blurring(s), "crashed off");
-                assertTrue(s.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "winded");
+                assertTrue(s.hasEffect(MobEffects.SLOWNESS), "winded");
                 Severed.toggleBlur(s);
                 assertFalse(Severed.blurring(s), "refused at the floor");
                 s.getFoodData().setFoodLevel(SeveredConfig.BLUR_FOOD_FLOOR.get() + 1);
@@ -152,7 +152,7 @@ class BlurTest {
 
                 // Running into a wall at Blur speed: hurt (Toughness taking its share), stunned, and Blur over.
                 ServerPlayer s = SeveredBodyTest.severed(server, level, "blur_crash");
-                s.moveTo(0.5, Y, 0.5);
+                s.snapTo(0.5, Y, 0.5);
                 Severed.toggleBlur(s);
                 double speed = Blur.topSpeed();
                 run(server, s, speed, 2);
@@ -197,7 +197,7 @@ class BlurTest {
             ServerLevel level = server.overworld();
             try {
                 ServerPlayer s = SeveredBodyTest.severed(server, level, "blur_end");
-                s.moveTo(0.5, Y, 0.5);
+                s.snapTo(0.5, Y, 0.5);
                 Severed.toggleBlur(s);
                 CombatHelper.stun(s, 20);
                 Blur.tick(s, Severed.state(s));

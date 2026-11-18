@@ -4,7 +4,6 @@ import com.cnethuka.kegare.innatetechnique.Ability;
 import com.cnethuka.kegare.innatetechnique.visual.Visual;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import javax.annotation.Nullable;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -19,6 +18,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -37,7 +38,7 @@ public class GlacialLanceEntity extends RimeProjectile implements com.cnethuka.k
     }
 
     GlacialLanceEntity(Level level, LivingEntity caster, float charge) {
-        super(RimeRegistry.GLACIAL_LANCE.get(), caster, level);
+        super(RimeRegistry.GLACIAL_LANCE.get(), caster, level, RimeRegistry.GLACIAL_LANCE_ITEM.get());
         entityData.set(DATA_CHARGE, Mth.clamp(charge, 0f, 1f));
         this.damage = (float) Mth.lerp(charge(), RimeConfig.LANCE_MIN_DAMAGE.get(), RimeConfig.LANCE_MAX_DAMAGE.get());
         this.lifetime = Math.max(1, RimeConfig.ticks(RimeConfig.LANCE_RANGE_SECONDS));
@@ -114,7 +115,7 @@ public class GlacialLanceEntity extends RimeProjectile implements com.cnethuka.k
     @Override
     protected void onLivingHit(LivingEntity target, @Nullable ServerPlayer caster) {
         int slow = RimeConfig.ticks(RimeConfig.LANCE_SLOWNESS_SECONDS);
-        if (slow > 0) target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, slow, RimeConfig.LANCE_SLOWNESS_AMPLIFIER.get()), caster);
+        if (slow > 0) target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, slow, RimeConfig.LANCE_SLOWNESS_AMPLIFIER.get()), caster);
         FreezeService.addStacks(target, RimeConfig.LANCE_FREEZE_STACKS.get(), caster);
         if (caster != null && target instanceof ServerPlayer && target != caster && charge() >= 0.999f) {
             RimeAdvancements.award(caster, RimeAdvancements.FULL_CHARGE);
@@ -122,14 +123,14 @@ public class GlacialLanceEntity extends RimeProjectile implements com.cnethuka.k
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putFloat("Charge", charge());
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        entityData.set(DATA_CHARGE, Mth.clamp(tag.getFloat("Charge"), 0f, 1f));
+        entityData.set(DATA_CHARGE, Mth.clamp(tag.getFloatOr("Charge", 0f), 0f, 1f));
     }
 }

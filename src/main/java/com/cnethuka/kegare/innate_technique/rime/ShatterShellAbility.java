@@ -1,5 +1,6 @@
 package com.cnethuka.kegare.innate_technique.rime;
 
+import com.cnethuka.kegare.platform.EntityCompat;
 import com.cnethuka.kegare.combat.CombatHelper;
 import com.cnethuka.kegare.innatetechnique.AbilityContext;
 import com.cnethuka.kegare.innatetechnique.CastManager;
@@ -46,9 +47,9 @@ public final class ShatterShellAbility extends RimeSpecial {
         double knockback = RimeConfig.SHATTER_KNOCKBACK.get();
         int stacks = RimeConfig.SHATTER_FREEZE_STACKS.get();
         int players = 0;
-        com.cnethuka.kegare.melee.CleanDodge.areaWentOff(p.serverLevel(), p, com.cnethuka.kegare.melee.CleanDodge.sphere(p.position(), radius));
+        com.cnethuka.kegare.melee.CleanDodge.areaWentOff(p.level(), p, com.cnethuka.kegare.melee.CleanDodge.sphere(p.position(), radius));
         // The shell bursts from the caster's body, and breaks what's round them whether or not it caught anyone (DESIGN §3.24).
-        com.cnethuka.kegare.impact.Impacts.blast(p.serverLevel(), p.getBoundingBox().getCenter(), p, null, 0, knockback, 0, 0, 0, true);
+        com.cnethuka.kegare.impact.Impacts.blast(p.level(), p.getBoundingBox().getCenter(), p, null, 0, knockback, 0, 0, 0, true);
         for (LivingEntity target : p.level().getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(radius),
                 e -> e != p && e.isAlive() && !e.isSpectator() && e.distanceToSqr(p) <= radius * radius)) {
             if (CombatHelper.isBoss(target)) continue; // never knocked back, never frozen (DESIGN §4)
@@ -60,7 +61,7 @@ public final class ShatterShellAbility extends RimeSpecial {
             }
             target.knockback(knockback, dx, dz);
             target.setDeltaMovement(target.getDeltaMovement().add(0, 0.15, 0));
-            target.hurtMarked = true;
+            EntityCompat.markHurt(target);
             // No damage, but it lands on them: the Impact System reads its push from the knockback above.
             com.cnethuka.kegare.impact.Impacts.hit(p, target, com.cnethuka.kegare.impact.ImpactKind.TECHNIQUE, 0, 0, 0, true);
             FreezeService.addStacks(target, stacks, p);

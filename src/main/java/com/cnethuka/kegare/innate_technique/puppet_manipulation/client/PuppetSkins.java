@@ -7,7 +7,7 @@ import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
-import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.world.entity.player.PlayerSkin;
 
 /**
  * A puppet's look: its owner's real skin (never a Swap disguise they happen to wear). From the tab list while the owner
@@ -33,6 +33,6 @@ public final class PuppetSkins {
             PlayerInfo info = connection.getPlayerInfo(owner);
             if (info != null) return DisguiseClient.resolving(info::getSkin);
         }
-        return mc.getSkinManager().getInsecureSkin(profile.get());
+        return mc.getSkinManager().createLookup(profile.get(), false).get();
     }
 }

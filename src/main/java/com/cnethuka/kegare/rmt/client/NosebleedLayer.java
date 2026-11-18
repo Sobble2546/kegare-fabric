@@ -1,26 +1,26 @@
 package com.cnethuka.kegare.rmt.client;
 
+import com.cnethuka.kegare.client.visual.PlayerLayers;
+import com.cnethuka.kegare.platform.client.event.EntityRenderersEvent;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.model.PlayerModel;
-import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.resources.Identifier;
-import com.cnethuka.kegare.platform.client.event.EntityRenderersEvent;
 
 /**
  * The nosebleed's line (DESIGN §3.17), drawn on the player's own model with hard edges, so it turns with the head and follows any animation:
  * both nostrils, then one thin line past the mouth, ending at the chin. Half a skin pixel wide on purpose: a wide patch at the mouth reads as a
  * blob, and a bar carried on down the chest as a tongue. The drops ({@link NosebleedClient}) take it from the chin.
  */
-final class NosebleedLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
+final class NosebleedLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
     private static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
     /** On the head, in skin pixels from its pivot: out past the hat (4.5), so any skin shows it. */
     private static final float FACE_OUT = 4.55f;
@@ -33,36 +33,35 @@ final class NosebleedLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
     private static final int BLOOD = 0xD01018, FRESH = 0xF02028;
     private static final int MIN_BLOCK_LIGHT = 7;
 
-    private NosebleedLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) {
+    private NosebleedLayer(RenderLayerParent<AvatarRenderState, PlayerModel> parent) {
         super(parent);
     }
 
     static void addLayers(EntityRenderersEvent.AddLayers event) {
-        for (PlayerSkin.Model skin : event.getSkins()) {
-            if (event.getSkin(skin) instanceof PlayerRenderer renderer) renderer.addLayer(new NosebleedLayer(renderer));
-        }
+        PlayerLayers.add(event, NosebleedLayer::new);
     }
 
     @Override
-    public void render(PoseStack pose, MultiBufferSource buffers, int light, AbstractClientPlayer player, float limbSwing, float limbSwingAmount,
-                       float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
-        if (player.isInvisible()) return;
-        int[] streak = NosebleedClient.streak(player.getId(), player.level().getGameTime());
+    public void submit(PoseStack pose, SubmitNodeCollector collector, int light, AvatarRenderState state, float yRot, float xRot) {
+        if (state.isInvisible) return;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) return;
+        int[] streak = NosebleedClient.streak(state.id, mc.level.getGameTime());
         if (streak == null || streak[0] >= streak[1]) return;
         int from = streak[0], to = streak[1];
-        VertexConsumer out = buffers.getBuffer(RenderType.entityCutoutNoCull(WHITE));
         // A tell has to show: it never goes as dark as the night round it.
-        light = LightTexture.pack(Math.max(LightTexture.block(light), MIN_BLOCK_LIGHT), LightTexture.sky(light));
+        int lit = LightTexture.pack(Math.max(LightTexture.block(light), MIN_BLOCK_LIGHT), LightTexture.sky(light));
 
         pose.pushPose();
         getParentModel().head.translateAndRotate(pose);
-        PoseStack.Pose face = pose.last();
-        for (int i = from; i < to; i++) {
-            float y = NOSE_ROW + i - 8; // the head's top is at -8, its pivot at 0
-            int rgb = i == to - 1 ? FRESH : BLOOD;
-            line(out, face, light, LINE_LEFT, y, rgb);
-            if (i == 0) line(out, face, light, -LINE_LEFT - LINE_WIDTH, y, rgb); // the other nostril
-        }
+        collector.submitCustomGeometry(pose, RenderTypes.entityCutoutNoCull(WHITE), (face, out) -> {
+            for (int i = from; i < to; i++) {
+                float y = NOSE_ROW + i - 8; // the head's top is at -8, its pivot at 0
+                int rgb = i == to - 1 ? FRESH : BLOOD;
+                line(out, face, lit, LINE_LEFT, y, rgb);
+                if (i == 0) line(out, face, lit, -LINE_LEFT - LINE_WIDTH, y, rgb); // the other nostril
+            }
+        });
         pose.popPose();
     }
 

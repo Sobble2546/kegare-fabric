@@ -1,5 +1,7 @@
 package com.cnethuka.kegare.trait;
 
+import com.cnethuka.kegare.platform.saved.SavedDataCompat;
+import com.mojang.serialization.Codec;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,13 +12,14 @@ import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import com.cnethuka.kegare.database.KegareDatabase;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 
 /**
  * World-level record for unique traits ({@code data/kegare_unique_traits.dat} in the overworld). It is the source
@@ -57,8 +60,9 @@ public final class UniqueTraitSavedData extends SavedData {
     public record Pending(UUID previousBearer, Optional<UUID> killer, long dueTick) {}
 
     private static final String NAME = "kegare_unique_traits";
-    private static final SavedData.Factory<UniqueTraitSavedData> FACTORY =
-            new SavedData.Factory<>(UniqueTraitSavedData::new, UniqueTraitSavedData::load);
+    /** The same compound the NeoForge build wrote, so an existing {@code data/kegare_unique_traits.dat} reads back. */
+    private static final Codec<UniqueTraitSavedData> CODEC = CompoundTag.CODEC.xmap(UniqueTraitSavedData::load, d -> d.save(new CompoundTag()));
+    private static final SavedDataType<UniqueTraitSavedData> TYPE = SavedDataCompat.type(NAME, UniqueTraitSavedData::new, CODEC);
 
     private final Map<Identifier, UUID> bearers = new HashMap<>();
     private final Map<Identifier, Pending> pending = new LinkedHashMap<>();
@@ -84,7 +88,7 @@ public final class UniqueTraitSavedData extends SavedData {
 
     /** The world's own copy regardless of storage mode: what a migration reads and an export writes. */
     public static UniqueTraitSavedData inWorld(MinecraftServer server) {
-        return server.overworld().getDataStorage().computeIfAbsent(FACTORY, NAME);
+        return server.overworld().getDataStorage().computeIfAbsent(TYPE);
     }
 
     /** Whether this is the network's record rather than one world's. */
@@ -220,13 +224,12 @@ public final class UniqueTraitSavedData extends SavedData {
 
     // ------------------------------------------------------------------ persistence
 
-    @Override
-    public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
+    private CompoundTag save(CompoundTag tag) {
         ListTag bearerList = new ListTag();
         bearers.forEach((trait, uuid) -> {
             CompoundTag entry = new CompoundTag();
             entry.putString("trait", trait.toString());
-            entry.putUUID("bearer", uuid);
+            entry.store("bearer", UUIDUtil.CODEC, uuid);
             bearerList.add(entry);
         });
         tag.put("bearers", bearerList);
@@ -235,8 +238,8 @@ public final class UniqueTraitSavedData extends SavedData {
         pending.forEach((trait, p) -> {
             CompoundTag entry = new CompoundTag();
             entry.putString("trait", trait.toString());
-            entry.putUUID("previous", p.previousBearer());
-            p.killer().ifPresent(k -> entry.putUUID("killer", k));
+            entry.store("previous", UUIDUtil.CODEC, p.previousBearer());
+            p.killer().ifPresent(k -> entry.store("killer", UUIDUtil.CODEC, k));
             entry.putLong("due", p.dueTick());
             pendingList.add(entry);
         });
@@ -245,7 +248,7 @@ public final class UniqueTraitSavedData extends SavedData {
         ListTag revokedList = new ListTag();
         revoked.forEach((uuid, traits) -> traits.forEach(trait -> {
             CompoundTag entry = new CompoundTag();
-            entry.putUUID("player", uuid);
+            entry.store("player", UUIDUtil.CODEC, uuid);
             entry.putString("trait", trait.toString());
             revokedList.add(entry);
         }));
@@ -254,7 +257,7 @@ public final class UniqueTraitSavedData extends SavedData {
         ListTag seenList = new ListTag();
         lastSeen.forEach((uuid, millis) -> {
             CompoundTag entry = new CompoundTag();
-            entry.putUUID("player", uuid);
+            entry.store("player", UUIDUtil.CODEC, uuid);
             entry.putLong("millis", millis);
             seenList.add(entry);
         });
@@ -262,32 +265,38 @@ public final class UniqueTraitSavedData extends SavedData {
         return tag;
     }
 
-    private static UniqueTraitSavedData load(CompoundTag tag, HolderLookup.Provider registries) {
+    private static UniqueTraitSavedData load(CompoundTag tag) {
         UniqueTraitSavedData data = new UniqueTraitSavedData();
         for (CompoundTag e : compounds(tag, "bearers")) {
-            Identifier trait = Identifier.tryParse(e.getString("trait"));
-            if (trait != null && e.hasUUID("bearer")) data.bearers.put(trait, e.getUUID("bearer"));
+            Identifier trait = trait(e);
+            Optional<UUID> bearer = e.read("bearer", UUIDUtil.CODEC);
+            if (trait != null && bearer.isPresent()) data.bearers.put(trait, bearer.get());
         }
         for (CompoundTag e : compounds(tag, "pending")) {
-            Identifier trait = Identifier.tryParse(e.getString("trait"));
-            if (trait == null || !e.hasUUID("previous")) continue;
-            Optional<UUID> killer = e.hasUUID("killer") ? Optional.of(e.getUUID("killer")) : Optional.empty();
-            data.pending.put(trait, new Pending(e.getUUID("previous"), killer, e.getLong("due")));
+            Identifier trait = trait(e);
+            Optional<UUID> previous = e.read("previous", UUIDUtil.CODEC);
+            if (trait == null || previous.isEmpty()) continue;
+            data.pending.put(trait, new Pending(previous.get(), e.read("killer", UUIDUtil.CODEC), e.getLongOr("due", 0L)));
         }
         for (CompoundTag e : compounds(tag, "revoked")) {
-            Identifier trait = Identifier.tryParse(e.getString("trait"));
-            if (trait != null && e.hasUUID("player")) data.revoked.computeIfAbsent(e.getUUID("player"), u -> new HashSet<>()).add(trait);
+            Identifier trait = trait(e);
+            Optional<UUID> player = e.read("player", UUIDUtil.CODEC);
+            if (trait != null && player.isPresent()) data.revoked.computeIfAbsent(player.get(), u -> new HashSet<>()).add(trait);
         }
         for (CompoundTag e : compounds(tag, "last_seen")) {
-            if (e.hasUUID("player")) data.lastSeen.put(e.getUUID("player"), e.getLong("millis"));
+            e.read("player", UUIDUtil.CODEC).ifPresent(player -> data.lastSeen.put(player, e.getLongOr("millis", 0L)));
         }
         return data;
     }
 
+    @Nullable
+    private static Identifier trait(CompoundTag entry) {
+        return Identifier.tryParse(entry.getStringOr("trait", ""));
+    }
+
     private static Iterable<CompoundTag> compounds(CompoundTag tag, String key) {
-        ListTag list = tag.getList(key, Tag.TAG_COMPOUND);
-        java.util.List<CompoundTag> out = new java.util.ArrayList<>(list.size());
-        for (int i = 0; i < list.size(); i++) out.add(list.getCompound(i));
+        java.util.List<CompoundTag> out = new java.util.ArrayList<>();
+        for (Tag entry : tag.getListOrEmpty(key)) if (entry instanceof CompoundTag compound) out.add(compound);
         return out;
     }
 }

@@ -15,24 +15,24 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.resources.Identifier;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.phys.Vec3;
 import com.cnethuka.kegare.platform.bus.IEventBus;
 import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
 import com.cnethuka.kegare.platform.client.event.ClientTickEvent;
 import com.cnethuka.kegare.platform.client.event.ModelEvent;
 import com.cnethuka.kegare.platform.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.client.model.data.ModelData;
 import com.cnethuka.kegare.platform.NeoForge;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -44,8 +44,8 @@ import org.joml.Vector3f;
  * smear; only the last one, shortened under its knot, changes length. Knots sit where it grips.
  */
 public final class StringsClient {
-    private static final ModelResourceLocation SEGMENT = ModelResourceLocation.standalone(Kegare.id("string/segment"));
-    private static final ModelResourceLocation KNOT = ModelResourceLocation.standalone(Kegare.id("string/knot"));
+    private static final Identifier SEGMENT = Kegare.id("string/segment");
+    private static final Identifier KNOT = Kegare.id("string/knot");
     /** The segment model's length (8 model units), in blocks. */
     private static final double SEGMENT_LENGTH = 0.5;
     /** Each segment reaches this much past the next one's start, so a bend never opens a gap between them. */
@@ -175,10 +175,10 @@ public final class StringsClient {
         Minecraft mc = Minecraft.getInstance();
         Camera camera = mc.gameRenderer.getMainCamera();
         if (player == mc.player && !camera.isDetached()) {
-            Vec3 look = new Vec3(camera.getLookVector());
-            Vec3 up = new Vec3(camera.getUpVector());
-            Vec3 left = new Vec3(camera.getLeftVector());
-            return camera.getPosition().add(look.scale(0.9)).subtract(left.scale(0.7)).subtract(up.scale(0.42));
+            Vec3 look = new Vec3(camera.forwardVector());
+            Vec3 up = new Vec3(camera.upVector());
+            Vec3 left = new Vec3(camera.leftVector());
+            return camera.position().add(look.scale(0.9)).subtract(left.scale(0.7)).subtract(up.scale(0.42));
         }
         float yaw = Mth.rotLerp(partial, player.yBodyRotO, player.yBodyRot) * Mth.DEG_TO_RAD;
         Vec3 forward = new Vec3(-Mth.sin(yaw), 0, Mth.cos(yaw));
@@ -195,13 +195,15 @@ public final class StringsClient {
         ClientLevel level = mc.level;
         if (level == null) return;
         float partial = event.getPartialTick().getGameTimeDeltaPartialTick(false);
-        Vec3 camera = event.getCamera().getPosition();
+        Vec3 camera = event.getCamera().position();
         PoseStack pose = event.getPoseStack();
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
-        RenderType type = RenderType.entityTranslucentEmissive(InventoryMenu.BLOCK_ATLAS);
-        VertexConsumer out = buffers.getBuffer(type);
         List<BakedQuad> segment = segment(mc);
         List<BakedQuad> knot = knot(mc);
+        if (segment.isEmpty()) return; // not baked yet
+        // The models' texture is in whichever atlas the model baker put it (the items atlas for textures/item/), so the quads name it.
+        RenderType type = RenderTypes.entityTranslucentEmissive(segment.get(0).sprite().atlasLocation());
+        VertexConsumer out = buffers.getBuffer(type);
         float age = level.getGameTime() + partial;
         for (Shown shown : SHOWN.values()) {
             float reveal = Mth.clamp((age - shown.born) / REVEAL_TICKS, 0f, 1f);
@@ -293,19 +295,31 @@ public final class StringsClient {
     }
 
     private static List<BakedQuad> segment(Minecraft mc) {
-        if (segmentQuads == null) segmentQuads = quads(mc.getModelManager().getModel(SEGMENT));
+        if (segmentQuads == null) {
+            List<BakedQuad> quads = quads(mc.getModelManager().getModel(ModelEvent.key(SEGMENT)));
+            if (quads.isEmpty()) return quads; // not baked yet: asked again next frame
+            segmentQuads = quads;
+        }
         return segmentQuads;
     }
 
     private static List<BakedQuad> knot(Minecraft mc) {
-        if (knotQuads == null) knotQuads = quads(mc.getModelManager().getModel(KNOT));
+        if (knotQuads == null) {
+            List<BakedQuad> quads = quads(mc.getModelManager().getModel(ModelEvent.key(KNOT)));
+            if (quads.isEmpty()) return quads;
+            knotQuads = quads;
+        }
         return knotQuads;
     }
 
-    private static List<BakedQuad> quads(BakedModel model) {
-        RandomSource random = RandomSource.create(42L);
-        List<BakedQuad> out = new ArrayList<>(model.getQuads(null, null, random, ModelData.EMPTY, null));
-        for (Direction side : Direction.values()) out.addAll(model.getQuads(null, side, random, ModelData.EMPTY, null));
+    /** Every quad of a baked model, unculled and on every side (it is drawn as a mesh, whatever faces it hides). */
+    private static List<BakedQuad> quads(@Nullable BlockStateModel model) {
+        List<BakedQuad> out = new ArrayList<>();
+        if (model == null) return out; // not baked (yet): nothing to draw, asked again next frame
+        for (BlockModelPart part : model.collectParts(RandomSource.create(42L))) {
+            out.addAll(part.getQuads(null));
+            for (Direction side : Direction.values()) out.addAll(part.getQuads(side));
+        }
         return out;
     }
 

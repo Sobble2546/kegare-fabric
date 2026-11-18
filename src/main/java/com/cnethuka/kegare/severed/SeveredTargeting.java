@@ -23,7 +23,7 @@ final class SeveredTargeting {
         LivingEntity best = null;
         double bestDistance = Double.MAX_VALUE;
         AABB search = player.getBoundingBox().expandTowards(look.scale(reach)).inflate(1.0 + tolerance);
-        for (LivingEntity other : player.serverLevel().getEntitiesOfClass(LivingEntity.class, search,
+        for (LivingEntity other : player.level().getEntitiesOfClass(LivingEntity.class, search,
                 e -> e != player && e.isAlive() && !e.isSpectator() && !(e instanceof ArmorStand))) {
             AABB box = other.getBoundingBox().inflate(tolerance);
             Optional<Vec3> hit = box.contains(eye) ? Optional.of(eye) : box.clip(eye, end);

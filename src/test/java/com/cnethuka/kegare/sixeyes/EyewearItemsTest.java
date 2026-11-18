@@ -14,14 +14,14 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-/** Eyewear's items (DESIGN §3.32): the rename from Tinted Glasses, and Curios' Eyes tag. */
+/** Eyewear's items (DESIGN §3.32): the rename from Tinted Glasses, and Trinkets' Eyes tag. */
 @ExtendWith(EphemeralTestServerProvider.class)
 class EyewearItemsTest {
-    private static final TagKey<Item> EYES = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("curios", "eyes"));
+    private static final TagKey<Item> EYES = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("trinkets", Eyewear.SLOT_ID));
 
     @Test
     void theOldNameStillFindsTheSunglasses() {
@@ -36,7 +36,7 @@ class EyewearItemsTest {
             CompoundTag saved = new CompoundTag();
             saved.putString("id", "kegare:tinted_glasses");
             saved.putInt("count", 1);
-            ItemStack loaded = ItemStack.parseOptional(server.registryAccess(), saved);
+            ItemStack loaded = ItemStack.OPTIONAL_CODEC.parse(server.registryAccess().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), saved).getOrThrow();
             assertTrue(loaded.is(KegareItems.SUNGLASSES.get()), "a stack saved under the old name loads as Sunglasses");
             assertEquals(Eyewear.SUNGLASSES, Eyewear.of(loaded), "and still counts as covering the eyes");
         });

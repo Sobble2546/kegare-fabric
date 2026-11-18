@@ -27,7 +27,7 @@ public final class PossessionLinks {
     }
 
     static void sendTo(ServerPlayer player) {
-        PacketDistributor.sendToPlayer(player, state(player.server));
+        PacketDistributor.sendToPlayer(player, state(player.level().getServer()));
     }
 
     private static StatePayload state(MinecraftServer server) {

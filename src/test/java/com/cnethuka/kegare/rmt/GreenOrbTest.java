@@ -21,7 +21,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -235,7 +235,7 @@ class GreenOrbTest {
             TestServer.ensureOverworld(server);
             ServerLevel level = server.overworld();
             ServerPlayer p = born(server, "orb_walled");
-            p.moveTo(0.5, 100, 0.5, -90f, 0f); // facing +X
+            p.snapTo(0.5, 100, 0.5, -90f, 0f); // facing +X
             for (int y = 92; y <= 112; y++) {
                 for (int z = -12; z <= 12; z++) level.setBlockAndUpdate(new BlockPos(2, y, z), Blocks.STONE.defaultBlockState());
             }
@@ -248,7 +248,7 @@ class GreenOrbTest {
                     }
                 }
                 // Pressed right up against it, the look check still means something.
-                p.moveTo(1.7, 100, 0.5, -90f, 0f);
+                p.snapTo(1.7, 100, 0.5, -90f, 0f);
                 GreenOrbService.force(p);
                 for (Vec3 point : GreenOrbService.state(p).path().points()) {
                     assertTrue(point.distanceTo(p.getEyePosition()) >= 0.74, "too close to the eyes: " + point);
@@ -290,7 +290,7 @@ class GreenOrbTest {
         ServerPlayer p = TestServer.player(server, name);
         BirthService.rebirth(p, OptionalInt.of(500));
         InnateTechniqueService.setInnateTechnique(p, Rime.RIME.get());
-        p.moveTo(0.5, 100, 0.5, -90f, 0f); // open air: nothing between the eyes and the orb
+        p.snapTo(0.5, 100, 0.5, -90f, 0f); // open air: nothing between the eyes and the orb
         return p;
     }
 }

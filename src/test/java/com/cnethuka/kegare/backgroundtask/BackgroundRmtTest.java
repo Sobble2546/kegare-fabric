@@ -36,7 +36,7 @@ import java.util.OptionalInt;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -53,7 +53,7 @@ class BackgroundRmtTest {
         TraitService.removeAll(p, Trait.RemoveReason.ADMIN);
         InnateTechniqueService.setInnateTechnique(p, Rime.RIME.get());
         MaliceService.refill(p);
-        p.moveTo(0.5, 120, 0.5, -90f, 0f);
+        p.snapTo(0.5, 120, 0.5, -90f, 0f);
         p.setHealth(p.getMaxHealth());
         return p;
     }

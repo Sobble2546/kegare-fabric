@@ -17,7 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import com.cnethuka.kegare.platform.NeoForge;
 import com.cnethuka.kegare.platform.event.entity.player.PlayerEvent;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -36,7 +36,7 @@ class RmtFatigueTest {
         TraitService.removeAll(p, Trait.RemoveReason.ADMIN);
         GradeService.set(p, Grade.GRADE_4);
         p.setHealth(p.getMaxHealth());
-        p.moveTo(0.5, 120, 0.5);
+        p.snapTo(0.5, 120, 0.5);
         return p;
     }
 

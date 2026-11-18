@@ -1,5 +1,6 @@
 package com.cnethuka.kegare.innate_technique.rime;
 
+import com.cnethuka.kegare.platform.EntityCompat;
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.innatetechnique.AbilityContext;
 import com.cnethuka.kegare.innatetechnique.CastType;
@@ -59,7 +60,7 @@ public final class IcePathAbility extends RimeSpecial {
         if (flat.lengthSqr() > 1.0e-4) {
             Vec3 dir = flat.normalize().scale(RimeConfig.PATH_SPEED.get());
             p.setDeltaMovement(dir.x, p.getDeltaMovement().y, dir.z);
-            p.hurtMarked = true; // the client owns its movement: push the slide to it every tick
+            EntityCompat.markHurt(p); // the client owns its movement: push the slide to it every tick
         }
         p.resetFallDistance();
         IcePaths.lay(p);

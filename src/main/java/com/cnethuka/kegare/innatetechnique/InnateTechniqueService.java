@@ -114,7 +114,7 @@ public final class InnateTechniqueService {
         data.pruneCooldowns(player.level().getGameTime());
         Optional<Identifier> id = data.innateTechniqueId();
         if (id.isPresent() && !KegareRegistries.INNATE_TECHNIQUE.containsKey(id.get())) {
-            Kegare.LOGGER.warn("{} had unknown innate technique {}; clearing it", player.getGameProfile().getName(), id.get());
+            Kegare.LOGGER.warn("{} had unknown innate technique {}; clearing it", player.getGameProfile().name(), id.get());
             data.setInnateTechnique(null);
             PlayerSync.markDirty(player);
             return true;

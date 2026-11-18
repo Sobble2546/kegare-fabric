@@ -13,7 +13,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
@@ -154,10 +155,10 @@ public final class ShatterClient {
     static void render(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES || RINGS.isEmpty()) return;
         Minecraft mc = Minecraft.getInstance();
-        Vec3 cam = event.getCamera().getPosition();
+        Vec3 cam = event.getCamera().position();
         float partial = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
-        RenderType type = RenderType.entityTranslucentEmissive(TEXTURE);
+        RenderType type = RenderTypes.entityTranslucentEmissive(TEXTURE);
         VertexConsumer out = buffers.getBuffer(type);
         for (Ring ring : RINGS) {
             float t = clock - ring.born() + partial;

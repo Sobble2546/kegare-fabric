@@ -101,9 +101,9 @@ public final class Parry {
         double gap = swingMs(attacker) - state.guardStartMs;
         boolean bySubTick = subTickPerfect(gap, window * 50.0);
         if (com.cnethuka.kegare.timing.TimingLog.any()) {
-            com.cnethuka.kegare.timing.TimingLog.send(player.server, String.format(java.util.Locale.ROOT,
+            com.cnethuka.kegare.timing.TimingLog.send(player.level().getServer(), String.format(java.util.Locale.ROOT,
                     "Parry %s (%s) <- %s (%s): by ticks %s (held %d of %d ticks), sub-tick %s (swing %.1f ms after the press, window %d ms)%s",
-                    player.getGameProfile().getName(), com.cnethuka.kegare.timing.SubTick.describe(player), attacker.getName().getString(),
+                    player.getGameProfile().name(), com.cnethuka.kegare.timing.SubTick.describe(player), attacker.getName().getString(),
                     attacker instanceof ServerPlayer ap ? com.cnethuka.kegare.timing.SubTick.describe(ap) : "a mob", byTicks ? "PERFECT" : "no", held, window,
                     bySubTick ? "PERFECT" : "no", gap, window * 50, com.cnethuka.kegare.timing.TimingConfig.PARRY_SUB_TICK.get() ? " [sub-tick used]" : " [ticks used]"));
         }
@@ -129,7 +129,7 @@ public final class Parry {
         state.parriedThisGuard = true;
         state.guardLoopAt = player.level().getGameTime() + MeleeIds.PARRY_PERFECT_TICKS;
         VisualService.playOnce(player, Visual.animation(MeleeIds.ANIM_PARRY_PERFECT));
-        MeleeImpact.PARRY_PERFECT.fire(player.serverLevel(), contact(player, attacker), player, attacker);
+        MeleeImpact.PARRY_PERFECT.fire(player.level(), contact(player, attacker), player, attacker);
         if (attacker instanceof ServerPlayer rusher && com.cnethuka.kegare.severed.ClosingLine.spendMomentum(rusher)) {
             // A Closing Line's momentum hit caught (DESIGN §3.27): it's spent, and they're staggered harder for having committed to it.
             stagger(attacker, com.cnethuka.kegare.severed.SeveredConfig.ticks(com.cnethuka.kegare.severed.SeveredConfig.PARRY_STAGGER_SECONDS.get()),
@@ -166,7 +166,7 @@ public final class Parry {
 
     static void stagger(LivingEntity attacker, int ticks, int slowness) {
         if (CombatHelper.isBoss(attacker)) return;
-        if (ticks > 0) attacker.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, ticks, slowness, false, false));
+        if (ticks > 0) attacker.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, ticks, slowness, false, false));
         if (attacker instanceof ServerPlayer player) {
             player.resetAttackStrengthTicker();
             MeleeLayer.sendAttackReset(player); // the client keeps its own copy, for the swing and the indicator

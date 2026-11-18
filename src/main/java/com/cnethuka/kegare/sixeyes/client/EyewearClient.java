@@ -1,24 +1,21 @@
 package com.cnethuka.kegare.sixeyes.client;
 
-import com.cnethuka.kegare.registry.KegareItems;
-import com.mojang.blaze3d.platform.InputConstants;
-import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import com.cnethuka.kegare.client.visual.PlayerLayers;
+import com.cnethuka.kegare.platform.client.event.EntityRenderersEvent;
 import com.cnethuka.kegare.platform.bus.IEventBus;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import com.cnethuka.kegare.platform.client.event.FMLClientSetupEvent;
 import com.cnethuka.kegare.platform.client.event.RegisterClientReloadListenersEvent;
-import org.lwjgl.glfw.GLFW;
-import top.theillusivec4.curios.api.client.CuriosRendererRegistry;
+import com.cnethuka.kegare.registry.KegareItems;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 
 /**
- * Eyewear on the client (DESIGN §3.32): each item's renderer on the face, and Curios' own key moved out of Technique Mode's way. Curios opens
- * its screen on G by default, which is Technique Mode, the game's main control; while it sits on G it moves to J.
+ * Eyewear on the client (DESIGN §3.32): each item's renderer on the face (drawn by the equipment slot mod's renderer, see
+ * {@code EyewearPlatform}), and the layer that gives a disguise the face's eyewear.
  */
 public final class EyewearClient {
-    private static final EyewearRenderer BLINDFOLD = new EyewearRenderer("blindfold", RenderType::entityCutoutNoCull);
-    private static final EyewearRenderer SUNGLASSES = new EyewearRenderer("sunglasses", RenderType::entityTranslucent);
+    private static final EyewearRenderer BLINDFOLD = new EyewearRenderer("blindfold", RenderTypes::entityCutoutNoCull);
+    private static final EyewearRenderer SUNGLASSES = new EyewearRenderer("sunglasses", RenderTypes::entityTranslucent);
 
     private EyewearClient() {}
 
@@ -34,11 +31,7 @@ public final class EyewearClient {
 
     public static void init(IEventBus modBus) {
         // A disguise wears the face's eyewear: a layer on every player renderer draws it.
-        modBus.addListener((com.cnethuka.kegare.platform.client.event.EntityRenderersEvent.AddLayers e) -> {
-            for (net.minecraft.client.resources.PlayerSkin.Model skin : e.getSkins()) {
-                if (e.getSkin(skin) instanceof net.minecraft.client.renderer.entity.player.PlayerRenderer renderer) renderer.addLayer(new DisguisedEyewearLayer(renderer));
-            }
-        });
+        modBus.addListener((EntityRenderersEvent.AddLayers e) -> PlayerLayers.add(e, DisguisedEyewearLayer::new));
         modBus.addListener((FMLClientSetupEvent e) -> e.enqueueWork(EyewearClient::setup));
         modBus.addListener((RegisterClientReloadListenersEvent e) -> e.registerReloadListener((ResourceManagerReloadListener) manager -> {
             BLINDFOLD.forget();
@@ -47,15 +40,7 @@ public final class EyewearClient {
     }
 
     private static void setup() {
-        CuriosRendererRegistry.register(KegareItems.BLINDFOLD.get(), () -> BLINDFOLD);
-        CuriosRendererRegistry.register(KegareItems.SUNGLASSES.get(), () -> SUNGLASSES);
-        Minecraft mc = Minecraft.getInstance();
-        for (KeyMapping key : mc.options.keyMappings) {
-            if ("key.curios.open.desc".equals(key.getName()) && key.getKey().getValue() == GLFW.GLFW_KEY_G) {
-                key.setKey(InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_J));
-                KeyMapping.resetMapping();
-                mc.options.save();
-            }
-        }
+        EyewearPlatform.register(KegareItems.BLINDFOLD.get(), BLINDFOLD);
+        EyewearPlatform.register(KegareItems.SUNGLASSES.get(), SUNGLASSES);
     }
 }

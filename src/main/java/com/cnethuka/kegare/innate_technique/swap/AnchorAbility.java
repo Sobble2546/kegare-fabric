@@ -70,7 +70,7 @@ public final class AnchorAbility extends SwapAbility {
         SwapSounds.ANCHOR_RECALL.at(anchor);
         Swapper.depart(caster);
         Swapper.depart(anchor);
-        SwapLink.play(caster.serverLevel(), Swapper.bodyPos(caster), Swapper.bodyPos(anchor));
+        SwapLink.play(caster.level(), Swapper.bodyPos(caster), Swapper.bodyPos(anchor));
         Anchors.consume(caster, anchor);
         Swapper.moveTo(caster, to);
         Swapper.arrive(caster);

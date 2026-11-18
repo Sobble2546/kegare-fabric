@@ -24,14 +24,14 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.Pig;
-import net.minecraft.world.entity.projectile.Snowball;
+import net.minecraft.world.entity.animal.pig.Pig;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import com.cnethuka.kegare.platform.NeoForge;
 import com.cnethuka.kegare.platform.event.entity.ProjectileImpactEvent;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -80,16 +80,16 @@ class TimeAdvancementsTest {
             TestServer.ensureOverworld(server);
             ServerLevel level = server.overworld();
             level.getHeight(Heightmap.Types.MOTION_BLOCKING, 0, 0);
-            server.setPvpAllowed(true);
-            Pig pig = EntityType.PIG.create(level);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
+            Pig pig = EntityType.PIG.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             try {
                 ServerPlayer caster = player(server, level, "tm_adv_caster", true);
                 ServerPlayer other = player(server, level, "tm_adv_other", false);
                 ServerPlayer clock = player(server, level, "tm_adv_clock", true);
-                caster.moveTo(0.5, Y, 0.5, -90f, 0f);
+                caster.snapTo(0.5, Y, 0.5, -90f, 0f);
                 caster.setYHeadRot(-90f);
-                other.moveTo(6.5, Y, 0.5, 90f, 0f);
-                clock.moveTo(3.5, Y, 6.5, 0f, 0f);
+                other.snapTo(6.5, Y, 0.5, 90f, 0f);
+                clock.snapTo(3.5, Y, 6.5, 0f, 0f);
 
                 // Only a holder earns them.
                 TimeAdvancements.award(other, TimeAdvancements.OVERCLOCK);
@@ -98,7 +98,7 @@ class TimeAdvancementsTest {
                 // Five of the caster's projectiles in the air when time stops (for Pre-Planned below).
                 Snowball[] thrown = new Snowball[5];
                 for (int i = 0; i < 5; i++) {
-                    thrown[i] = new Snowball(level, caster);
+                    thrown[i] = new Snowball(level, caster, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.SNOWBALL));
                     thrown[i].setPos(4.5, Y + 1, 0.5 + i * 0.2);
                     level.addFreshEntity(thrown[i]);
                 }
@@ -134,7 +134,7 @@ class TimeAdvancementsTest {
 
                 // Slow Motion: Decelerate on a player with an ability on cooldown (a mob doesn't count).
                 DecelerateEntity hand = new DecelerateEntity(level, caster);
-                pig.moveTo(3.5, Y, -3.5, 0f, 0f);
+                pig.snapTo(3.5, Y, -3.5, 0f, 0f);
                 pig.setNoGravity(true);
                 level.addFreshEntity(pig);
                 DecelerateEntity.strike(hand, caster, pig, 1f);
@@ -151,7 +151,7 @@ class TimeAdvancementsTest {
                 // Not So Fast: Rewind a player who'd got 8 blocks further away in those 3 seconds.
                 int ticks = TimeConfig.ticks(TimeConfig.REWIND_SECONDS);
                 for (int i = 0; i < ticks + 3; i++) {
-                    other.moveTo(3.5 + i * (9.0 / ticks), Y, 0.5, 90f, 0f);
+                    other.snapTo(3.5 + i * (9.0 / ticks), Y, 0.5, 90f, 0f);
                     PositionHistory.tick(server);
                     TestServer.advanceGameTime(server, 1);
                 }
@@ -159,7 +159,7 @@ class TimeAdvancementsTest {
                 InnateTechniqueService.select(caster, 0);
                 Vec3 eye = caster.getEyePosition(), at = other.position().add(0, 1, 0), d = at.subtract(eye);
                 float yaw = (float) Math.toDegrees(Math.atan2(-d.x, d.z));
-                caster.moveTo(caster.getX(), caster.getY(), caster.getZ(), yaw, (float) -Math.toDegrees(Math.atan2(d.y, Math.hypot(d.x, d.z))));
+                caster.snapTo(caster.getX(), caster.getY(), caster.getZ(), yaw, (float) -Math.toDegrees(Math.atan2(d.y, Math.hypot(d.x, d.z))));
                 caster.setYHeadRot(yaw);
                 MaliceService.refill(caster);
                 CastManager.handleIntent(caster, CastIntent.SPECIAL_PRESS);
@@ -180,7 +180,7 @@ class TimeAdvancementsTest {
                 StasisFields.open(caster, new Vec3(10.5, Y, 10.5), 4.0, 100); // in the loaded chunk, away from everyone
                 Snowball[] caught = new Snowball[6];
                 for (int i = 0; i < 6; i++) {
-                    caught[i] = new Snowball(level, i == 0 ? caster : other);
+                    caught[i] = new Snowball(level, i == 0 ? caster : other, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.SNOWBALL));
                     caught[i].setPos(10.5, Y + 0.5, 10.5 + i * 0.3);
                     caught[i].setNoGravity(true);
                     caught[i].setDeltaMovement(0.5, 0, 0);

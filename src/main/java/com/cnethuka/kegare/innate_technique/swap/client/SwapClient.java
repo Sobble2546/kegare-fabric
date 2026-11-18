@@ -13,7 +13,10 @@ import java.util.Iterator;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -28,7 +31,6 @@ import com.cnethuka.kegare.platform.client.event.RenderLevelStageEvent;
 import com.cnethuka.kegare.platform.client.event.RegisterClientReloadListenersEvent;
 import com.cnethuka.kegare.platform.client.event.RenderPlayerEvent;
 import com.cnethuka.kegare.platform.NeoForge;
-import org.joml.Vector3f;
 
 /**
  * Swap's client side: what it draws itself ({@link SwapFx}), effects drawn along a line (Exchange's travelling orbs) and the
@@ -61,7 +63,7 @@ public final class SwapClient {
 
     private static final List<Travel> TRAVELLING = new ArrayList<>();
     /** Small teal dust for a swap's two ends: vanilla dust lives longer the bigger it is, and these should be gone at once. */
-    private static final DustParticleOptions TEAL_FLICK = new DustParticleOptions(new Vector3f(0.18f, 0.9f, 0.82f), 0.5f);
+    private static final DustParticleOptions TEAL_FLICK = new DustParticleOptions(0x2EE6D1, 0.5f);
 
     private SwapClient() {}
 
@@ -149,13 +151,30 @@ public final class SwapClient {
         if (level != null) SwapFx.snap(level);
     }
 
+    /** Models of our own, one per arm model, posed from a player's render state to read the pose they are drawn in. */
+    private static PlayerModel poseWide, poseSlim;
+
+    /**
+     * Every player drawn: SwapFx remembers the pose their model is drawn in. On 1.21.11 a player's model is posed from the render state
+     * when it is drawn, so it can't be read off the renderer afterwards: a model of our own is posed from the same (finished) state.
+     */
     private static void onRenderPlayer(RenderPlayerEvent.Post event) {
-        if (event.getEntity() instanceof AbstractClientPlayer player) SwapFx.remember(player, event.getRenderer().getModel(), event.getPartialTick());
+        if (!(event.getEntity() instanceof AbstractClientPlayer player)) return;
+        boolean slim = event.getRenderState().skin != null && event.getRenderState().skin.model() == PlayerModelType.SLIM;
+        PlayerModel model = slim ? poseSlim : poseWide;
+        if (model == null) {
+            Minecraft mc = Minecraft.getInstance();
+            model = new PlayerModel(mc.getEntityModels().bakeLayer(slim ? ModelLayers.PLAYER_SLIM : ModelLayers.PLAYER), slim);
+            if (slim) poseSlim = model;
+            else poseWide = model;
+        }
+        model.setupAnim(event.getRenderState());
+        SwapFx.remember(player, model, event.getPartialTick());
     }
 
     private static void onRenderLevel(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES) return;
-        SwapFx.render(new PoseStack(), event.getCamera().getPosition(), event.getPartialTick().getGameTimeDeltaPartialTick(false));
+        SwapFx.render(new PoseStack(), event.getCamera().position(), event.getPartialTick().getGameTimeDeltaPartialTick(false));
     }
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {

@@ -389,9 +389,14 @@ All timestamps use **level game time**. They persist across restarts and are ide
   - The hotbar stands on the **left edge as a column** (`kegare:combat_hotbar`). It is the **vanilla hotbar**:
     vanilla's own hotbar, selection and off-hand sprites turned a quarter turn (slot 1 at the top, the off-hand
     slot above it), items upright with vanilla's pick-up pop. Chat moves right to clear it.
-  - Hearts, food, armour and air sit **on top of** the panel (it raises `Gui.leftHeight`/`rightHeight`), and
-    action-bar text, the held item's name and chat move up to match (chat sits just above the hearts, as in
-    vanilla).
+  - Hearts, food, armour and air sit **on top of** the panel (Fabric: the panel registers its height with the status bar height
+    registry, `HudStatusBarHeightRegistry`, through a no-draw layer `kegare:combat_stack` below the health bar; vanilla's
+    `Gui.leftHeight`/`rightHeight` are gone), and action-bar text and the held item's name move up with them: Fabric lifts those two
+    above the tallest status bar (once it is taller than two rows), and `HudClearance` adds the rest so they rise by the full
+    amount the hearts did. Chat moves up and right by `HudClearance` (chat sits just above the hearts, as in vanilla).
+    `kegare:combat_name` finds the top of the stack through two no-draw probe layers in the same registry. Because the panel registers
+    a height provider, Fabric wraps the vanilla bars for the whole session, so the action-bar text and the held item's name also rise
+    above a stack taller than two rows when the panel is down, the way it does on any Fabric client with a mod that adds a status bar.
 
   The panel:
   - **crest**: freeze pips (pulsing while frozen);
@@ -529,8 +534,12 @@ Malice is always shown as whole numbers (floored, like the HUD); the stored valu
 ### 3.10 Data generation and art
 - **Kegare's creative tab** (`KegareCreativeTab`, titled "Kegare", its icon the Purification Talisman): after the vanilla tabs, so it's on the creative screen's next page, reached with NeoForge's page arrows, like any mod's. It's filled from
   `KegareItems.ITEMS`, so an item added later appears there by itself: today the Purification Talisman, the Blindfold and the Sunglasses. They're in no vanilla tab; creative search still finds them.
-- `./gradlew runData` generates lang, the item model, tags (`kegare:talismans`), the talisman recipe
-  (gold + amethyst + paper; overridable by datapack) and the advancements.
+- `./gradlew runData` (on Fabric an alias of Loom's `runDatagen`, with client data generation on) generates lang, the item models (the
+  `models/item` files and the `items/` definitions since 1.21.4), the sound definitions, tags (`kegare:talismans`, `trinkets:head/eyes`), the
+  recipes (gold + amethyst + paper for the talisman; overridable by datapack) and the advancements, into `src/generated/resources`. The
+  entrypoint is `KegareDataGen` (`fabric-datagen` in fabric.mod.json); the sound provider still fails if an `.ogg` is missing.
+- **Tests** run on a throwaway server (`EphemeralTestServerProvider` and the per-target `TestMinecraftServer` in `targets/<target>/testJava`),
+  started under `fabric-loader-junit`; `TestBootstrap` runs the mods' entrypoints and vanilla's bootstrap once per JVM.
 - **Assets are edited directly**, and each has exactly one source:
   - **Models:** the Blockbench projects in `art/blockbench/` are the source. Edit one in Blockbench and export over the shipped
     files it makes (an OBJ in `models/fx/` and its textures in `textures/entity/`, or a block model for Strings, §3.20).
@@ -757,8 +766,32 @@ closing it or disconnecting at any point changes nothing.
 - Layouts are computed from the screen size and support GUI sizes down to Minecraft's minimum of 320×240.
 - Every screen fits at GUI scales 1–4 on a 1920×1080 window, and in a 640×480 window (auto scale, which gives a 320×240 GUI).
 
+**How the GUI draws (Fabric, Minecraft 1.21.11).** The 2D GUI is a retained tree of draw states, not immediate calls, so a few
+things changed in how it is built; what the player sees is meant to be the same.
+- Tints and fades are an ARGB argument on the draw call (`GuiDraw.blit/tinted/fade`), not a global color. Overlapping draws stack in
+  call order: there is no z to raise, so a badge, label or cooldown number is simply drawn after the icon it sits on.
+- The reveal's glows, rays, rings and the flame's halo are **additive**: a GUI pipeline of our own (`GuiPipelines.GUI_ADDITIVE`,
+  vanilla's textured GUI pipeline with source-alpha + one blending) replaces the old blend-function toggle. The talisman burn is still
+  drawn a column at a time, each tinted by the paper's brightness.
+- The reveal's player model and the Sorcerer screen's go through the GUI's entity pass: the local player is extracted into a render
+  state (at a real partial tick, so PAL's animation stays smooth, with head and body turned toward the emblem), then drawn in a box. The
+  box is clipped to its bounds and ignores the reveal canvas's scale, so it is sized in GUI units.
+- Dash streaks (§3.22) are drawn as short rotated strips that widen along their length with a fading gradient (the GUI has no free
+  triangles); they read as the same thin needles.
+- The progression toast is a vanilla `Toast` (`update` decides when it hides). Tooltips are queued for the end of the frame, so they
+  always sit on top. Mob-effect icons on the Six Eyes read tags are vanilla's GUI sprites.
+- Effect tiers are untouched: Reduced and Vanilla still scale or drop the streaks and the other effects exactly as before.
+
 ### 3.13 Animations and VFX (visual only)
 **Rule: visuals are cosmetic. The server acts first and never waits on an animation or an effect.**
+
+- **Entity drawing (Fabric, Minecraft 1.21.x):** entities and player layers are drawn from *render states*, read off the entity once a
+  frame (`extractRenderState`) and drawn from that (`submit`). Kegare's entity renderers (Glacial Lance, Spire, Frost Shard, Splinter,
+  Anchor, Decelerate, puppets and shells) copy what they need off the entity into their own state, and queue their geometry with
+  `submitCustomGeometry`; a puppet and a shell are drawn from a player's `AvatarRenderState` (a puppet's extras travel on it as a
+  `RenderStateDataKey`). A player layer (Mimic's flicker, Nosebleed, the fist tell, the held lance, Possession's glow, a disguise's
+  eyewear, Rime's frost) finds its player through `client.render.Avatars` and reads the parent model's parts when it is submitted.
+  What each effects setting shows is unchanged (Full, Reduced and Vanilla pick the same branches as before).
 
 - **Libraries:** player animations use Player Animation Library (PAL, by ZigyTheBird). VFX use Photon (by
   KilaBash), which needs LDLib2. All three are required mods; see README.
@@ -1264,7 +1297,7 @@ separate bar is filled from any of them.
     its own phase). Round it a hard, near-black ink outline, irregular like a brush stroke, varying in thickness, with flicks flung off
     it and small breaks; inside it a see-through glow in the Malice color (the white glow tinted by the vertex color; the ink stays
     black), strongest at the outline and thin near the body so the player stays readable. Smooth, high-resolution art: its render
-    type (`AuraRenderTypes`) filters the texture linearly, translucent, unlit, no depth written. The ink outline and the moving tongues
+    type (`AuraRenderTypes`: vanilla's translucent emissive entity pipeline with a linear sampler, `client/visual/WorldTypes`) filters the texture linearly, translucent, unlit, no depth written. The ink outline and the moving tongues
     are what stop it reading as glass.
     - Drawn as an upright card facing the camera round the vertical, its feet at the player's, 0.32 blocks behind them from the camera,
       so the body stands in front of it; scaled with the body (crouching shrinks it). Small wisps (`entity/aura_wisp.png`, an upward
@@ -1273,6 +1306,7 @@ separate bar is filled from any of them.
       second instead of 11, wisps every 3 ticks instead of 5, eased in and out.
     - Your own first person: only a faint flow (`entity/aura_edge.png`) up both edges of the view, 13% of the width each, and a little
       wider (19%) low on the right round your arm: never in the middle 60%. Nothing round your own body in first person.
+      (On 1.21.11 the HUD tints a quad one colour, so the arm strip's fade from nothing at its top is ten stacked bands.)
     - Reduced: the simpler sheet (`entity/aura_simple.png`: an even outline with no breaks or flicks) and half the wisps. Vanilla: dust
       in the Malice color rising round the body (none round your own in first person). An invisible player shows nothing.
     - Visible to everyone: reinforcement is open. The color follows the ready fist's rules (§3.22): the wearer sees their own Malice
@@ -1573,8 +1607,10 @@ The HUD and Sorcerer screen show Anchor's current stage cost (throw or recall).
   - name tag (`RenderNameTagEvent`);
   - skin, arm model and cape, and the tab-list head (`PlayerInfo#getSkin` mixin);
   - tab-list name (`PlayerTabOverlay#getNameForDisplay` mixin);
-  - visible armor and held items, lent from the face for the length of one render (`RenderPlayerEvent`). If the
-    face isn't loaded on that client, the slots are drawn empty rather than showing the wearer's own gear.
+  - visible armor and held items, written into the wearer's render state from the face's, after the state is read off the
+    player (`RenderPlayerEvent.Post`; nothing of the wearer's inventory is touched). If the face isn't loaded on that client,
+    the slots are drawn empty rather than showing the wearer's own gear. The arms follow what the face holds there (bare if
+    nothing, held out if something; a pose the wearer is in the middle of, such as drawing a bow, is kept).
   - eyewear: the eyewear the face is wearing right now, or none if it wears none (`DisguisedEyewearLayer`), and never the
     wearer's own (`EyewearRenderer` skips it on a disguise). The server sends it with the disguise (`Entry.faceEyewear`, at once
     when the face puts some on or takes it off), so it's right even when that client can't see the face; a face that's gone shows
@@ -2333,11 +2369,13 @@ Each client plays its own part:
   color for a technique (its core stays white): the attacker sees their own color, everyone else the color of the face they wear
   (§1, §3.19). Never on your own body in your own first person, and smaller the closer it is to your camera.
 - **Impact frame**: on the impact-frame tier and above, the attacker and the victim see one black-and-white high-contrast frame
-  (`shaders/post/impact_frame.json`, Minecraft's own post-processing): brightness cut hard into black and white, read through a
+  (`shaders/post/impact_frame.fsh`, a full-screen fragment shader run by `client/visual/FullscreenFx`): brightness cut hard into black and white, read through a
   slight blur so textures don't turn to grain, with the outlines of shapes inked black. It's the first frame of the freeze.
   Everyone else sees the flash.
-- **The screen shader hook** (`ScreenEffects`, `ScreenFx`): any post chain over one player's whole screen for a set time, from the
-  server, fading in and out by its `Amount` uniform. Time Manipulation's Standstill uses it for its gray (`kegare:grayscale`, §3.26). `/kegare debug screen <player> <effect> <seconds>` plays one.
+- **The screen shader hook** (`ScreenEffects`, `ScreenFx`): any full-screen fragment shader (`assets/<ns>/shaders/post/<path>.fsh`, GLSL 330,
+  the picture as `DiffuseSampler`) over one player's whole screen for a set time, from the server, fading in and out by its `Amount`
+  (`Params.x` of the `KegareFx` block). On 1.21.11 the old JSON post chains and `EffectInstance` programs no longer exist, so an effect is a
+  fragment shader alone; the hit-stop freeze copies the main target's colour and copies it back. Time Manipulation's Standstill uses it for its gray (`kegare:grayscale`, §3.26). `/kegare debug screen <player> <effect> <seconds>` plays one.
 
 **The melee layer's moments** (§3.22) play by themselves at the tier `[impact.moments]` gives them: `DASH_BURST` a light shake for
 the one dashing; `CLEAN_DODGE` a short freeze for the one who dodged; `PARRY_PERFECT` freeze, shake and a white flash for both
@@ -2399,7 +2437,7 @@ Big hits damage the world. This changes fights on purpose: cover breaks and the 
 **What breaks it.** Only hits strong enough, read from the Impact System's strength (§3.23): a hit at `minimumTier` (Medium) or
 above breaks blocks round where it met the body. Light hits never break anything. Swap never does (a clean magic trick). A hit by a
 player or their technique always may; a mob's only with the `mobGriefing` gamerule on (`mobsNeedGriefing`).
-- **`/gamerule kegareBattleDamage`** (default true) switches all of it per world. False: hits break nothing (no blocks, craters,
+- **`/gamerule kegare:battle_damage`** (default true; Fabric 1.21.11 game rules are namespaced ids, it was `kegareBattleDamage`) switches all of it per world. False: hits break nothing (no blocks, craters,
   wall-slam craters or spilled containers), and nothing about how they feel changes (hit-stop, shake, flashes, the impact frame).
   Rebuilds already pending in `RESTORING` still finish. While it's true, `mode` picks how breaking works.
 - **Area blasts** (`Impacts.blast`) also break the blocks at their own centre, whether or not they hit anyone: Curio Burst and Chain
@@ -2484,7 +2522,7 @@ default table (§3.21): Point Maker and Accelerate 0, Rewind 1, Decelerate 2, Fa
 |---|---|---|---|---|
 | **Point Maker** | INSTANT, two stages | 40 mark / 60 return | 12 s | With no mark out: mark the top of the block you're looking at (`markRange` 32; only you see the mark). It snapshots where you'll stand (the top of that block), your facing, your active effects and your health, and lasts `markSeconds` (15). Second cast: return to it, facing as you faced; every effect you've gained since is removed; heal `healFraction` (30%) of MAX health, but never more than you've lost since marking (so never above the snapshot): 20 → 8 comes back to 14, 20 → 18 to 20. It never touches Malice. The mark starts no cooldown; the return does, or the mark running out. Marked in another dimension: "Your mark is in another dimension.", free. The mark is gone on death, logout and a technique change, with no cooldown. |
 | ↳ **Rewind** (R) | INSTANT | 120 | 12 s, shared | The player or mob you're looking at (`[targeting] range` 24, in line of sight, `aimTolerance` 0.3) is snapped back to where it was `seconds` (3) ago: position only (health, effects and facing stay), nudged out of blocks, its fall reset. Needs an unbroken record of those 3 s in its current level: fizzles for free without one ("X has no past here to go back to."), when it's within 1 block of where it was then, since nothing would visibly happen ("X was already there."), and on a boss ("Time won't move X."). `TimeTargetEvent` first: cancelled, it fizzles with the Malice spent. |
-| **Accelerate** | TOGGLE | 60, then 40/s | 8 s (from switching off) | Your own clock runs `rate` (2.0) times as fast, and everything about you takes that one factor: walking, sprinting and swimming (multiplied attribute modifiers on movement and swim speed, not a potion), attack speed, mining speed (block break speed), using an item (eating, drinking, drawing a bow, loading a crossbow, raising a shield: its use counts down `rate` times as fast, on both sides; the client reads the rate back from the movement modifier the game already sends, so it needs no payload of its own), and every OTHER cooldown of your innate technique (`CooldownRates`). Full control and no momentum, so it never feels like Blur; jumping and gravity are unchanged. A sprint goes from 5.50 to 11.19 blocks a second, and a bread from 1.6 s to 0.8 s. |
+| **Accelerate** | TOGGLE | 60, then 40/s | 8 s (from switching off) | Your own clock runs `rate` (2.0) times as fast, and everything about you takes that one factor: walking and sprinting (multiplied attribute modifiers on movement speed, not a potion; swimming is not sped up on the Fabric build, which has no swim speed attribute: reduced), attack speed, mining speed (block break speed), using an item (eating, drinking, drawing a bow, loading a crossbow, raising a shield: its use counts down `rate` times as fast, on both sides; the client reads the rate back from the movement modifier the game already sends, so it needs no payload of its own), and every OTHER cooldown of your innate technique (`CooldownRates`). Full control and no momentum, so it never feels like Blur; jumping and gravity are unchanged. A sprint goes from 5.50 to 11.19 blocks a second, and a bread from 1.6 s to 0.8 s. |
 | ↳ **Fast Forward** (R) | INSTANT | 320 | 20 s, shared | `seconds` (6) off every OTHER cooldown of your technique at once: never Accelerate's own, never the ultimate's, never Burnout (it isn't a cooldown) and never a shared ability's (RMT). Switches Accelerate off if it's on, and puts it on their shared cooldown. |
 | **Decelerate** | INSTANT | 50 | 6 s | Throws a real projectile (`DecelerateEntity`, `speed` 2 blocks a tick, no gravity, gone after `flightSeconds` 1.5; blocks stop it). On a player or mob: `damage` (3, type `kegare:time_manipulation`, the caster credited), then for `seconds` (5) Slowness II and Mining Fatigue II, and (players) their ability cooldowns at `cooldownRate` 0.5. `TimeTargetEvent` comes before the cooldown slow: cancelled, the effects still land and the cooldowns don't slow. A boss takes the damage only. |
 | ↳ **Stasis Field** (R) | INSTANT | 140 | 14 s, shared | A field of `radius` 4 for `seconds` (5) on the block you're looking at (`range` 32; no block, free). Everything living inside gets Slowness V (`slownessAmplifier` 4), a boss excepted. Every projectile inside, yours too, keeps its direction at `projectileSpeed` (5%) of the speed it came in with (gravity can't bend it while it's in), and gets its own speed back the moment it leaves or the field ends (`StasisFields`). |
@@ -2660,7 +2698,7 @@ player alone (`SensesPayload`, only when it changes; an empty set once they stop
 Sensing isn't seeing: a Blurring or Accelerating player, whom eyes see behind where they are (§3.30), is outlined where they really
 are (`SensedPositionsPayload`, every tick).
 The client draws each sensed body's silhouette into a mask (invisible ones as if they weren't), its brightness how near it is, and
-`shaders/post/senses.json` lays a dim, pale, neutral two-pixel outline just outside each silhouette: never vanilla glowing, no team
+`shaders/post/senses.fsh` (alpha-blended over the picture) lays a dim, pale, neutral two-pixel outline just outside each silhouette: never vanilla glowing, no team
 or Malice color, no names or labels, nothing that tells a technique or trait (§1). It shows at every effects setting, because it's
 what they play by.
 
@@ -2701,11 +2739,12 @@ Technique Mode, unchanged (`client/SeveredKeys`). Controls lists the key as "Tec
   dust-grey, see-through, lit by the world like the body itself, never glowing), and dust and grit kicked off the ground they run on
   (vanilla block particles of that block). Where they really are reads clearly: the body itself is drawn as always, a sharp, solid
   silhouette at the front, and no afterimage is drawn within 0.9 blocks of it, so a hit on what you see is a hit on the real box.
-  A copy of a body carries no name tag (`client/visual/BodyCopies`, also used by Senses and Time Manipulation's afterimages).
+  A copy of a body carries no name tag (`client/visual/FlatBodies` draws what the entity renderer submits through one flat colour and never takes its name, shadow, fire, glint or outline; also used by Senses and Time Manipulation's afterimages; `BodyCopies` still wraps the extraction).
   Reduced draws three afterimages; Vanilla none, only the dust. No afterimage is drawn within 1.6 blocks of the camera looking at it,
   so your own smear shows in third person only, and someone blurring past or through you never fills your view with grey. **In first person** (`BlurFeel`): the view opens up to 12% wider the faster you go, and needle streaks run round the
   screen's edge, flowing from where you're headed; nothing is drawn inside the middle 60% of the screen. Half of it at Reduced, none
-  at Vanilla, and vanilla's FOV Effects slider scales the widening.
+  at Vanilla, and vanilla's FOV Effects slider scales the widening. (On 1.21.11 the HUD draws rectangles, not triangles: each needle is
+  three turned rectangles that widen a step at a time from its point, each fading along its length.)
 - **HUD:** "Blur" under the crosshair with the melee cues while it's on, "Winded" with a countdown bar while it can't come back, and
   "Closing Line" with a countdown bar while Closing Line cools down (below).
 
@@ -2907,7 +2946,7 @@ potential, where the next one comes easier, and consecutive Black Flashes can re
   - *120%*, *Nothing to Celebrate* and *Blessed by the Sparks*: a chain of 2, 4 and 7 Black Sparks on players. The chain is the zone's
     (above): a spark on a mob keeps the zone up but isn't counted, and the count ends with the zone.
   - *Lights Out*: a Black Spark sends a player into a block hard enough to make a wall-slam crater (§3.24), within the slam window of
-    the spark. With `kegareBattleDamage` off the same slam still counts (slams are watched either way; only the crater waits for the
+    the spark. With `kegare:battle_damage` off the same slam still counts (slams are watched either way; only the crater waits for the
     rule, `BattleDamage.addSlamListener`). Anyone can earn it.
 - **Tests:** `ZoneTest` (in for its time; x1.2 on melee and a technique but not on the hit that started it; RMT x1.2 with its fatigue
   ignored; refreshed, restoring fatigue; the chain 1, 2, then ended with the zone and starting over at 1; the command), `ZoneFatigueTest`
@@ -3191,9 +3230,9 @@ for the eye" (§3.30).
 **Something's Missing** (Six Eyes tab, goal, hidden and silent like the rest of it): a full-detail Read of a Severed player for the first time. The
 focus is the Read the server decides for itself, so that's the one it counts.
 
-**Eyewear** (Curios, a required dependency; client `EyewearRenderer`)
-- Two items for Curios' **Eyes** slot (`data/kegare/curios`, the item tag `curios:eyes`, a player's only Curios slot unless another mod adds
-  some): a **Blindfold** (string, black wool, string) and **Sunglasses** (tinted glass, iron nugget, tinted glass; a
+**Eyewear** (Trinkets, optional: without it nobody can wear eyewear, and the items still exist; client `EyewearRenderer`)
+- Two items for Trinkets' **Eyes** slot (`head/eyes`: `data/trinkets/slots/head/eyes.json` and `data/trinkets/entities/kegare.json` give every player
+  one, the item tag `trinkets:head/eyes` says what fits; Trinkets only reads slot data in its own namespace): a **Blindfold** (string, black wool, string) and **Sunglasses** (tinted glass, iron nugget, tinted glass; a
   registry alias from `kegare:tinted_glasses` keeps any already made or worn). Anyone can wear them and they mean nothing on a non-bearer, so wearing one
   proves nothing.
 - **Real 3D models,** ours (sources `art/blockbench/blindfold.bbmodel` and `sunglasses.bbmodel`, exported to `models/fx/` and `textures/entity/`), for everyone to see:
@@ -3201,7 +3240,7 @@ focus is the Read the server decides for itself, so that's the one it counts.
     narrow toward the temples, with diagonal folds in its shape and grey painted along their ridges. Matte and opaque. A flat overlap behind, no knot or tails.
   - The Sunglasses: two round lenses 2.9 pixels across (40 sides) on the eyes, a touch low on the nose, deep indigo, darker toward the top and a little lighter at the bottom, with a small
     highlight, see-through enough to show the eyes behind them. A hairline silver rim round each, a thin silver bridge with a small angular step, thin silver arms straight back along the head.
-- **Drawing them** (`EyewearRenderer`, Curios' `ICurioRenderer`): under the head's transform, so they follow turning, looking up and down, sneaking, swimming, crawling, sleeping and every animation that moves the
+- **Drawing them** (`EyewearRenderer`, called from the equipment slot mod's own renderer, Trinkets' `TrinketRenderer` on 1.21.11, and from `DisguisedEyewearLayer`): under the head's transform, so they follow turning, looking up and down, sneaking, swimming, crawling, sleeping and every animation that moves the
   head. They sit outside the hat layer (4.5: the lenses at 4.53, the frame at 4.6, the cloth from 4.56 to 4.74), so hair never covers them, and close enough not to float.
   - **Under a helmet:** no rule of their own. They sit inside a helmet's shell (5.0) and a worn skull (4.75), so a helmet shows them only through its face opening and never with anything clipping through it; a carved pumpkin or a
     skull hides them altogether. A modded helmet with a tighter shell could cut them.
@@ -3214,8 +3253,8 @@ focus is the Read the server decides for itself, so that's the one it counts.
     face's eyewear sent, and again the moment the face changes it; through the wire; Awareness both ways).
 - **Eyewear never reduces what the eyes see:** range, map, outlines, voids, Reads and efficiency stay full when covered. It changes only how
   fast Strain moves, and whether the uncovered edge is there.
-- **Curios' own key:** Curios opens its screen on G by default, which is Technique Mode. While it sits on G it's moved to J
-  (`EyewearClient`, saved to the player's options); any other key they've chosen is left alone. The inventory's Curios button still works.
+- **No key to move:** Trinkets has no key binding of its own (its slot screen opens from the inventory's button), so nothing competes
+  with Technique Mode's G. (Curios did, and was moved to J; that code is gone.)
 
 **Strain and the uncovered edge** (`Strain`, `Edge`, `SixEyesData`; attachment `kegare:six_eyes`, saved, kept on death, wiped when the eyes go)
 - **Strain** (0 to 100) is the eyes' fatigue, private to the bearer (a small meter under the crosshair, `StrainClient`). It builds in a fight
@@ -3278,7 +3317,7 @@ focus is the Read the server decides for itself, so that's the one it counts.
 ### 3.33 Postgres storage (package `database`)
 
 Optional: a server owner can move all of Kegare's saved data off the server's world files and into Postgres. Postgres only, and Kegare's data only: vanilla's own player files (inventory, ender chest, health, position)
-stay with Minecraft, and so do other mods' attachments, Curios' with the eyewear in it among them.
+stay with Minecraft, and so do other mods' attachments, Trinkets' with the eyewear in it among them.
 
 **Off by default.** With it off, world saving works exactly as it always has and no connection is ever opened. On a client, even a singleplayer one, it's never on: only a dedicated server reads the settings, so a client never opens a connection. The driver
 (`org.postgresql:postgresql`) is bundled through jarJar, so nobody installs anything. There's no pool library: `ConnectionPool` is our own, and uses the driver directly, not through DriverManager, which can't see into a mod's module layer.

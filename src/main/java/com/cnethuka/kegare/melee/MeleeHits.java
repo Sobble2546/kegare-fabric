@@ -25,9 +25,9 @@ public final class MeleeHits {
     /** A hit's damage before the target's armour, armour enchantments and effects took their share (in {@code LivingDamageEvent.Pre}). */
     public static float beforeDefences(com.cnethuka.kegare.platform.event.entity.living.LivingDamageEvent.Pre event) {
         var c = event.getContainer();
-        return event.getNewDamage() + c.getReduction(net.neoforged.neoforge.common.damagesource.DamageContainer.Reduction.ARMOR)
-                + c.getReduction(net.neoforged.neoforge.common.damagesource.DamageContainer.Reduction.ENCHANTMENTS)
-                + c.getReduction(net.neoforged.neoforge.common.damagesource.DamageContainer.Reduction.MOB_EFFECTS);
+        return event.getNewDamage() + c.getReduction(com.cnethuka.kegare.platform.damage.DamageContainer.Reduction.ARMOR)
+                + c.getReduction(com.cnethuka.kegare.platform.damage.DamageContainer.Reduction.ENCHANTMENTS)
+                + c.getReduction(com.cnethuka.kegare.platform.damage.DamageContainer.Reduction.MOB_EFFECTS);
     }
 
     public static Kind of(DamageSource source, ServerLevel level) {
@@ -36,7 +36,7 @@ public final class MeleeHits {
             return attacker instanceof ServerPlayer player && CastScope.current(player) != null ? Kind.TECHNIQUE : Kind.MELEE;
         }
         // Every technique's damage is its own Kegare damage type; the attribution catches anything that isn't.
-        if (source.typeHolder().unwrapKey().map(key -> key.location().getNamespace().equals("kegare")).orElse(false)) return Kind.TECHNIQUE;
+        if (source.typeHolder().unwrapKey().map(key -> key.identifier().getNamespace().equals("kegare")).orElse(false)) return Kind.TECHNIQUE;
         Attribution.Hit hit = Attribution.of(source, level.getServer());
         return hit != null && hit.ability() != null ? Kind.TECHNIQUE : Kind.OTHER;
     }

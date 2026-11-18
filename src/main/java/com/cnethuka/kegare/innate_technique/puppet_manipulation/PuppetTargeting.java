@@ -62,7 +62,7 @@ public final class PuppetTargeting {
         T best = null;
         double bestDistance = Double.MAX_VALUE;
         AABB search = caster.getBoundingBox().expandTowards(look.scale(reach)).inflate(1.0 + TOLERANCE);
-        for (T other : caster.serverLevel().getEntitiesOfClass(type, search, valid::test)) {
+        for (T other : caster.level().getEntitiesOfClass(type, search, valid::test)) {
             AABB box = other.getBoundingBox().inflate(TOLERANCE);
             Optional<Vec3> hit = box.contains(eye) ? Optional.of(eye) : box.clip(eye, end);
             if (hit.isEmpty()) continue;

@@ -332,7 +332,7 @@ public final class LanceAftermath {
     static boolean nearOwnCamera(Vec3 at, double reach) {
         Minecraft mc = Minecraft.getInstance();
         if (!mc.options.getCameraType().isFirstPerson()) return false;
-        return mc.gameRenderer.getMainCamera().getPosition().distanceToSqr(at) < reach * reach;
+        return mc.gameRenderer.getMainCamera().position().distanceToSqr(at) < reach * reach;
     }
 
     // ---------------------------------------------------------------------------------------------- drawing
@@ -344,7 +344,7 @@ public final class LanceAftermath {
         ClientLevel level = mc.level;
         if (level == null) return;
         Camera camera = event.getCamera();
-        Vec3 cam = camera.getPosition();
+        Vec3 cam = camera.position();
         float partial = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
         PoseStack pose = new PoseStack();

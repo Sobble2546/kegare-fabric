@@ -5,7 +5,6 @@ import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.sound.KegareSounds;
 import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -15,6 +14,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import com.cnethuka.kegare.platform.NeoForge;
@@ -40,7 +41,9 @@ public class DecelerateEntity extends ThrowableProjectile {
     }
 
     DecelerateEntity(Level level, LivingEntity caster) {
-        super(TimeRegistry.DECELERATE.get(), caster, level);
+        // What the owner-taking constructor did before 1.21.2: at the thrower's eyes, owned by them.
+        super(TimeRegistry.DECELERATE.get(), caster.getX(), caster.getEyeY() - 0.1, caster.getZ(), level);
+        setOwner(caster);
         this.damage = TimeConfig.DECELERATE_DAMAGE.get().floatValue();
         this.lifetime = Math.max(1, TimeConfig.ticks(TimeConfig.DECELERATE_RANGE_SECONDS));
     }
@@ -76,13 +79,13 @@ public class DecelerateEntity extends ThrowableProjectile {
     static void strike(net.minecraft.world.entity.Entity hand, @Nullable ServerPlayer caster, LivingEntity target, float damage) {
         boolean wasCooling = target instanceof ServerPlayer player && cooling(player);
         // A target frozen in a Standstill has the hit held for the resume; the slow still goes on now.
-        if (!target.hurt(TimeDamage.source(hand.level(), hand, caster), damage) && !TimeStops.holding(target)) return;
+        if (!target.hurtOrSimulate(TimeDamage.source(hand.level(), hand, caster), damage) && !TimeStops.holding(target)) return;
         TimeManipulation.sound(target, KegareSounds.TIME_TICK, 1f, 0.55f);
         if (TimeTargeting.immune(target)) return; // a boss takes the damage, never the slow
         int ticks = TimeConfig.ticks(TimeConfig.DECELERATE_SECONDS);
         if (ticks <= 0) return;
-        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, ticks, TimeConfig.DECELERATE_SLOWNESS.get()), caster);
-        target.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, ticks, TimeConfig.DECELERATE_FATIGUE.get()), caster);
+        target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, ticks, TimeConfig.DECELERATE_SLOWNESS.get()), caster);
+        target.addEffect(new MobEffectInstance(MobEffects.MINING_FATIGUE, ticks, TimeConfig.DECELERATE_FATIGUE.get()), caster);
         if (target instanceof ServerPlayer player && caster != null
                 && !NeoForge.EVENT_BUS.post(new TimeTargetEvent(caster, player, TimeManipulation.DECELERATE)).isCanceled()) {
             CooldownRates.set(player, new CooldownRates.Rate("decelerate", TimeConfig.DECELERATE_COOLDOWN_RATE.get(), key -> true,
@@ -107,17 +110,17 @@ public class DecelerateEntity extends ThrowableProjectile {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("Lifetime", lifetime);
         tag.putFloat("Damage", damage);
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        lifetime = tag.getInt("Lifetime");
-        damage = tag.getFloat("Damage");
+        lifetime = tag.getIntOr("Lifetime", 0);
+        damage = tag.getFloatOr("Damage", 0f);
     }
 
     @Nullable

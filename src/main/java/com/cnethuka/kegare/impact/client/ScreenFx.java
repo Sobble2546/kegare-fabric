@@ -1,23 +1,20 @@
 package com.cnethuka.kegare.impact.client;
 
 import com.cnethuka.kegare.Kegare;
+import com.cnethuka.kegare.client.visual.FullscreenFx;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.PostChain;
 import net.minecraft.resources.Identifier;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
 
 /**
  * What the Impact System does to the whole picture (DESIGN §3.23), after the world and your hand are drawn and before the HUD (called
@@ -25,23 +22,26 @@ import org.lwjgl.opengl.GL30;
  * <ul>
  * <li><b>Hit-stop</b>: the frame a hit lands on is shown again for a few frames, freezing the picture. Only the picture: the game
  * ticks on underneath, keys are read, the HUD stays live, and when it ends everything shows where it really is.</li>
- * <li><b>Screen effects</b>: post-processing chains ({@code assets/<namespace>/shaders/post/<path>.json}, vanilla's
- * {@link PostChain}) over the whole screen for a time, faded by their {@code Amount} uniform. The impact frame is one; the server's
- * screen effect hook plays others (grayscale for players a Standstill freezes; its inverted frame comes from its own client code).</li>
+ * <li><b>Screen effects</b>: a full-screen shader pass ({@link FullscreenFx}; {@code assets/<namespace>/shaders/post/<path>.fsh},
+ * GLSL 330, reading the picture as {@code DiffuseSampler} and its fade as {@code Params.x}) over the whole screen for a time, faded
+ * by that Amount. The impact frame is one; the server's screen effect hook plays others (grayscale for players a Standstill freezes;
+ * its inverted frame comes from its own client code).</li>
  * </ul>
- * A chain that won't load (a driver that can't run it) is logged once and skipped; the rest still play.
+ * A shader that won't load (a driver that can't run it, or no such file) is logged once and skipped; the rest still play. 1.21.11 has no
+ * JSON post chain to load any more (the old {@code shaders/post/*.json} format is gone), so an effect is a fragment shader alone.
  */
 public final class ScreenFx {
     private static @Nullable TextureTarget held;
+    /** What an effect reads: the picture as it was before the effect, since a pass can't read what it writes. */
+    private static @Nullable TextureTarget scratch;
     private static boolean capturing, holding;
     /** The freeze asked for, counted from the frame it's captured on: a slow frame must never eat it. */
     private static long holdMillis;
     private static long holdUntil;
 
-    private static final Map<Identifier, PostChain> CHAINS = new HashMap<>();
+    private static final Map<Identifier, FullscreenFx> EFFECTS = new HashMap<>();
     private static final Set<Identifier> BROKEN = new HashSet<>();
     private static final Map<Identifier, Playing> PLAYING = new LinkedHashMap<>();
-    private static int chainWidth, chainHeight;
 
     /** {@code start} and {@code end} are -1 until it's first drawn: its time counts from there, so it's always seen at least once. */
     private record Playing(long millis, long fade, long start, long end) {
@@ -103,15 +103,12 @@ public final class ScreenFx {
             holding = true;
             holdUntil = now + holdMillis * 1_000_000L;
             holdMillis = 0;
-            copy(main, held(main));
+            FullscreenFx.copy(main, held(main));
         } else if (holding) {
             if (now >= holdUntil) holding = false;
-            else if (held != null && held.width == main.width && held.height == main.height) copy(held, main);
+            else if (held != null && held.width == main.width && held.height == main.height) FullscreenFx.copy(held, main);
         }
         if (PLAYING.isEmpty()) return;
-        RenderSystem.disableBlend();
-        RenderSystem.disableDepthTest();
-        RenderSystem.resetTextureMatrix();
         for (Iterator<Map.Entry<Identifier, Playing>> it = PLAYING.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<Identifier, Playing> e = it.next();
             Playing p = e.getValue().started(now);
@@ -120,54 +117,57 @@ public final class ScreenFx {
                 it.remove();
                 continue;
             }
-            PostChain chain = chain(mc, main, e.getKey());
-            if (chain == null) continue;
-            chain.setUniform("Amount", p.amount(now));
-            chain.process(deltaTracker.getGameTimeDeltaTicks());
+            FullscreenFx fx = effect(mc, e.getKey());
+            if (fx == null) continue;
+            try {
+                TextureTarget before = scratch(main);
+                FullscreenFx.copy(main, before);
+                fx.draw(main, new float[] {p.amount(now)}, false, before.getColorTextureView());
+            } catch (RuntimeException | LinkageError error) {
+                fail(e.getKey(), error);
+            }
         }
-        main.bindWrite(false);
     }
 
     private static TextureTarget held(RenderTarget main) {
-        if (held == null) held = new TextureTarget(main.width, main.height, false, Minecraft.ON_OSX);
-        else if (held.width != main.width || held.height != main.height) held.resize(main.width, main.height, Minecraft.ON_OSX);
+        if (held == null) held = new TextureTarget("kegare_hit_stop", main.width, main.height, false);
+        else if (held.width != main.width || held.height != main.height) held.resize(main.width, main.height);
         return held;
     }
 
-    private static void copy(RenderTarget from, RenderTarget to) {
-        GlStateManager._glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, from.frameBufferId);
-        GlStateManager._glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, to.frameBufferId);
-        GlStateManager._glBlitFrameBuffer(0, 0, from.width, from.height, 0, 0, to.width, to.height, GL11.GL_COLOR_BUFFER_BIT, GL11.GL_NEAREST);
-        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
-        Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
+    private static TextureTarget scratch(RenderTarget main) {
+        if (scratch == null) scratch = new TextureTarget("kegare_screen_fx", main.width, main.height, false);
+        else if (scratch.width != main.width || scratch.height != main.height) scratch.resize(main.width, main.height);
+        return scratch;
     }
 
-    private static @Nullable PostChain chain(Minecraft mc, RenderTarget main, Identifier effect) {
+    private static @Nullable FullscreenFx effect(Minecraft mc, Identifier effect) {
         if (BROKEN.contains(effect)) return null;
-        if (chainWidth != main.width || chainHeight != main.height) {
-            chainWidth = main.width;
-            chainHeight = main.height;
-            CHAINS.values().forEach(c -> c.resize(main.width, main.height));
-        }
-        PostChain chain = CHAINS.get(effect);
-        if (chain != null) return chain;
-        Identifier file = Identifier.fromNamespaceAndPath(effect.getNamespace(), "shaders/post/" + effect.getPath() + ".json");
-        try {
-            chain = new PostChain(mc.getTextureManager(), mc.getResourceManager(), main, file);
-            chain.resize(main.width, main.height);
-            CHAINS.put(effect, chain);
-            return chain;
-        } catch (Exception | LinkageError e) {
+        FullscreenFx fx = EFFECTS.get(effect);
+        if (fx != null) return fx;
+        Identifier file = Identifier.fromNamespaceAndPath(effect.getNamespace(), "shaders/post/" + effect.getPath() + ".fsh");
+        if (mc.getResourceManager().getResource(file).isEmpty()) {
             BROKEN.add(effect);
-            Kegare.LOGGER.warn("Screen effect {} can't load ({}); skipping it", effect, e.toString());
+            Kegare.LOGGER.warn("Screen effect {} has no shader ({}); skipping it", effect, file);
             return null;
         }
+        fx = new FullscreenFx(effect.getNamespace() + "_" + effect.getPath(),
+                Identifier.fromNamespaceAndPath(effect.getNamespace(), "post/" + effect.getPath()), List.of("DiffuseSampler"), false);
+        EFFECTS.put(effect, fx);
+        return fx;
     }
 
-    /** Resource packs changed: the chains load again. */
+    private static void fail(Identifier effect, Throwable error) {
+        BROKEN.add(effect);
+        FullscreenFx fx = EFFECTS.remove(effect);
+        if (fx != null) fx.close();
+        Kegare.LOGGER.warn("Screen effect {} can't run ({}); skipping it", effect, error.toString());
+    }
+
+    /** Resource packs changed: the shaders load again. */
     public static void reload() {
-        CHAINS.values().forEach(PostChain::close);
-        CHAINS.clear();
+        EFFECTS.values().forEach(FullscreenFx::close);
+        EFFECTS.clear();
         BROKEN.clear();
     }
 

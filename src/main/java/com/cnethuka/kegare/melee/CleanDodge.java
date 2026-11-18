@@ -93,7 +93,7 @@ public final class CleanDodge {
 
     private static void dodged(ServerPlayer player, MeleeState state, Vec3 at, @Nullable Entity from) {
         state.ghost = null;
-        MeleeImpact.CLEAN_DODGE.fire(player.serverLevel(), at, player);
+        MeleeImpact.CLEAN_DODGE.fire(player.level(), at, player);
         ReinforcedStrike.earn(player, state);
         Entity thrower = from instanceof Projectile shot ? shot.getOwner() : from;
         if (thrower instanceof ServerPlayer opponent && Attribution.isRealTarget(player, opponent)) FightTracker.meleeMove(player, opponent, MeleeMoves.CLEAN_DODGE);

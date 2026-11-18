@@ -1,6 +1,8 @@
 package com.cnethuka.kegare.battledamage;
 
+import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.battledamage.BattleDamageConfig.Mode;
+import net.fabricmc.fabric.api.gamerule.v1.GameRuleBuilder;
 import com.cnethuka.kegare.impact.Impact;
 import com.cnethuka.kegare.impact.ImpactStrength;
 import com.cnethuka.kegare.impact.ImpactTier;
@@ -32,7 +34,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRule;
+import net.minecraft.world.level.gamerules.GameRuleCategory;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
@@ -74,12 +78,12 @@ public final class BattleDamage {
     private BattleDamage() {}
 
     /**
-     * {@code /gamerule kegareBattleDamage} (default true). False: hits break nothing (no blocks, craters, wall-slam craters or spilled
+     * {@code /gamerule kegare:battle_damage} (default true; game rules are namespaced ids since 1.21.11). False: hits break nothing (no blocks, craters, wall-slam craters or spilled
      * containers), while how they feel is unchanged; rebuilds already under way in RESTORING still finish. When it's true,
      * {@code [battle_damage] mode} picks how breaking works.
      */
-    public static final GameRules.Key<GameRules.BooleanValue> RULE =
-            GameRules.register("kegareBattleDamage", GameRules.Category.MISC, GameRules.BooleanValue.create(true));
+    public static final GameRule<Boolean> RULE = GameRuleBuilder.forBoolean(true).category(GameRuleCategory.MISC)
+            .buildAndRegister(Kegare.id("battle_damage"));
 
     public static void init() {
         NeoForge.EVENT_BUS.addListener(BattleDamage::onEntityJoin);
@@ -118,14 +122,14 @@ public final class BattleDamage {
 
     /** Whether hits break anything here at all ({@link #RULE}). */
     public static boolean on(ServerLevel level) {
-        return level.getGameRules().getBoolean(RULE);
+        return level.getGameRules().get(RULE);
     }
 
     /** With the rule on: a player's hit (or their technique's) always; a mob's or nobody's only where mobs may grief. */
     static boolean allowed(ServerLevel level, @Nullable Entity attacker) {
         if (!on(level)) return false;
         if (attacker instanceof Player) return true;
-        return !BattleDamageConfig.MOBS_NEED_GRIEFING.get() || level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
+        return !BattleDamageConfig.MOBS_NEED_GRIEFING.get() || level.getGameRules().get(GameRules.MOB_GRIEFING);
     }
 
     /** A slam into a wall, floor or ceiling at {@code speed} (blocks/tick), meeting it at {@code at}: a crater, no damage. */
@@ -191,7 +195,7 @@ public final class BattleDamage {
             protectedTags = tags;
             protectedFrom = list;
         }
-        if (protectedBlocks.contains(state.getBlockHolder().unwrapKey().map(ResourceKey::location).orElse(null))) return true;
+        if (protectedBlocks.contains(state.getBlockHolder().unwrapKey().map(ResourceKey::identifier).orElse(null))) return true;
         for (TagKey<Block> tag : protectedTags) if (state.is(tag)) return true;
         return false;
     }

@@ -1,5 +1,6 @@
 package com.cnethuka.kegare.innate_technique.time_manipulation;
 
+import com.cnethuka.kegare.platform.EntityCompat;
 import com.cnethuka.kegare.combat.CombatHelper;
 import com.cnethuka.kegare.impact.ScreenEffects;
 import com.cnethuka.kegare.innatetechnique.Burnout;
@@ -147,7 +148,7 @@ public final class TimeStops {
     // ---------------------------------------------------------------- starting and ending
 
     static Stop start(ServerPlayer caster, Vec3 centre, double radius, int ticks) {
-        ServerLevel level = caster.serverLevel();
+        ServerLevel level = caster.level();
         Stop stop = new Stop(level, caster, centre, radius, level.getGameTime() + ticks);
         STOPS.put(level.dimension(), stop);
         refresh(stop, true);
@@ -173,7 +174,7 @@ public final class TimeStops {
         stop.level.playSound(null, stop.centre.x, stop.centre.y, stop.centre.z, KegareSounds.TIME_RESUME.value(), SoundSource.PLAYERS, volume, 1f);
         // Everything lands at once.
         for (Map.Entry<LivingEntity, Queued> e : stop.queued.entrySet()) land(e.getKey(), e.getValue());
-        for (LivingEntity e : wasFrozen) e.invulnerableTime = 0;
+        for (LivingEntity e : wasFrozen) EntityCompat.setInvulnerableTime(e, 0);
         for (ServerPlayer p : stop.held.keySet()) if (p.isAlive() && !p.isRemoved()) InsightHooks.survivedStandstill(p);
         for (UUID owner : stop.hung.values()) VOLLEY_HITS.remove(owner); // each stop's volley counts on its own
         for (Map.Entry<Entity, UUID> e : stop.hung.entrySet()) {
@@ -191,9 +192,9 @@ public final class TimeStops {
         if (!victim.isAlive() || victim.isRemoved() || q.total <= 0f || q.source == null) return;
         landing = victim;
         try {
-            victim.invulnerableTime = 0;
+            EntityCompat.setInvulnerableTime(victim, 0);
             victim.hurt(q.source, (float) Math.min(q.total, TimeConfig.STANDSTILL_DAMAGE_CAP.get()));
-            victim.invulnerableTime = 0; // projectiles that hung in the air land right after, in full
+            EntityCompat.setInvulnerableTime(victim, 0); // projectiles that hung in the air land right after, in full
         } finally {
             landing = null;
         }

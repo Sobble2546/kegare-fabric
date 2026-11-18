@@ -17,8 +17,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import net.minecraft.data.PackOutput;
-import net.neoforged.neoforge.common.data.LanguageProvider;
+import java.util.concurrent.CompletableFuture;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.world.item.Item;
 
 /**
  * Generates {@code assets/kegare/lang/en_us.json}. This is the ONLY place player-facing names live.
@@ -26,7 +29,7 @@ import net.neoforged.neoforge.common.data.LanguageProvider;
  * Fails datagen if a registered innate technique, ability or trait has no name or one-line description ({@code .desc}), or an
  * innate technique has no epithet ({@code .epithet}).
  */
-public final class KegareLanguageProvider extends LanguageProvider {
+public final class KegareLanguageProvider extends FabricLanguageProvider {
     // ---- Display terms. Code IDs match them: malice / innate_technique / dominion / severed. ----
     // "Kegare" is the mod name and is reserved for the future hostile spirit mobs; never use it for the energy.
     private static final String MALICE = "Malice";
@@ -38,18 +41,33 @@ public final class KegareLanguageProvider extends LanguageProvider {
 
     private final Set<String> written = new HashSet<>();
 
-    public KegareLanguageProvider(PackOutput output) {
-        super(output, Kegare.MODID, "en_us");
+    /** Fabric hands the builder in per call; the {@code add(...)} calls below go through this one. */
+    private TranslationBuilder out;
+
+    public KegareLanguageProvider(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+        super(output, "en_us", registries);
     }
 
     @Override
-    public void add(String key, String value) {
+    public void generateTranslations(HolderLookup.Provider registries, TranslationBuilder builder) {
+        out = builder;
+        try {
+            addTranslations();
+        } finally {
+            out = null;
+        }
+    }
+
+    private void add(String key, String value) {
         written.add(key);
-        super.add(key, value);
+        out.add(key, value);
     }
 
-    @Override
-    protected void addTranslations() {
+    private void add(Item item, String value) {
+        add(item.getDescriptionId(), value);
+    }
+
+    private void addTranslations() {
         // Terms, for UI that wants the bare word.
         add("kegare.term.malice", MALICE);
         add("kegare.term.innate_technique", INNATE_TECHNIQUE);
@@ -61,7 +79,7 @@ public final class KegareLanguageProvider extends LanguageProvider {
         add("item.kegare.purification_talisman.desc", "Rerolls your " + INNATE_TECHNIQUE + ". " + MALICE + " and traits are untouched.");
 
         // Keybinds
-        add("key.categories.kegare", "Kegare");
+        add("key.category.kegare.main", "Kegare");
         add("key.kegare.special", "Special (with a number key)");
         add("key.kegare.technique_mode", "Technique Mode / Blur");
         add("key.kegare.parry", "Parry");
@@ -329,13 +347,17 @@ public final class KegareLanguageProvider extends LanguageProvider {
         // Eyewear (DESIGN §3.32): anyone's.
         add("itemGroup.kegare", "Kegare");
         add("disconnect.kegare.db.unreachable", "Kegare can't reach its database. Your data is safe; try again shortly.");
+        // Kegare is needed on both sides (platform/net: the join handshake).
+        add("kegare.network.missing", "Kegare is required on this server. Install the Kegare mod (same version as the server).");
+        add("kegare.network.version", "Kegare network version mismatch: the server uses %s, your client uses %s. Use the same Kegare version as the server.");
+        add("kegare.network.timeout", "The Kegare handshake timed out.");
         add("disconnect.kegare.db.held", "Your data is still being saved on another server. Try again in a moment.");
         add("disconnect.kegare.db.lease_lost", "Your data has moved to another server.");
         add("message.kegare.db.down", "Kegare can't reach its database. The game carries on and saves are queued.");
         add("message.kegare.db.up", "Kegare's database is back. Queued saves are going in.");
         add("item.kegare.blindfold", "Blindfold");
         add("item.kegare.sunglasses", "Sunglasses");
-        add("curios.identifier.eyes", "Eyes");
+        add("trinkets.slot.head.eyes", "Eyes");
         add("death.attack.kegare.eyes_collapse", "%1$s's mind gave out");
         add("death.attack.kegare.eyes_collapse.player", "%1$s's mind gave out while fighting %2$s");
 

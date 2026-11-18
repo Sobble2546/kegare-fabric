@@ -20,6 +20,6 @@ public final class RimeDamage {
      * @param caster who cast it (source entity), credited with kills
      */
     public static DamageSource source(Level level, Entity direct, @Nullable Entity caster) {
-        return new DamageSource(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(RIME), direct, caster);
+        return new DamageSource(level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(RIME), direct, caster);
     }
 }

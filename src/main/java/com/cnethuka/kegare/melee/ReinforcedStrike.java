@@ -8,6 +8,7 @@ import com.cnethuka.kegare.progression.Landings;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
+import com.cnethuka.kegare.platform.EntityCompat;
 
 /**
  * Reinforcement, spent: no key and no slot. A perfect parry or a clean dodge readies it, and the next melee hit in time lands
@@ -89,12 +90,12 @@ public final class ReinforcedStrike {
         double knockback = numbers.strikeKnockback();
         if (!CombatHelper.isBoss(target) && knockback > 0) { // bosses: damaged, never moved
             target.knockback(knockback, attacker.getX() - target.getX(), attacker.getZ() - target.getZ());
-            target.hurtMarked = true;
+            EntityCompat.markHurt(target);
         }
         VisualService.playOnce(attacker, Visual.animation(MeleeIds.ANIM_REINFORCED_STRIKE));
         Vec3 at = target.position().add(0, target.getBbHeight() * 0.6, 0);
         MeleeTell.playStrikeImpact(attacker, at);
-        MeleeImpact.STRIKE_HIT.fire(attacker.serverLevel(), at, target, attacker);
+        MeleeImpact.STRIKE_HIT.fire(attacker.level(), at, target, attacker);
         float strike = beforeDefences * (float) (1.0 + numbers.strikeBonus());
         LANDED.forEach(listener -> listener.landed(attacker, target, strike));
         return damage * (float) (1.0 + numbers.strikeBonus());

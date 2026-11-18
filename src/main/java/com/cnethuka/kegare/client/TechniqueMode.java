@@ -3,6 +3,7 @@ package com.cnethuka.kegare.client;
 import com.cnethuka.kegare.innatetechnique.InnateTechnique;
 import com.cnethuka.kegare.network.SyncPayload;
 import com.cnethuka.kegare.registry.KegareRegistries;
+import com.cnethuka.kegare.platform.net.ClientNet;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 
@@ -46,7 +47,7 @@ public final class TechniqueMode {
             exit();
         } else if (abilitiesAvailable()) {
             active = true;
-            shownAtMs = net.minecraft.Util.getMillis();
+            shownAtMs = net.minecraft.util.Util.getMillis();
         }
     }
 
@@ -57,7 +58,7 @@ public final class TechniqueMode {
     /** The local player has an innate technique with abilities, is alive and is not Severed. */
     public static boolean abilitiesAvailable() {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.player.isDeadOrDying() || mc.player.isSpectator()) return false;
+        if (!ClientNet.isActive() || mc.player == null || mc.player.isDeadOrDying() || mc.player.isSpectator()) return false; // inert off a Kegare server
         return current() != null && ClientLoadout.size() > 0;
     }
 

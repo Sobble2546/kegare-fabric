@@ -3,10 +3,13 @@ package com.cnethuka.kegare.combat;
 import com.cnethuka.kegare.config.KegareServerConfig;
 import com.cnethuka.kegare.registry.KegareAttachments;
 import com.cnethuka.kegare.innatetechnique.CastManager;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.neoforge.common.Tags;
 
 /**
  * Shared combat state for abilities, dominions and anything else that needs it.
@@ -14,6 +17,9 @@ import net.neoforged.neoforge.common.Tags;
  * Reads never create the attachment, so querying mobs is free.
  */
 public final class CombatHelper {
+    /** {@code c:bosses}, the convention tag Fabric API ships with the wither and the ender dragon (NeoForge's {@code BOSSES}). */
+    public static final TagKey<EntityType<?>> BOSSES = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath("c", "bosses"));
+
     private CombatHelper() {}
 
     private static long now(LivingEntity entity) {
@@ -25,7 +31,7 @@ public final class CombatHelper {
      * innate techniques but are never moved, swapped or disabled (no freeze, launch, knockback or swap).
      */
     public static boolean isBoss(Entity entity) {
-        return entity.getType().is(Tags.EntityTypes.BOSSES);
+        return entity.getType().is(BOSSES);
     }
 
     /** Marks the entity as in combat right now (also pauses Malice regen). */

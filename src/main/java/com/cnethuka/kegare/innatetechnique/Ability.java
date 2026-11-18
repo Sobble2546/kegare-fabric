@@ -2,7 +2,7 @@ package com.cnethuka.kegare.innatetechnique;
 
 import java.util.List;
 import java.util.Optional;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;

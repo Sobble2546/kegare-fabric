@@ -58,7 +58,7 @@ public final class RefinementService {
     /** From the shared hit path: {@code ability} landed on {@code target}, a real target. */
     static void onLanded(ServerPlayer caster, LivingEntity target, Ability ability) {
         RefinementData data = get(caster);
-        long now = caster.server.overworld().getGameTime();
+        long now = caster.level().getServer().overworld().getGameTime();
         long window = ProgressionConfig.ticks(ProgressionConfig.ROLLING_WINDOW);
         int earlier = data.hits.count(target.getUUID(), now, window);
         data.hits.record(target.getUUID(), now, window);

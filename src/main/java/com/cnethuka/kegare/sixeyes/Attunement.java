@@ -70,7 +70,7 @@ public final class Attunement {
     /** A pin the client says it made: only a bearer, only something living in their own dimension. */
     static void pinned(ServerPlayer bearer, int entityId) {
         if (!SixEyes.isBearer(bearer)) return;
-        Entity target = bearer.serverLevel().getEntity(entityId);
+        Entity target = bearer.level().getEntity(entityId);
         if (target instanceof LivingEntity && target != bearer && fresh(PINS, bearer, entityId)) add(bearer, SixEyesConfig.ATTUNEMENT_PIN.get());
     }
 

@@ -17,7 +17,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.Vec3;
 import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
 import com.cnethuka.kegare.platform.client.event.ClientTickEvent;
-import org.joml.Vector3f;
 
 /**
  * The green orb on its finder's client (nobody else is ever sent it). Draws it where the server says it has got to on the route
@@ -25,8 +24,8 @@ import org.joml.Vector3f;
  * the server says it was taken in. Only ever shows: the server decides everything.
  */
 public final class GreenOrbClient {
-    private static final DustParticleOptions GREEN = new DustParticleOptions(new Vector3f(0.45f, 1f, 0.55f), 1.2f);
-    private static final DustParticleOptions WHITE = new DustParticleOptions(new Vector3f(1f, 1f, 1f), 0.5f);
+    private static final DustParticleOptions GREEN = new DustParticleOptions(0x73FF8C, 1.2f);
+    private static final DustParticleOptions WHITE = new DustParticleOptions(0xFFFFFF, 0.5f);
     private static final int DOTS_PER_LEG = 4;
 
     @Nullable

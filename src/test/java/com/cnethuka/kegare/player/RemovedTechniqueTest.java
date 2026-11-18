@@ -25,7 +25,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import com.cnethuka.kegare.platform.attachment.AttachmentHolder;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -61,7 +61,7 @@ public class RemovedTechniqueTest {
         assertEquals(10, RefinementService.peak(player), "Peak Refinement stays");
         assertTrue(LoadoutService.slots(player).stream().flatMap(java.util.Optional::stream).noneMatch(RemovedTechniqueTest::removed), "nothing removed on the bar");
         assertTrue(InnateTechniqueService.get(player).cooldowns().keySet().stream().noneMatch(RemovedTechniqueTest::removed), "nor cooling down");
-        assertFalse(TestServer.hasAdvancement(player.server, player, KegareAdvancements.REAWAKENING), "it's not a talisman's reroll");
+        assertFalse(TestServer.hasAdvancement(player.level().getServer(), player, KegareAdvancements.REAWAKENING), "it's not a talisman's reroll");
     }
 
     private static boolean removed(Identifier id) {

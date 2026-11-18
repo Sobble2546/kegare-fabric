@@ -6,6 +6,7 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -29,7 +30,8 @@ public final class RimeEnvironment {
         BlockPos pos = entity.blockPosition();
         List<CostEnvironment.Factor> factors = new ArrayList<>();
         boolean hot = false;
-        if (level.dimensionType().ultraWarm()) {
+        // the old "ultra warm" dimensions: the Nether
+        if (level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, pos)) {
             factors.add(new CostEnvironment.Factor(NETHER, RimeConfig.ENV_NETHER.get().floatValue()));
             hot = true;
         } else {
@@ -60,7 +62,7 @@ public final class RimeEnvironment {
     /** Snow is falling on this spot (vanilla's isRainingAt is false for snow). */
     public static boolean snowingAt(Level level, BlockPos pos) {
         if (!level.isRaining() || !level.canSeeSky(pos.above())) return false;
-        return level.getBiome(pos).value().getPrecipitationAt(pos) == Biome.Precipitation.SNOW;
+        return level.getBiome(pos).value().getPrecipitationAt(pos, level.getSeaLevel()) == Biome.Precipitation.SNOW;
     }
 
     /** "Home Field": snow falling on you in a cold biome. */

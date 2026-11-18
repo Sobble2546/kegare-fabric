@@ -23,10 +23,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.Cow;
+import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -35,14 +35,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 class DirectiveTest {
     private static Cow cow(ServerLevel level, double x, int y, double z) {
         Cow cow = new Cow(EntityType.COW, level);
-        cow.moveTo(x, y, z, 0f, 0f);
+        cow.snapTo(x, y, z, 0f, 0f);
         level.addFreshEntity(cow);
         return cow;
     }
 
     private static void hitBy(ServerPlayer player, net.minecraft.world.entity.LivingEntity target) {
         target.invulnerableTime = 0;
-        assertTrue(target.hurt(player.damageSources().playerAttack(player), 1f), "setup: the hit landed");
+        assertTrue(target.hurtServer((net.minecraft.server.level.ServerLevel) target.level(), player.damageSources().playerAttack(player), 1f), "setup: the hit landed");
     }
 
     @Test
@@ -53,14 +53,14 @@ class DirectiveTest {
             ServerPlayer owner = PossessionTest.damageable(server, "guard_owner");
             level.addNewPlayer(owner);
             PossessionTest.prepare(owner);
-            owner.moveTo(0.5, ground, 0.5, -90f, 0f);
+            owner.snapTo(0.5, ground, 0.5, -90f, 0f);
             ServerPlayer enemy = PossessionTest.damageable(server, "guard_enemy");
             level.addNewPlayer(enemy);
-            enemy.moveTo(3.5, ground, 3.5, 0f, 0f);
+            enemy.snapTo(3.5, ground, 3.5, 0f, 0f);
             Cow first = cow(level, 2.5, ground, 0.5);
             Cow second = cow(level, -1.5, ground, 0.5);
-            WitherBoss wither = EntityType.WITHER.create(level);
-            wither.moveTo(3.5, ground, -3.5, 0f, 0f);
+            WitherBoss wither = EntityType.WITHER.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            wither.snapTo(3.5, ground, -3.5, 0f, 0f);
             wither.setNoAi(true);
             level.addFreshEntity(wither);
             net.minecraft.world.entity.decoration.ArmorStand stand = new net.minecraft.world.entity.decoration.ArmorStand(level, 0.5, ground, 3.5);
@@ -85,21 +85,21 @@ class DirectiveTest {
                 a.setTarget(null);
                 b.setTarget(null);
                 enemy.invulnerableTime = 0;
-                assertTrue(enemy.hurt(owner.damageSources().playerAttack(owner), 1f), "setup: the hit landed");
+                assertTrue(enemy.hurtServer((net.minecraft.server.level.ServerLevel) enemy.level(), owner.damageSources().playerAttack(owner), 1f), "setup: the hit landed");
                 assertSame(enemy, a.getTarget(), "a player the owner hit");
 
                 // A technique of the owner's counts, however it was delivered.
                 a.setTarget(null);
                 b.setTarget(null);
                 second.invulnerableTime = 0;
-                assertTrue(second.hurt(CurioBursts.source(level, b, owner), 1f), "setup: the blast landed");
+                assertTrue(second.hurtServer((net.minecraft.server.level.ServerLevel) second.level(), CurioBursts.source(level, b, owner), 1f), "setup: the blast landed");
                 assertSame(second, a.getTarget(), "their Curio Burst counts as them");
 
                 // A puppet's own punch doesn't call the others over, and other people's hits are none of their business.
                 a.setTarget(null);
                 b.setTarget(null);
                 first.invulnerableTime = 0;
-                assertTrue(first.hurt(level.damageSources().mobAttack(b), 1f), "setup: the punch landed");
+                assertTrue(first.hurtServer((net.minecraft.server.level.ServerLevel) first.level(), level.damageSources().mobAttack(b), 1f), "setup: the punch landed");
                 assertNull(a.getTarget(), "a puppet's punch isn't the owner's doing");
                 hitBy(enemy, second);
                 assertNull(a.getTarget(), "someone else's hit isn't either");
@@ -118,9 +118,9 @@ class DirectiveTest {
                 assertSame(wither, a.getTarget(), "a boss the owner hit");
                 wither.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
                 float health = wither.getHealth();
-                a.moveTo(wither.getX() - 1.0, ground, wither.getZ(), -90f, 0f);
+                a.snapTo(wither.getX() - 1.0, ground, wither.getZ(), -90f, 0f);
                 wither.invulnerableTime = 0;
-                assertTrue(a.doHurtTarget(wither), "the punch lands");
+                assertTrue(a.doHurtTarget((net.minecraft.server.level.ServerLevel) a.level(), wither), "the punch lands");
                 assertTrue(wither.getHealth() < health, "and hurts it");
                 assertEquals(net.minecraft.world.phys.Vec3.ZERO, wither.getDeltaMovement(), "but never pushes it");
             } finally {
@@ -142,7 +142,7 @@ class DirectiveTest {
             ServerPlayer owner = PossessionTest.damageable(server, "guard_refinement");
             level.addNewPlayer(owner);
             PossessionTest.prepare(owner);
-            owner.moveTo(0.5, ground, 0.5, -90f, 0f);
+            owner.snapTo(0.5, ground, 0.5, -90f, 0f);
             Cow target = cow(level, 2.5, ground, 0.5);
             Cow other = cow(level, -1.5, ground, 0.5);
             try {
@@ -153,24 +153,24 @@ class DirectiveTest {
                 assertEquals(0.0, RefinementService.get(owner).xp(), 1.0e-6, "a bare-handed hit earns nothing");
                 assertSame(target, guard.getTarget());
 
-                guard.moveTo(target.getX() - 1.0, ground, target.getZ(), -90f, 0f);
+                guard.snapTo(target.getX() - 1.0, ground, target.getZ(), -90f, 0f);
                 target.invulnerableTime = 0;
-                assertTrue(guard.doHurtTarget(target), "setup: the punch landed");
+                assertTrue(guard.doHurtTarget((net.minecraft.server.level.ServerLevel) guard.level(), target), "setup: the punch landed");
                 double one = RefinementService.get(owner).xp();
                 assertTrue(one > 0, "the guard's punch earned Refinement");
 
                 target.invulnerableTime = 0;
-                assertTrue(guard.doHurtTarget(target), "setup: the second punch landed");
+                assertTrue(guard.doHurtTarget((net.minecraft.server.level.ServerLevel) guard.level(), target), "setup: the second punch landed");
                 assertEquals(one, RefinementService.get(owner).xp(), 1.0e-6, "the repeat limit: no landing twice within a second");
 
                 TestServer.advanceGameTime(server, (int) com.cnethuka.kegare.progression.ProgressionConfig.ticks(com.cnethuka.kegare.progression.ProgressionConfig.LANDING_REPEAT) + 1);
                 target.invulnerableTime = 0;
-                assertTrue(guard.doHurtTarget(target), "setup: the third punch landed");
+                assertTrue(guard.doHurtTarget((net.minecraft.server.level.ServerLevel) guard.level(), target), "setup: the third punch landed");
                 double two = RefinementService.get(owner).xp();
                 assertTrue(two > one && two - one < one, "the same target is worth less each time: " + one + " then " + (two - one));
 
                 other.invulnerableTime = 0;
-                assertTrue(guard.doHurtTarget(other), "setup: the punch on a fresh target landed");
+                assertTrue(guard.doHurtTarget((net.minecraft.server.level.ServerLevel) guard.level(), other), "setup: the punch on a fresh target landed");
                 assertEquals(one, RefinementService.get(owner).xp() - two, 1.0e-6, "a new target is worth full value");
             } finally {
                 target.discard();
@@ -184,8 +184,8 @@ class DirectiveTest {
     private static void punch(PuppetEntity puppet, net.minecraft.world.entity.LivingEntity target) {
         target.setHealth(target.getMaxHealth());
         target.invulnerableTime = 0;
-        puppet.moveTo(target.getX() - 1.0, target.getY(), target.getZ(), -90f, 0f);
-        assertTrue(puppet.doHurtTarget(target), "setup: the punch landed");
+        puppet.snapTo(target.getX() - 1.0, target.getY(), target.getZ(), -90f, 0f);
+        assertTrue(puppet.doHurtTarget((net.minecraft.server.level.ServerLevel) puppet.level(), target), "setup: the punch landed");
         assertTrue(target.getHealth() < target.getMaxHealth(), "setup: and hurt");
     }
 
@@ -197,7 +197,7 @@ class DirectiveTest {
             ServerPlayer owner = PossessionTest.damageable(server, "idle_owner");
             level.addNewPlayer(owner);
             PossessionTest.prepare(owner);
-            owner.moveTo(0.5, ground, 0.5, -90f, 0f);
+            owner.snapTo(0.5, ground, 0.5, -90f, 0f);
             Cow target = cow(level, 2.5, ground, 0.5);
             Cow other = cow(level, -1.5, ground, 0.5);
             net.minecraft.world.entity.decoration.ArmorStand stand = new net.minecraft.world.entity.decoration.ArmorStand(level, 0.5, ground, 3.5);
@@ -256,7 +256,7 @@ class DirectiveTest {
                 // None of these are their landing a hit or an ability on something real.
                 TestServer.advanceGameTime(server, window + repeat);
                 owner.invulnerableTime = 0;
-                assertTrue(owner.hurt(level.damageSources().mobAttack(other), 1f), "setup: being hit");
+                assertTrue(owner.hurtServer((net.minecraft.server.level.ServerLevel) owner.level(), level.damageSources().mobAttack(other), 1f), "setup: being hit");
                 spare.invulnerableTime = 0;
                 spare.hurt(owner.damageSources().playerAttack(owner), 1f);
                 Landings.land(owner, stand, PuppetManipulation.CURIO_BURST);
@@ -278,7 +278,7 @@ class DirectiveTest {
 
                 TestServer.advanceGameTime(server, window + repeat);
                 other.invulnerableTime = 0;
-                assertTrue(other.hurt(CurioBursts.source(level, spare, owner), 1f), "setup: the blast landed");
+                assertTrue(other.hurtServer((net.minecraft.server.level.ServerLevel) other.level(), CurioBursts.source(level, spare, owner), 1f), "setup: the blast landed");
                 TestServer.advanceGameTime(server, repeat);
                 xp = RefinementService.get(owner).xp();
                 punch(guard, target);
@@ -300,7 +300,7 @@ class DirectiveTest {
             ServerPlayer owner = PossessionTest.damageable(server, "directive_owner");
             level.addNewPlayer(owner);
             PossessionTest.prepare(owner);
-            owner.moveTo(0.5, ground, 0.5, -90f, 0f);
+            owner.snapTo(0.5, ground, 0.5, -90f, 0f);
             Cow cow = new Cow(EntityType.COW, level);
             try {
                 PuppetEntity a = PuppetTest.create(server, owner, 0);
@@ -308,7 +308,7 @@ class DirectiveTest {
                 PuppetEntity b = PuppetTest.create(server, owner, 0);
                 InnateTechniqueService.clearCooldowns(owner);
                 PuppetEntity far = PuppetTest.create(server, owner, 0);
-                far.moveTo(0.5, ground, 40.5, 0f, 0f); // out of Directive's 32 blocks
+                far.snapTo(0.5, ground, 40.5, 0f, 0f); // out of Directive's 32 blocks
                 assertEquals(PuppetOrder.FOLLOW, a.order(), "new puppets follow");
                 InnateTechniqueService.select(owner, 1);
 
@@ -348,9 +348,9 @@ class DirectiveTest {
                 // Stay: it stays put while the owner walks off. Follow: it comes after them.
                 InnateTechniqueService.select(owner, 1);
                 DirectiveAbility.give(owner, PuppetOrder.STAY, null);
-                b.moveTo(owner.getX() + 1, ground, owner.getZ(), 0f, 0f);
+                b.snapTo(owner.getX() + 1, ground, owner.getZ(), 0f, 0f);
                 double bx = b.getX();
-                owner.moveTo(owner.getX(), ground, owner.getZ() + 10, 0f, 0f);
+                owner.snapTo(owner.getX(), ground, owner.getZ() + 10, 0f, 0f);
                 for (int i = 0; i < 60; i++) tick(server, b);
                 assertEquals(bx, b.getX(), 0.3, "Stay: it stays");
                 DirectiveAbility.give(owner, PuppetOrder.FOLLOW, null);
@@ -359,12 +359,12 @@ class DirectiveTest {
 
                 // Guard: a mob hurts the owner; the guards go for it, and punch it (barely). The owner has walked 10 blocks toward
                 // the far puppet since, so it's put back out of Directive's range of where they stand now.
-                far.moveTo(0.5, ground, owner.getZ() - 36, 0f, 0f);
+                far.snapTo(0.5, ground, owner.getZ() - 36, 0f, 0f);
                 DirectiveAbility.give(owner, PuppetOrder.GUARD, null);
-                cow.moveTo(owner.getX() + 2, ground, owner.getZ(), 0f, 0f);
+                cow.snapTo(owner.getX() + 2, ground, owner.getZ(), 0f, 0f);
                 level.addFreshEntity(cow);
                 owner.invulnerableTime = 0;
-                assertTrue(owner.hurt(level.damageSources().mobAttack(cow), 1f), "setup: the cow's hit landed");
+                assertTrue(owner.hurtServer((net.minecraft.server.level.ServerLevel) owner.level(), level.damageSources().mobAttack(cow), 1f), "setup: the cow's hit landed");
                 assertSame(cow, b.getTarget(), "the guard goes for the cow");
                 assertNull(far.getTarget(), "the far puppet doesn't (out of range)");
                 float cowHealth = cow.getHealth();
@@ -376,9 +376,9 @@ class DirectiveTest {
                 assertTrue(cowHealth - cow.getHealth() <= PuppetConfig.MELEE_DAMAGE.get() + 1e-3, "a weak one");
 
                 // Pathing stops about a block short of a target: a half-size puppet still reaches it from there.
-                b.moveTo(cow.getX(), ground, cow.getZ() + 1.8, 0f, 0f);
+                b.snapTo(cow.getX(), ground, cow.getZ() + 1.8, 0f, 0f);
                 assertTrue(b.isWithinMeleeAttackRange(cow), "reaches a cow from where pathing leaves it");
-                b.moveTo(cow.getX(), ground, cow.getZ() + 2.6, 0f, 0f);
+                b.snapTo(cow.getX(), ground, cow.getZ() + 2.6, 0f, 0f);
                 assertFalse(b.isWithinMeleeAttackRange(cow), "but not from further");
 
                 // A new order calls off the chase.
@@ -388,7 +388,7 @@ class DirectiveTest {
                 // Focus: every puppet in range swarms what the owner looks at.
                 InnateTechniqueService.clearCooldowns(owner);
                 MaliceService.refill(owner);
-                cow.moveTo(owner.getX() + 6, ground, owner.getZ(), 0f, 0f);
+                cow.snapTo(owner.getX() + 6, ground, owner.getZ(), 0f, 0f);
                 PossessionTest.aimAt(owner, cow);
                 CastManager.handleIntent(owner, CastIntent.SPECIAL_PRESS);
                 assertSame(cow, a.getTarget(), "Focus: a swarms the cow");
@@ -396,15 +396,15 @@ class DirectiveTest {
                 assertNull(far.getTarget(), "the far one doesn't hear it");
 
                 // Bosses can be targeted (and damaged); never the owner.
-                WitherBoss wither = EntityType.WITHER.create(level);
-                wither.moveTo(owner.getX() + 3, ground, owner.getZ(), 0f, 0f);
+                WitherBoss wither = EntityType.WITHER.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                wither.snapTo(owner.getX() + 3, ground, owner.getZ(), 0f, 0f);
                 wither.setNoAi(true);
                 level.addFreshEntity(wither);
                 assertTrue(a.attack(wither), "a boss is a fair target");
                 wither.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
                 float witherHealth = wither.getHealth();
-                a.moveTo(wither.getX() - 1.0, ground, wither.getZ(), -90f, 0f);
-                assertTrue(a.doHurtTarget(wither), "the punch lands on the boss");
+                a.snapTo(wither.getX() - 1.0, ground, wither.getZ(), -90f, 0f);
+                assertTrue(a.doHurtTarget((net.minecraft.server.level.ServerLevel) a.level(), wither), "the punch lands on the boss");
                 assertTrue(wither.getHealth() < witherHealth, "and hurts it");
                 assertEquals(net.minecraft.world.phys.Vec3.ZERO, wither.getDeltaMovement(), "but never pushes it");
                 wither.discard();
@@ -422,22 +422,22 @@ class DirectiveTest {
         TestServer.onServerThread(server, () -> {
             ServerLevel level = PossessionTest.setUp(server);
             int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, 0, 0);
-            server.setPvpAllowed(true);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.PVP, true, server);
             ServerPlayer owner = PossessionTest.damageable(server, "focus_owner");
             ServerPlayer victim = PossessionTest.damageable(server, "focus_victim");
             level.addNewPlayer(owner);
             level.addNewPlayer(victim);
             PossessionTest.prepare(owner);
-            owner.moveTo(0.5, ground, 0.5, -90f, 0f);
+            owner.snapTo(0.5, ground, 0.5, -90f, 0f);
             try {
                 PuppetEntity puppet = PuppetTest.create(server, owner, PuppetConfig.ticks(PuppetConfig.CREATION_FULL_CHARGE));
-                victim.moveTo(owner.getX() + 6, ground, owner.getZ(), 90f, 0f);
+                victim.snapTo(owner.getX() + 6, ground, owner.getZ(), 90f, 0f);
                 victim.setHealth(20f);
                 InnateTechniqueService.select(owner, 1);
                 PossessionTest.aimAt(owner, victim);
                 CastManager.handleIntent(owner, CastIntent.SPECIAL_PRESS);
                 assertSame(victim, puppet.getTarget(), "Focus works on players");
-                puppet.moveTo(victim.getX() - 0.6, ground, victim.getZ(), -90f, 0f);
+                puppet.snapTo(victim.getX() - 0.6, ground, victim.getZ(), -90f, 0f);
                 for (int i = 0; i < 60 && victim.getHealth() >= 20f; i++) {
                     tick(server, puppet);
                     victim.invulnerableTime = 0;

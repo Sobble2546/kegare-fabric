@@ -26,7 +26,7 @@ public final class StringsSync {
     }
 
     static void sendTo(ServerPlayer player) {
-        PacketDistributor.sendToPlayer(player, new Payload(Strings.entries(player.serverLevel())));
+        PacketDistributor.sendToPlayer(player, new Payload(Strings.entries(player.level())));
     }
 
     /**

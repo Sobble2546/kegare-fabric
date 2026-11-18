@@ -7,7 +7,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -119,7 +120,7 @@ public final class MarkClient {
         double top = shape.isEmpty() ? 1.0 : shape.max(Direction.Axis.Y);
         int light = LevelRenderer.getLightColor(level, pos.above());
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
-        RenderType type = RenderType.entityCutout(TimeFx.WHITE);
+        RenderType type = RenderTypes.entityCutout(TimeFx.WHITE);
         VertexConsumer out = buffers.getBuffer(type);
         Matrix4f m = pose.last().pose().translate((float) (pos.getX() - cam.x), (float) (pos.getY() + top + 0.009 - cam.y),
                 (float) (pos.getZ() - cam.z), new Matrix4f());

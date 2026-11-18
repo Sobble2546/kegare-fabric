@@ -31,14 +31,14 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.Cow;
+import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
-import net.minecraft.world.entity.monster.Zombie;
-import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.entity.monster.zombie.Zombie;
+import net.minecraft.world.entity.projectile.arrow.Arrow;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -66,7 +66,7 @@ class MeleeLayerTest {
             InnateTechniqueService.setInnateTechnique(p, Rime.RIME.get());
             MaliceService.refill(p);
         }
-        p.moveTo(2.5, ground(level), 8.5, -90f, 0f);
+        p.snapTo(2.5, ground(level), 8.5, -90f, 0f);
         p.setYHeadRot(-90f);
         p.setHealth(p.getMaxHealth());
         return p;
@@ -77,7 +77,7 @@ class MeleeLayerTest {
     }
 
     private static <T extends LivingEntity> T place(ServerLevel level, T mob, double x, double z) {
-        mob.moveTo(x, ground(level), z, 0f, 0f);
+        mob.snapTo(x, ground(level), z, 0f, 0f);
         mob.setNoGravity(true);
         if (mob instanceof net.minecraft.world.entity.Mob m) m.setNoAi(true);
         level.addFreshEntity(mob);
@@ -170,7 +170,7 @@ class MeleeLayerTest {
 
                 // Pressed up against it: refused for free, with no cooldown.
                 ServerPlayer q = player(server, "dash_wall_close", 1000);
-                q.moveTo(4.65, y, 8.5, -90f, 0f);
+                q.snapTo(4.65, y, 8.5, -90f, 0f);
                 q.setYHeadRot(-90f);
                 double before = malice(q);
                 send(q, Action.DASH);
@@ -231,8 +231,8 @@ class MeleeLayerTest {
                 advance(server, p, MeleeConfig.ticks(MeleeConfig.PARRY_PERFECT_WINDOW.get()) - 1);
                 double before = malice(p);
                 assertEquals(0f, melee(p, attacker, 6f), EPS, "the last tick of the window still parries");
-                assertTrue(attacker.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "staggered: slowed");
-                assertEquals(MeleeConfig.ticks(MeleeConfig.PARRY_STAGGER_SECONDS.get()), attacker.getEffect(MobEffects.MOVEMENT_SLOWDOWN).getDuration(), "for its time");
+                assertTrue(attacker.hasEffect(MobEffects.SLOWNESS), "staggered: slowed");
+                assertEquals(MeleeConfig.ticks(MeleeConfig.PARRY_STAGGER_SECONDS.get()), attacker.getEffect(MobEffects.SLOWNESS).getDuration(), "for its time");
                 assertTrue(ReinforcedStrike.isReady(p), "and a Strike is earned");
                 assertEquals(before, malice(p), EPS, "the window itself costs nothing");
                 assertTrue(impacts.contains(MeleeImpact.PARRY_PERFECT), "fires its named moment");
@@ -275,7 +275,7 @@ class MeleeLayerTest {
                 advance(server, p, MeleeConfig.ticks(MeleeConfig.PARRY_PERFECT_WINDOW.get()));
                 double before = malice(p);
                 assertEquals(6f * (1f - MeleeConfig.GUARD_MELEE_REDUCTION.get().floatValue()), melee(p, attacker, 6f), EPS, "40% less");
-                assertFalse(attacker.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "no stagger past the window");
+                assertFalse(attacker.hasEffect(MobEffects.SLOWNESS), "no stagger past the window");
                 assertFalse(ReinforcedStrike.isReady(p), "no Strike either");
                 advance(server, p, 20);
                 assertEquals(before - MeleeConfig.GUARD_DRAIN.get(), malice(p), 0.01, "drains its rate over a second");
@@ -303,7 +303,7 @@ class MeleeLayerTest {
             p.hurt(RimeDamage.source(level, caster, caster), 10f);
             assertEquals(10f * (1f - MeleeConfig.GUARD_TECHNIQUE_REDUCTION.get().floatValue()), before - p.getHealth(), EPS, "in the perfect window: only the slight reduction");
             assertFalse(ReinforcedStrike.isReady(p), "and no Strike");
-            assertFalse(caster.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "and no stagger");
+            assertFalse(caster.hasEffect(MobEffects.SLOWNESS), "and no stagger");
 
             p.setHealth(p.getMaxHealth());
             p.invulnerableTime = 0;
@@ -408,7 +408,7 @@ class MeleeLayerTest {
                 send(p, Action.PARRY_PRESS);
                 float taken = melee(p, boss, 6f);
                 assertEquals(6f * (1f - MeleeConfig.GUARD_MELEE_REDUCTION.get().floatValue()), taken, EPS, "reduced, not cancelled, even in the window");
-                assertFalse(boss.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "bosses can't be staggered");
+                assertFalse(boss.hasEffect(MobEffects.SLOWNESS), "bosses can't be staggered");
                 assertFalse(ReinforcedStrike.isReady(p), "so nothing was parried");
             } finally {
                 boss.discard();
@@ -464,7 +464,7 @@ class MeleeLayerTest {
             ServerPlayer swap = player(server, "parry_no_target", 1000);
             InnateTechniqueService.setInnateTechnique(swap, Swap.SWAP.get());
             MaliceService.refill(swap);
-            swap.moveTo(swap.getX(), swap.getY(), swap.getZ(), 0f, -90f); // straight up: nobody to swap with
+            swap.snapTo(swap.getX(), swap.getY(), swap.getZ(), 0f, -90f); // straight up: nobody to swap with
             send(swap, Action.PARRY_PRESS);
             InnateTechniqueService.select(swap, 0); // Positions
             CastManager.handleIntent(swap, CastIntent.CAST_PRESS);
@@ -620,7 +620,7 @@ class MeleeLayerTest {
     private static void dashAside(ServerPlayer p, ServerLevel level) {
         send(p, Action.DASH);
         MeleeLayer.state(p).dashDirection = null;
-        p.moveTo(p.getX(), ground(level), p.getZ() + 4, p.getYRot(), 0f);
+        p.snapTo(p.getX(), ground(level), p.getZ() + 4, p.getYRot(), 0f);
     }
 
     @Test
@@ -628,9 +628,9 @@ class MeleeLayerTest {
         TestServer.onServerThread(server, () -> {
             ServerLevel level = world(server);
             ServerPlayer p = player(server, "dodge_swing", 1000);
-            p.moveTo(8.5, ground(level), 2.5, 0f, 0f);
+            p.snapTo(8.5, ground(level), 2.5, 0f, 0f);
             ServerPlayer attacker = player(server, "dodge_swing_attacker", 1000);
-            attacker.moveTo(11.0, ground(level), 2.5, 90f, 0f);
+            attacker.snapTo(11.0, ground(level), 2.5, 90f, 0f);
             attacker.lookAt(EntityAnchorArgument.Anchor.EYES, p.getEyePosition());
             level.addNewPlayer(attacker);
             try {
@@ -652,12 +652,12 @@ class MeleeLayerTest {
         TestServer.onServerThread(server, () -> {
             ServerLevel level = world(server);
             ServerPlayer attacker = player(server, "dodge_miss_attacker", 1000);
-            attacker.moveTo(11.0, ground(level), 2.5, 90f, 0f);
+            attacker.snapTo(11.0, ground(level), 2.5, 90f, 0f);
             level.addNewPlayer(attacker);
             try {
                 // Aimed the other way.
                 ServerPlayer p = player(server, "dodge_miss_wrong_way", 1000);
-                p.moveTo(8.5, ground(level), 2.5, 0f, 0f);
+                p.snapTo(8.5, ground(level), 2.5, 0f, 0f);
                 attacker.lookAt(EntityAnchorArgument.Anchor.EYES, new Vec3(20, attacker.getEyeY(), 2.5));
                 dashAside(p, level);
                 attacker.swing(InteractionHand.MAIN_HAND);
@@ -667,7 +667,7 @@ class MeleeLayerTest {
 
                 // They didn't really get out of the way: the swing reaches where they are now too.
                 ServerPlayer near = player(server, "dodge_miss_near", 1000);
-                near.moveTo(8.5, ground(level), 2.5, 0f, 0f);
+                near.snapTo(8.5, ground(level), 2.5, 0f, 0f);
                 attacker.lookAt(EntityAnchorArgument.Anchor.EYES, near.getEyePosition());
                 send(near, Action.DASH);
                 MeleeLayer.state(near).dashDirection = null;
@@ -678,7 +678,7 @@ class MeleeLayerTest {
 
                 // Too late.
                 ServerPlayer late = player(server, "dodge_miss_late", 1000);
-                late.moveTo(8.5, ground(level), 2.5, 0f, 0f);
+                late.snapTo(8.5, ground(level), 2.5, 0f, 0f);
                 attacker.lookAt(EntityAnchorArgument.Anchor.EYES, late.getEyePosition());
                 dashAside(late, level);
                 advance(server, late, MeleeConfig.ticks(MeleeConfig.DODGE_WINDOW.get()) + 1);
@@ -689,7 +689,7 @@ class MeleeLayerTest {
 
                 // Hit in the window: not clean, whatever follows.
                 ServerPlayer hit = player(server, "dodge_miss_hit", 1000);
-                hit.moveTo(8.5, ground(level), 2.5, 0f, 0f);
+                hit.snapTo(8.5, ground(level), 2.5, 0f, 0f);
                 attacker.lookAt(EntityAnchorArgument.Anchor.EYES, hit.getEyePosition());
                 dashAside(hit, level);
                 melee(hit, attacker, 1f);
@@ -708,7 +708,7 @@ class MeleeLayerTest {
         TestServer.onServerThread(server, () -> {
             ServerLevel level = world(server);
             ServerPlayer p = player(server, "dodge_arrow", 1000);
-            p.moveTo(8.5, ground(level), 2.5, 0f, 0f);
+            p.snapTo(8.5, ground(level), 2.5, 0f, 0f);
             Vec3 chest = p.position().add(0, 1, 0);
             dashAside(p, level);
             Arrow away = new Arrow(EntityType.ARROW, level);
@@ -735,7 +735,7 @@ class MeleeLayerTest {
             ServerLevel level = world(server);
             ServerPlayer p = player(server, "dodge_area", 1000);
             ServerPlayer enemy = player(server, "dodge_area_enemy", 1000);
-            p.moveTo(8.5, ground(level), 2.5, 0f, 0f);
+            p.snapTo(8.5, ground(level), 2.5, 0f, 0f);
             Vec3 old = p.position().add(0, 1, 0);
             level.addNewPlayer(p);
             try {
@@ -801,7 +801,7 @@ class MeleeLayerTest {
                 advance(server, p, MeleeConfig.ticks(MeleeConfig.SEVERED_PERFECT_WINDOW.get()) - 1);
                 assertEquals(0f, melee(p, attacker, 6f), EPS, "parries in its own window");
                 assertFalse(ReinforcedStrike.isReady(p), "no Strike: that's Malice, and they have none");
-                assertEquals(MeleeConfig.ticks(MeleeConfig.SEVERED_PARRY_STAGGER.get()), attacker.getEffect(MobEffects.MOVEMENT_SLOWDOWN).getDuration(),
+                assertEquals(MeleeConfig.ticks(MeleeConfig.SEVERED_PARRY_STAGGER.get()), attacker.getEffect(MobEffects.SLOWNESS).getDuration(),
                         "the attacker staggered for longer instead");
                 assertTrue(MeleeConfig.SEVERED_PARRY_STAGGER.get() > MeleeConfig.PARRY_STAGGER_SECONDS.get());
                 ReinforcedStrike.earn(p); // what a clean dodge or anything else would do

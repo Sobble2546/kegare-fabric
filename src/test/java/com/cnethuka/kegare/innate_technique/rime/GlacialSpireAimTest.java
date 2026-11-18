@@ -19,12 +19,12 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -37,7 +37,7 @@ class GlacialSpireAimTest {
         Villager v = new Villager(EntityType.VILLAGER, level);
         v.setNoAi(true);
         v.setNoGravity(true);
-        v.moveTo(x, y, z, 0f, 0f);
+        v.snapTo(x, y, z, 0f, 0f);
         level.addFreshEntity(v);
         return v;
     }
@@ -46,7 +46,7 @@ class GlacialSpireAimTest {
         ServerPlayer p = TestServer.player(server, name);
         BirthService.rebirth(p, OptionalInt.of(1000));
         InnateTechniqueService.setInnateTechnique(p, Rime.RIME.get());
-        p.moveTo(x, y, z, -90f, 0f);
+        p.snapTo(x, y, z, -90f, 0f);
         p.setOnGround(true);
         MaliceService.refill(p);
         return p;
@@ -77,7 +77,7 @@ class GlacialSpireAimTest {
             assertEquals(1, spires.size(), "the warning circle is down");
             GlacialSpireEntity spire = spires.get(0);
             assertEquals(7.5, spire.getX(), EPS);
-            target.moveTo(12.5, ground, 12.5, 0f, 0f);
+            target.snapTo(12.5, ground, 12.5, 0f, 0f);
             spire.tick();
             assertEquals(7.5, spire.getX(), EPS, "it doesn't follow them");
             assertEquals(8.5, spire.getZ(), EPS, "it doesn't follow them");

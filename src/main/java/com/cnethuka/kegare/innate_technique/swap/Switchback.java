@@ -32,9 +32,9 @@ public final class Switchback {
     private Switchback() {}
 
     static void schedule(ServerPlayer caster, LivingEntity target) {
-        cancel(caster.server, caster.getUUID());
+        cancel(caster.level().getServer(), caster.getUUID());
         int delay = SwapConfig.ticks(SwapConfig.SWITCHBACK_DELAY);
-        PENDING.put(caster.getUUID(), new Pending(target, caster.serverLevel().getGameTime() + delay, caster.level().dimension()));
+        PENDING.put(caster.getUUID(), new Pending(target, caster.level().getGameTime() + delay, caster.level().dimension()));
         String key = timerKey(caster.getUUID());
         VisualService.startLoop(caster, key, SwapIds.SWITCHBACK_TIMER, delay);
         VisualService.startLoop(target, key, SwapIds.SWITCHBACK_TIMER, delay);
@@ -78,7 +78,7 @@ public final class Switchback {
     static void cancelInvolving(LivingEntity entity) {
         if (PENDING.isEmpty() || entity.level().isClientSide()) return;
         UUID id = entity.getUUID();
-        MinecraftServer server = entity.getServer();
+        MinecraftServer server = entity.level().getServer();
         for (Iterator<Map.Entry<UUID, Pending>> it = PENDING.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<UUID, Pending> e = it.next();
             if (e.getKey().equals(id) || e.getValue().target().getUUID().equals(id)) {

@@ -59,7 +59,7 @@ public final class TimeClient {
     private static void onRenderLevel(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES) return;
         float partial = event.getPartialTick().getGameTimeDeltaPartialTick(false);
-        MarkClient.render(new PoseStack(), event.getCamera().getPosition());
+        MarkClient.render(new PoseStack(), event.getCamera().position());
         TimeFx.render(new PoseStack(), event.getCamera(), partial);
     }
 
