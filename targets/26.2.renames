@@ -1,0 +1,74 @@
+# 26.2: 26.renames with 26.3's GPU package (com.mojang.renderpearl.api) put back to 26.2's com.mojang.blaze3d, and without the names 26.2
+# has not changed yet (EnderMan, key scancodes). Regenerate by hand from 26.renames when that file gains a rule. Same format.
+\bnet\.minecraft\.advancements\.(CriteriaTriggers|Criterion)\b	net.minecraft.advancements.triggers.$1
+\bnet\.minecraft\.advancements\.criterion\.ImpossibleTrigger\b	net.minecraft.advancements.triggers.ImpossibleTrigger
+\bnet\.minecraft\.client\.renderer\.block\.model\.BakedQuad\b	net.minecraft.client.resources.model.geometry.BakedQuad
+\bnet\.minecraft\.client\.renderer\.block\.model\.BlockStateModel\b	net.minecraft.client.renderer.block.dispatch.BlockStateModel
+\bnet\.minecraft\.client\.renderer\.state\.CameraRenderState\b	net.minecraft.client.renderer.state.level.CameraRenderState
+\bnet\.minecraft\.client\.renderer\.LightTexture\b	net.minecraft.util.LightCoordsUtil
+\bLightTexture\b	LightCoordsUtil
+\bnet\.minecraft\.client\.gui\.GuiGraphics\b	net.minecraft.client.gui.GuiGraphicsExtractor
+\bGuiGraphics\b	GuiGraphicsExtractor
+\.drawCenteredString\(	.centeredText(
+\.drawStringWithBackdrop\(	.textWithBackdrop(
+\.drawString\(	.text(
+\.drawWordWrap\(	.textWithWordWrap(
+\.hLine\(	.horizontalLine(
+\.vLine\(	.verticalLine(
+\.renderOutline\(	.outline(
+\.renderFakeItem\(	.fakeItem(
+\.renderItemDecorations\(	.itemDecorations(
+\.submitEntityRenderState\(	.entity(
+\.displayClientMessage\((.*), true\);	.sendOverlayMessage($1);
+\.displayClientMessage\((.*), false\);	.sendSystemMessage($1);
+\.getMainCamera\(\)	.mainCamera()
+\b(mc|minecraft|Minecraft\.getInstance\(\))\.screen\b	$1.gui.screen()
+\b(mc|minecraft|Minecraft\.getInstance\(\))\.setScreen\(	$1.gui.setScreen(
+\b(mc|minecraft|Minecraft\.getInstance\(\))\.getToastManager\(\)	$1.gui.toastManager()
+\b(mc|minecraft|Minecraft\.getInstance\(\))\.getOverlay\(\)	$1.gui.overlay()
+\b(mc|minecraft|Minecraft\.getInstance\(\))\.getMainRenderTarget\(\)	$1.gameRenderer.mainRenderTarget()
+\b(mc|minecraft)\.options\.hideGui\b	$1.gui.hud.isHidden()
+\borg\.lwjgl\.glfw\.GLFW\b	com.mojang.blaze3d.platform.InputConstants
+\bGLFW\.GLFW_	InputConstants.
+\bRenderTypes\.entityCutoutNoCull\(	RenderTypes.entityCutout(
+\bServerEntityWorldChangeEvents\b	ServerEntityLevelChangeEvents
+\bAFTER_(PLAYER|ENTITY)_CHANGE_WORLD\b	AFTER_$1_CHANGE_LEVEL
+\b(START|END)_WORLD_TICK\b	$1_LEVEL_TICK
+\bdisplay\.isHidden\(\)	display.hidden()
+\.getBlockHolder\(\)	.typeHolder()
+\bInputConstants\.KEY_ENTER\b	InputConstants.KEY_RETURN
+\bInputConstants\.KEY_KP_ENTER\b	InputConstants.KEY_NUMPADENTER
+\bInputConstants\.KEY_UNKNOWN\b	InputConstants.UNKNOWN.getValue()
+\bpublic void render\(GuiGraphicsExtractor	public void extractRenderState(GuiGraphicsExtractor
+\bsuper\.render\((g|graphics),	super.extractRenderState($1,
+\bpublic void renderBackground\(GuiGraphicsExtractor	public void extractBackground(GuiGraphicsExtractor
+\bsuper\.renderBackground\(	super.extractBackground(
+\bvoid renderWidget\(GuiGraphicsExtractor	void extractWidgetRenderState(GuiGraphicsExtractor
+\brenderScrollingStringOverContents\(	extractScrollingStringOverContents(
+\bprevious\.render\(graphics, delta\)	previous.extractRenderState(graphics, delta)
+\.renderItem\(	.item(
+\bRenderTypes\.itemEntityTranslucentCull\(	RenderTypes.itemTranslucent(
+\bnet\.minecraft\.client\.renderer\.MultiBufferSource\b	com.cnethuka.kegare.platform.client.KBuffers
+\b(?:mc|minecraft|Minecraft\.getInstance\(\))\.renderBuffers\(\)\.bufferSource\(\)	com.cnethuka.kegare.platform.client.KBuffers.immediate()
+\bMultiBufferSource\b	KBuffers
+\bcom\.mojang\.blaze3d\.platform\.DepthTestFunction\b	com.mojang.blaze3d.platform.CompareOp
+\bDepthTestFunction\.NO_DEPTH_TEST\b	CompareOp.ALWAYS_PASS
+\bDepthTestFunction\.LEQUAL_DEPTH_TEST\b	CompareOp.LESS_THAN_OR_EQUAL
+\bDepthTestFunction\.GREATER_DEPTH_TEST\b	CompareOp.GREATER_THAN
+\bDepthTestFunction\b	CompareOp
+\bLevelRenderer\.getLightColor\(	net.minecraft.util.LightCoordsUtil.getLightCoords(
+\bprotected void renderContents\(GuiGraphicsExtractor	protected void extractContents(GuiGraphicsExtractor
+\bInventoryScreen\.renderEntityInInventoryFollowsMouse\(	InventoryScreen.extractEntityInInventoryFollowsMouse(
+\bGui\.getMobEffectSprite\(	net.minecraft.client.gui.Hud.getMobEffectSprite(
+\bRenderTypes::entityCutoutNoCull\b	RenderTypes::entityCutout
+\bcom\.mojang\.blaze3d\.platform\.(SourceFactor|DestFactor)\b	com.mojang.blaze3d.platform.BlendFactor
+\b(SourceFactor|DestFactor)\.	BlendFactor.
+\.withBlend\((.*)\)$	.withColorTargetState(new com.mojang.blaze3d.pipeline.ColorTargetState($1))
+\bpublic void knockback\(double strength, double x, double z\) \{	public void knockback(double strength, double x, double z, net.minecraft.world.damagesource.DamageSource source, float amount, boolean flag) {
+"knockback\(DDD\)V"	"knockback(DDDLnet/minecraft/world/damagesource/DamageSource;FZ)V"
+kegare\$knockback\(double strength, double x, double z, CallbackInfo ci\)	kegare\$knockback(double strength, double x, double z, net.minecraft.world.damagesource.DamageSource source, float amount, boolean flag, CallbackInfo ci)
+(?<![\w.])(?:net\.minecraft\.world\.entity\.)?EntityType\.(?!CODEC\b|STREAM_CODEC\b)([A-Z][A-Z0-9_]+)\b	net.minecraft.world.entity.EntityTypes.$1
+\b(display|bush|missing)\.isHidden\(\)	$1.hidden()
+orElseThrow\(\)\.isHidden\(\)	orElseThrow().hidden()
+\b(display|bush|missing)\.getType\(\)	$1.type()
+\.render\(null, null\)	.extractRenderState(null, null)

@@ -3,8 +3,12 @@
 # Kegare: notes for coding agents
 
 ## What this is
-- An unofficial, fan-made Jujutsu Kaisen mod, built for PvP. NeoForge 21.1.x, Minecraft 1.21.1, Java 21, ModDevGradle.
-  Mod id `kegare`, package `com.cnethuka.kegare`, branch `main`, remote `origin`.
+- An unofficial, fan-made Jujutsu Kaisen mod, built for PvP. Fabric (Loader 0.20.x, Loom), one build per Minecraft target:
+  1.21.11 (the default; Java 21), 26.2 and 26.3 (Java 25). The NeoForge 1.21.1 original is branch `main`.
+- One source tree. `src/main/java` is shared; `targets/<target>/java` holds the classes whose code differs per Minecraft version
+  (same package and class name on every target); `targets/26.renames` lists names Mojang only renamed, swapped in when compiling
+  for 26.x. NeoForge-style events, registries, attachments and networking are Kegare's own layer in `platform/` (keep using it).
+  Mod id `kegare`, package `com.cnethuka.kegare`. The Fabric port is branch `fabric-port` (local, not pushed); remote `origin`.
 - **The task you're given is the spec.** Do what it asks, name any small extra you add, and nothing more. If it conflicts
   with DESIGN.md, say so in your report instead of guessing.
 
@@ -23,11 +27,14 @@
 - Network version: `network/KegareNetwork.VERSION`, documented in DESIGN §3.5.
 
 ## Build, test, data
-- Gradle needs JDK 21: point `JAVA_HOME` at one.
-- Compile: `./gradlew compileJava -q`. Full suite: `./gradlew test` (JUnit runs inside FML on a throwaway server).
+- Gradle itself needs JDK 25 (Loom), whichever target you build: point `JAVA_HOME` at one. Pick the target with
+  `-Ptarget=1.21.11|26.2|26.3` (default 1.21.11).
+- Compile: `./gradlew compileJava -q`. Full suite: `./gradlew test` (JUnit runs inside Fabric's Knot on a throwaway server;
+  1.21.11 only until the 26.x test server is ported).
+- A change to shared code must still compile on every target that compiles today; say in the report which targets you built.
 - Data: `./gradlew runData` after any lang, advancement, tag or config-option change. Run it and `test` as separate Gradle
   invocations. Afterwards `git status` must show no changes from runData.
-- Jar: `./gradlew build -x test` → `build/libs/kegare-<minecraft version>-<version>.jar`.
+- Jar: `./gradlew -Ptarget=<target> build -x test` → `build/libs/kegare-<minecraft version>-<version>.jar`.
 
 ## Workflow
 - Commit each working step as you finish it, not all at the end. Each commit builds and passes tests on its own. End every
