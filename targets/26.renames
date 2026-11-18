@@ -37,3 +37,24 @@
 \borg\.lwjgl\.glfw\.GLFW\b	com.mojang.blaze3d.platform.InputConstants
 \bGLFW\.GLFW_	InputConstants.
 \bRenderTypes\.entityCutoutNoCull\(	RenderTypes.entityCutout(
+\bServerEntityWorldChangeEvents\b	ServerEntityLevelChangeEvents
+\bAFTER_(PLAYER|ENTITY)_CHANGE_WORLD\b	AFTER_$1_CHANGE_LEVEL
+\b(START|END)_WORLD_TICK\b	$1_LEVEL_TICK
+\bshouldAnnounceChat\b	announceToChat
+\bdisplay\.isHidden\(\)	display.hidden()
+\.getBlockHolder\(\)	.typeHolder()
+\bslide\.(position|yRot|xRot)\(\)	slide.target().$1()
+\bInputConstants\.KEY_ENTER\b	InputConstants.KEY_RETURN
+\bInputConstants\.KEY_KP_ENTER\b	InputConstants.KEY_NUMPADENTER
+\bInputConstants\.Type\.KEYSYM\b	InputConstants.Type.KEYBOARD
+\bInputConstants\.KEY_UNKNOWN\b	InputConstants.UNKNOWN.getValue()
+\bevent\.scancode\(\)	event.keycode()
+\bpublic void render\(GuiGraphicsExtractor	public void extractRenderState(GuiGraphicsExtractor
+\bsuper\.render\((g|graphics),	super.extractRenderState($1,
+\bpublic void renderBackground\(GuiGraphicsExtractor	public void extractBackground(GuiGraphicsExtractor
+\bsuper\.renderBackground\(	super.extractBackground(
+\bvoid renderWidget\(GuiGraphicsExtractor	void extractWidgetRenderState(GuiGraphicsExtractor
+\brenderScrollingStringOverContents\(	extractScrollingStringOverContents(
+\bprevious\.render\(graphics, delta\)	previous.extractRenderState(graphics, delta)
+\.renderItem\(	.item(
+\bRenderTypes\.itemEntityTranslucentCull\(	RenderTypes.itemTranslucent(

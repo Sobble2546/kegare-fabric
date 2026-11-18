@@ -350,7 +350,7 @@ public final class StringsClient {
         for (Vec3[] span : tense(level, 1f)) {
             int specks = Math.max(1, Math.min(4, (int) (span[0].distanceTo(span[1]) / 4.0)));
             for (int i = 0; i < specks; i++) {
-                Vec3 at = along(span[0], span[1], 0.0, level.random.nextDouble());
+                Vec3 at = along(span[0], span[1], 0.0, level.getRandom().nextDouble());
                 level.addParticle(PuppetFx.PALE_SPECK, at.x, at.y, at.z, 0, 0, 0);
             }
         }

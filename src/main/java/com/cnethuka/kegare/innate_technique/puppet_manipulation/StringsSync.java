@@ -47,7 +47,7 @@ public final class StringsSync {
         }
 
         private void write(FriendlyByteBuf buf) {
-            buf.writeCollection(entries, (b, e) -> {
+            com.cnethuka.kegare.platform.net.Bufs.writeCollection(buf, entries, (b, e) -> {
                 b.writeVarInt(e.caster());
                 b.writeVarInt(e.first());
                 b.writeVarInt(e.second() + 1);
@@ -57,7 +57,7 @@ public final class StringsSync {
         }
 
         private static Payload read(FriendlyByteBuf buf) {
-            return new Payload(buf.readList(b -> new Entry(b.readVarInt(), b.readVarInt(), b.readVarInt() - 1, b.readEnum(Strings.Phase.class), b.readFloat())));
+            return new Payload(com.cnethuka.kegare.platform.net.Bufs.readList(buf, b -> new Entry(b.readVarInt(), b.readVarInt(), b.readVarInt() - 1, b.readEnum(Strings.Phase.class), b.readFloat())));
         }
 
         @Override

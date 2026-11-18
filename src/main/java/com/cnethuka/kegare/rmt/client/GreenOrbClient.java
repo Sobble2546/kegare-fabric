@@ -79,8 +79,8 @@ public final class GreenOrbClient {
             effect.scale(1f + 0.45f * (float) fraction);
         } else if (!usingPhoton && mc.level.getGameTime() % 2 == 0) { // vanilla stand-in
             mc.level.addParticle(GREEN, pos.x, pos.y, pos.z, 0, 0, 0);
-            mc.level.addParticle(ParticleTypes.HAPPY_VILLAGER, pos.x + (mc.level.random.nextDouble() - 0.5) * 0.4,
-                    pos.y + (mc.level.random.nextDouble() - 0.5) * 0.4, pos.z + (mc.level.random.nextDouble() - 0.5) * 0.4, 0, 0, 0);
+            mc.level.addParticle(ParticleTypes.HAPPY_VILLAGER, pos.x + (mc.level.getRandom().nextDouble() - 0.5) * 0.4,
+                    pos.y + (mc.level.getRandom().nextDouble() - 0.5) * 0.4, pos.z + (mc.level.getRandom().nextDouble() - 0.5) * 0.4, 0, 0, 0);
         }
         tickDots(mc.level, fraction);
     }

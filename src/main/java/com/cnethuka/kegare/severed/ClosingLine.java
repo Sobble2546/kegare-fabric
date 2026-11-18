@@ -188,7 +188,7 @@ public final class ClosingLine {
         event.setAmount(event.getAmount() + (float) (SeveredConfig.MOMENTUM_DAMAGE.get() * speed));
         double knockback = SeveredConfig.CLOSING_CARRY.get() * speed;
         if (!CombatHelper.isBoss(target) && knockback > 0) {
-            target.knockback(knockback, attacker.getX() - target.getX(), attacker.getZ() - target.getZ());
+            com.cnethuka.kegare.platform.EntityCompat.knockback(target, knockback, attacker.getX() - target.getX(), attacker.getZ() - target.getZ());
             EntityCompat.markHurt(target);
         }
         Impacts.charge(target, Math.min(1.0, speed / SeveredConfig.CLOSING_SPEED.get()));

@@ -90,13 +90,13 @@ public final class RewindAbility extends TimeAbility.Special {
         Vec3 then = path.get(0);
         // Not So Fast: a player who'd run 8 blocks or more further from the caster in that time.
         double ran = target.position().distanceTo(caster.position()) - then.distanceTo(caster.position());
-        TimeManipulation.sound(target, KegareSounds.TIME_REVERSE_TICK, 1f, 1f);
+        TimeManipulation.sound(target, KegareSounds.TIME_REVERSE_TICK.holder(), 1f, 1f);
         Swapper.moveTo(target, then, target.getYRot(), target.getXRot());
         target.setDeltaMovement(Vec3.ZERO);
         EntityCompat.markHurt(target);
         target.resetFallDistance();
         TimeStops.moved(target); // if held in a Standstill, it's held here now
-        TimeManipulation.sound(target, KegareSounds.TIME_REVERSE_TICK, 1f, 0.85f);
+        TimeManipulation.sound(target, KegareSounds.TIME_REVERSE_TICK.holder(), 1f, 0.85f);
         TimeManipulation.fx(target, TimeManipulation.fx(TimeNet.Fx.Kind.REWIND, target.getId(), path, 0f, 0));
         Landings.land(caster, target, this); // no damage, so the landing is counted here
         Impacts.hit(caster, target, ImpactKind.TECHNIQUE, 0, 0, 0, false);

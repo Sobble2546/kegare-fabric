@@ -53,7 +53,7 @@ public final class CleanDodge {
         AABB ghost = state.ghost;
         AABB now = player.getBoundingBox();
         AABB search = ghost.inflate(SEARCH);
-        for (LivingEntity attacker : player.level().getEntitiesOfClass(LivingEntity.class, search, e -> e != player && e.isAlive() && e.swinging && e.swingTime <= 0)) {
+        for (LivingEntity attacker : player.level().getEntitiesOfClass(LivingEntity.class, search, e -> e != player && e.isAlive() && com.cnethuka.kegare.platform.EntityCompat.swingStarted(e))) {
             if (!Attribution.isOwn(player, attacker) && swingReaches(attacker, ghost) && !swingReaches(attacker, now)) {
                 dodged(player, state, ghost.getCenter(), attacker);
                 return;

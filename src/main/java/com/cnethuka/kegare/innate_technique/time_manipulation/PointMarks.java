@@ -74,7 +74,7 @@ final class PointMarks {
     static Mark mark(ServerPlayer player, BlockPos block, Vec3 standAt) {
         Set<Holder<MobEffect>> effects = new HashSet<>();
         for (MobEffectInstance e : player.getActiveEffects()) effects.add(e.getEffect());
-        long dayTime = player.level().getDayTime() % 24000L;
+        long dayTime = com.cnethuka.kegare.platform.EntityCompat.dayTime(player.level()) % 24000L;
         // The world's clock: dayTime 0 is six in the morning. Hands in radians from twelve, clockwise.
         double hours = (dayTime / 1000.0 + 6.0) % 12.0;
         float hour = (float) (hours / 12.0 * Mth.TWO_PI), minute = (float) ((dayTime % 1000L) / 1000.0 * Mth.TWO_PI);

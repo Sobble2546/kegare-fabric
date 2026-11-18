@@ -56,6 +56,6 @@ public abstract class ServerLevelEventsMixin {
     private void kegare$nightSlept(java.util.function.BooleanSupplier hasTimeLeft, CallbackInfo ci) {
         ServerLevel self = (ServerLevel) (Object) this;
         if (!self.getGameRules().get(GameRules.ADVANCE_TIME)) return;
-        NeoForge.EVENT_BUS.post(new SleepFinishedTimeEvent(self, self.getDayTime()));
+        NeoForge.EVENT_BUS.post(new SleepFinishedTimeEvent(self, com.cnethuka.kegare.platform.EntityCompat.dayTime(self)));
     }
 }

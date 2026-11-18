@@ -25,33 +25,33 @@ public final class SwapSounds {
     }
 
     /** Positions. */
-    public static final Clap POSITIONS = new Clap(KegareSounds.SWAP_CLAP, 1f, 1f);
+    public static final Clap POSITIONS = new Clap(KegareSounds.SWAP_CLAP.holder(), 1f, 1f);
     /** Switchback's cast: two claps, a beat apart. */
-    public static final Clap SWITCHBACK = new Clap(KegareSounds.SWAP_DOUBLE_CLAP, 1f, 1f);
+    public static final Clap SWITCHBACK = new Clap(KegareSounds.SWAP_DOUBLE_CLAP.holder(), 1f, 1f);
     /** Awareness's cast: the clap, a little higher. */
-    public static final Clap AWARENESS = new Clap(KegareSounds.SWAP_CLAP, 0.9f, 1.12f);
+    public static final Clap AWARENESS = new Clap(KegareSounds.SWAP_CLAP.holder(), 0.9f, 1.12f);
     /** Mimic's cast: a hollow clap of cupped hands, at the caster only (the target stays as themselves). */
-    public static final Clap MIMIC = new Clap(KegareSounds.SWAP_CUPPED_CLAP, 1f, 1f);
+    public static final Clap MIMIC = new Clap(KegareSounds.SWAP_CUPPED_CLAP.holder(), 1f, 1f);
     /** Anchor's throw: the token flicked off the thumb, ringing as it spins away. */
-    public static final Clap FLICK = new Clap(KegareSounds.SWAP_FLICK, 0.9f, 1f);
+    public static final Clap FLICK = new Clap(KegareSounds.SWAP_FLICK.holder(), 0.9f, 1f);
     /** The token sticking where it lands. */
-    public static final Clap TOKEN_LAND = new Clap(KegareSounds.SWAP_TOKEN_LAND, 0.9f, 1f);
+    public static final Clap TOKEN_LAND = new Clap(KegareSounds.SWAP_TOKEN_LAND.holder(), 0.9f, 1f);
     /** Anchor's recall: the clap, a shade lower than Positions', at both ends. */
-    public static final Clap ANCHOR_RECALL = new Clap(KegareSounds.SWAP_CLAP, 1f, 0.94f);
+    public static final Clap ANCHOR_RECALL = new Clap(KegareSounds.SWAP_CLAP.holder(), 1f, 0.94f);
     /** Send Off's cast, at the caster (its tell): the clap and a shove of air. */
-    public static final Clap SEND_OFF = new Clap(KegareSounds.SWAP_SHOVE, 1f, 1f);
+    public static final Clap SEND_OFF = new Clap(KegareSounds.SWAP_SHOVE.holder(), 1f, 1f);
     /** Send Off's two ends, the target and the token: the clap, as low as Anchor's recall. */
-    public static final Clap SEND_OFF_ENDS = new Clap(KegareSounds.SWAP_CLAP, 0.9f, 0.94f);
+    public static final Clap SEND_OFF_ENDS = new Clap(KegareSounds.SWAP_CLAP.holder(), 0.9f, 0.94f);
     /** Exchange, at both: the clap and two chimes sliding past each other. */
-    public static final Clap EXCHANGE = new Clap(KegareSounds.SWAP_TRADE, 0.9f, 1f);
+    public static final Clap EXCHANGE = new Clap(KegareSounds.SWAP_TRADE.holder(), 0.9f, 1f);
     /** Momentum Exchange, at both (its tell): the clap, hard and low. */
-    public static final Clap MOMENTUM = new Clap(KegareSounds.SWAP_CLAP, 1f, 0.8f);
+    public static final Clap MOMENTUM = new Clap(KegareSounds.SWAP_CLAP.holder(), 1f, 0.8f);
     /** Total Swap, at both ends: the biggest clap. */
-    public static final Clap TOTAL_SWAP = new Clap(KegareSounds.SWAP_BIG_CLAP, 1f, 1f);
+    public static final Clap TOTAL_SWAP = new Clap(KegareSounds.SWAP_BIG_CLAP.holder(), 1f, 1f);
     /** A disguise landing (Awareness, Total Swap): a card riffled over. */
-    public static final Clap CARD_FLIP = new Clap(KegareSounds.SWAP_FLIP, 0.9f, 1f);
+    public static final Clap CARD_FLIP = new Clap(KegareSounds.SWAP_FLIP.holder(), 0.9f, 1f);
     /** Switchback's swap back: a finger snap. */
-    public static final Clap SWITCHBACK_BACK = new Clap(KegareSounds.SWAP_SNAP, 1f, 1f);
+    public static final Clap SWITCHBACK_BACK = new Clap(KegareSounds.SWAP_SNAP.holder(), 1f, 1f);
 
     private SwapSounds() {}
 }

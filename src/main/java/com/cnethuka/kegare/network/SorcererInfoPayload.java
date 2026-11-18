@@ -94,9 +94,9 @@ public record SorcererInfoPayload(
         buf.writeFloat(regenPercent);
         buf.writeBoolean(regenPaused);
         buf.writeOptional(innateTechnique, FriendlyByteBuf::writeIdentifier);
-        buf.writeCollection(abilities, SorcererInfoPayload::writeInfo);
-        buf.writeCollection(shared, SorcererInfoPayload::writeInfo);
-        buf.writeCollection(traits, FriendlyByteBuf::writeIdentifier);
+        com.cnethuka.kegare.platform.net.Bufs.writeCollection(buf, abilities, SorcererInfoPayload::writeInfo);
+        com.cnethuka.kegare.platform.net.Bufs.writeCollection(buf, shared, SorcererInfoPayload::writeInfo);
+        com.cnethuka.kegare.platform.net.Bufs.writeCollection(buf, traits, FriendlyByteBuf::writeIdentifier);
         buf.writeVarInt(rollsSinceLegendary);
         buf.writeVarInt(totalRolls);
         buf.writeVarInt(hardPity);
@@ -132,9 +132,9 @@ public record SorcererInfoPayload(
                 buf.readVarInt(), buf.readFloat(), buf.readVarInt(), buf.readBoolean(),
                 buf.readFloat(), buf.readFloat(), buf.readBoolean(),
                 buf.readOptional(FriendlyByteBuf::readIdentifier),
-                buf.readList(SorcererInfoPayload::readInfo),
-                buf.readList(SorcererInfoPayload::readInfo),
-                buf.readList(FriendlyByteBuf::readIdentifier),
+                com.cnethuka.kegare.platform.net.Bufs.readList(buf, SorcererInfoPayload::readInfo),
+                com.cnethuka.kegare.platform.net.Bufs.readList(buf, SorcererInfoPayload::readInfo),
+                com.cnethuka.kegare.platform.net.Bufs.readList(buf, FriendlyByteBuf::readIdentifier),
                 buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readInt(),
                 buf.readVarInt(), buf.readVarInt());
     }

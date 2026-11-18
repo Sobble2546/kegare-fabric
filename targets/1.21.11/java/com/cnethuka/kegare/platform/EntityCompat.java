@@ -1,6 +1,9 @@
 package com.cnethuka.kegare.platform;
 
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 
 /**
  * The entity fields 26.x hides or renames. This is the 1.21.11 file (plain fields); targets/26.3/java has the twin with the same
@@ -21,5 +24,27 @@ public final class EntityCompat {
     /** Tells the client its own movement changed (a player moves itself): after setting a velocity on something that can be a player. */
     public static void markHurt(Entity entity) {
         entity.hurtMarked = true;
+    }
+
+    /** True on the tick a swing starts (the arm has not moved yet). */
+    public static boolean swingStarted(LivingEntity entity) {
+        return entity.swinging && entity.swingTime <= 0;
+    }
+
+    public static InteractionHand swingHand(LivingEntity entity) {
+        return entity.swingingArm == null ? InteractionHand.MAIN_HAND : entity.swingingArm;
+    }
+
+    public static void swing(LivingEntity entity, InteractionHand hand) {
+        entity.swing(hand);
+    }
+
+    /** Vanilla knockback: strength, then the direction the hit came FROM (x, z). */
+    public static void knockback(LivingEntity entity, double strength, double x, double z) {
+        entity.knockback(strength, x, z);
+    }
+
+    public static long dayTime(Level level) {
+        return level.getDayTime();
     }
 }

@@ -89,7 +89,7 @@ public final class ReinforcedStrike {
         Landings.markStrike(attacker, target);
         double knockback = numbers.strikeKnockback();
         if (!CombatHelper.isBoss(target) && knockback > 0) { // bosses: damaged, never moved
-            target.knockback(knockback, attacker.getX() - target.getX(), attacker.getZ() - target.getZ());
+            com.cnethuka.kegare.platform.EntityCompat.knockback(target, knockback, attacker.getX() - target.getX(), attacker.getZ() - target.getZ());
             EntityCompat.markHurt(target);
         }
         VisualService.playOnce(attacker, Visual.animation(MeleeIds.ANIM_REINFORCED_STRIKE));

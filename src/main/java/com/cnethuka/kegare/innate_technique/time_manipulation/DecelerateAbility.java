@@ -33,6 +33,6 @@ public final class DecelerateAbility extends TimeAbility {
         DecelerateEntity hand = new DecelerateEntity(p.level(), p);
         hand.shootFromRotation(p, p.getXRot(), p.getYRot(), 0f, TimeConfig.DECELERATE_SPEED.get().floatValue(), 0.4f);
         p.level().addFreshEntity(hand);
-        TimeManipulation.sound(p, KegareSounds.TIME_THROW, 0.9f, 1f);
+        TimeManipulation.sound(p, KegareSounds.TIME_THROW.holder(), 0.9f, 1f);
     }
 }

@@ -70,13 +70,13 @@ public record RevealPayload(
         buf.writeVarInt(capacity);
         buf.writeVarInt(tier);
         buf.writeBoolean(severed);
-        buf.writeCollection(traits, FriendlyByteBuf::writeIdentifier);
+        com.cnethuka.kegare.platform.net.Bufs.writeCollection(buf, traits, FriendlyByteBuf::writeIdentifier);
     }
 
     private static RevealPayload read(FriendlyByteBuf buf) {
         return new RevealPayload(buf.readEnum(RollReason.class), buf.readOptional(FriendlyByteBuf::readIdentifier),
                 buf.readVarInt(), buf.readBoolean(), buf.readBoolean(), buf.readVarInt(), buf.readVarInt(), buf.readBoolean(),
-                buf.readList(FriendlyByteBuf::readIdentifier));
+                com.cnethuka.kegare.platform.net.Bufs.readList(buf, FriendlyByteBuf::readIdentifier));
     }
 
     @Override

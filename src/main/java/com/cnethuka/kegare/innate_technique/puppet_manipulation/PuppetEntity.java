@@ -241,7 +241,7 @@ public class PuppetEntity extends PathfinderMob implements Puppet {
         setShiftKeyDown(owner.isShiftKeyDown());
         setPose(owner.isCrouching() ? net.minecraft.world.entity.Pose.CROUCHING : net.minecraft.world.entity.Pose.STANDING);
         setSprinting(owner.isSprinting());
-        if (owner.swinging && owner.swingTime <= 0) swing(owner.swingingArm);
+        if (com.cnethuka.kegare.platform.EntityCompat.swingStarted(owner)) com.cnethuka.kegare.platform.EntityCompat.swing(this, com.cnethuka.kegare.platform.EntityCompat.swingHand(owner));
         for (net.minecraft.world.entity.EquipmentSlot slot : net.minecraft.world.entity.EquipmentSlot.values()) {
             if (slot.getType() == net.minecraft.world.entity.EquipmentSlot.Type.ANIMAL_ARMOR) continue;
             net.minecraft.world.item.ItemStack theirs = owner.getItemBySlot(slot);

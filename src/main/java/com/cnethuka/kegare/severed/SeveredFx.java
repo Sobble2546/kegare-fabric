@@ -40,17 +40,17 @@ final class SeveredFx {
     static void blurOn(ServerPlayer player) {
         dust(player, player.position(), 10, 0.35, 0.08);
         VisualService.playOnce(player, Visual.animation(SeveredIds.ANIM_BLUR_ON));
-        sound(player, KegareSounds.SEVERED_BLUR_ON, 0.9f, 1f);
+        sound(player, KegareSounds.SEVERED_BLUR_ON.holder(), 0.9f, 1f);
     }
 
     static void wind(ServerPlayer player) { // heard where each listener sees them (too fast for the eye, §3.30)
-        com.cnethuka.kegare.sight.DelayedSight.playSound(player, KegareSounds.SEVERED_BLUR_WIND, SoundSource.PLAYERS, 0.5f,
+        com.cnethuka.kegare.sight.DelayedSight.playSound(player, KegareSounds.SEVERED_BLUR_WIND.holder(), SoundSource.PLAYERS, 0.5f,
                 0.9f + player.getRandom().nextFloat() * 0.2f);
     }
 
     static void winded(ServerPlayer player) {
         VisualService.playOnce(player, Visual.animation(SeveredIds.ANIM_WINDED));
-        sound(player, KegareSounds.SEVERED_WINDED, 0.8f, 1f);
+        sound(player, KegareSounds.SEVERED_WINDED.holder(), 0.8f, 1f);
     }
 
     /** Closing Line's launch: a crack and a burst of dust and grit off the ground where they left. */
@@ -59,7 +59,7 @@ final class SeveredFx {
         dust(player, at, 28, 0.45, 0.22);
         player.level().sendParticles(ParticleTypes.POOF, at.x - direction.x * 0.4, at.y + 0.15, at.z - direction.z * 0.4, 6, 0.25, 0.05, 0.25, 0.04);
         VisualService.playOnce(player, Visual.animation(SeveredIds.ANIM_CLOSING_LINE_LAUNCH));
-        sound(player, KegareSounds.SEVERED_CLOSING_LINE_LAUNCH, 2.0f, 1f); // heavy, and heard well off
+        sound(player, KegareSounds.SEVERED_CLOSING_LINE_LAUNCH.holder(), 2.0f, 1f); // heavy, and heard well off
     }
 
     /** Its arrival: a skid and dust where they stop. */
@@ -67,7 +67,7 @@ final class SeveredFx {
         Vec3 at = player.position();
         dust(player, at.add(direction.x * 0.3, 0, direction.z * 0.3), 16, 0.35, 0.12);
         VisualService.playOnce(player, Visual.animation(SeveredIds.ANIM_CLOSING_LINE_ARRIVE));
-        sound(player, KegareSounds.SEVERED_CLOSING_LINE_ARRIVE, 1.0f, 1f);
+        sound(player, KegareSounds.SEVERED_CLOSING_LINE_ARRIVE.holder(), 1.0f, 1f);
     }
 
     static void wallCrash(ServerPlayer player, double lost) {
@@ -75,6 +75,6 @@ final class SeveredFx {
         player.level().sendParticles(ParticleTypes.POOF, ahead.x, ahead.y, ahead.z, (int) Math.min(12, 3 + lost * 6), 0.2, 0.4, 0.2, 0.02);
         dust(player, player.position(), (int) Math.min(24, 6 + lost * 10), 0.3, 0.12);
         VisualService.playOnce(player, Visual.animation(SeveredIds.ANIM_WALL_CRASH));
-        sound(player, KegareSounds.SEVERED_WALL_CRASH, (float) Math.min(1.6, 0.6 + lost * 0.4), 1f);
+        sound(player, KegareSounds.SEVERED_WALL_CRASH.holder(), (float) Math.min(1.6, 0.6 + lost * 0.4), 1f);
     }
 }

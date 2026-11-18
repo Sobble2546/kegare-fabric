@@ -31,7 +31,7 @@ public final class CombatHelper {
      * innate techniques but are never moved, swapped or disabled (no freeze, launch, knockback or swap).
      */
     public static boolean isBoss(Entity entity) {
-        return entity.getType().is(BOSSES);
+        return entity.getType().builtInRegistryHolder().is(BOSSES);
     }
 
     /** Marks the entity as in combat right now (also pauses Malice regen). */

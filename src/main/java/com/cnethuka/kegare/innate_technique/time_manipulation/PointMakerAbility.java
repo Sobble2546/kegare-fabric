@@ -75,7 +75,7 @@ public final class PointMakerAbility extends TimeAbility {
         BlockHitResult hit = TimeTargeting.lookedAtBlock(p, TimeConfig.MARK_RANGE.get()).orElseThrow();
         PointMarks.mark(p, hit.getBlockPos(), TimeTargeting.topOf(p, hit.getBlockPos()));
         VisualService.playOnce(p, MARK);
-        TimeManipulation.sound(p, KegareSounds.TIME_CLICK, 0.8f, 1.15f);
+        TimeManipulation.sound(p, KegareSounds.TIME_CLICK.holder(), 0.8f, 1.15f);
     }
 
     /** The return to the mark. Package-visible for the tests. */
@@ -83,7 +83,7 @@ public final class PointMakerAbility extends TimeAbility {
         boolean low = p.getHealth() < TimeAdvancements.SECOND_CHANCE_HEALTH;
         List<Vec3> path = new ArrayList<>(mark.path);
         path.add(p.position());
-        TimeManipulation.sound(p, KegareSounds.TIME_CLICK, 1f, 0.9f);
+        TimeManipulation.sound(p, KegareSounds.TIME_CLICK.holder(), 1f, 0.9f);
         Swapper.moveTo(p, mark.standAt, mark.yaw, mark.pitch);
         p.setDeltaMovement(Vec3.ZERO);
         EntityCompat.markHurt(p);
@@ -94,7 +94,7 @@ public final class PointMakerAbility extends TimeAbility {
         if (heal > 0f) p.setHealth(Math.min(mark.health, p.getHealth() + heal));
         PointMarks.clear(p);
         VisualService.playOnce(p, RETURN);
-        TimeManipulation.sound(p, KegareSounds.TIME_CLICK, 1f, 0.9f);
+        TimeManipulation.sound(p, KegareSounds.TIME_CLICK.holder(), 1f, 0.9f);
         TimeManipulation.fx(p, TimeManipulation.fx(TimeNet.Fx.Kind.RETURN, p.getId(), path, 0f, 0));
         if (low) TimeAdvancements.secondChanceStarted(p);
     }

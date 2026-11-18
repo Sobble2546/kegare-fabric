@@ -56,6 +56,8 @@ if (renamesName != null) {
 }
 sourceSets.main {
     java.srcDir "targets/${targetName}/java"
+    // 26.x: the data generators are left out (their Fabric and vanilla base classes changed shape); src/generated is made on 1.21.11.
+    if (tp.getProperty('exclude_sources') != null) java.exclude tp.getProperty('exclude_sources').split(',')
     resources {
         srcDir 'src/generated/resources'
         exclude '**/*.bbmodel'

@@ -59,7 +59,7 @@ public final class ShatterShellAbility extends RimeSpecial {
                 dx = p.getRandom().nextDouble() - 0.5;
                 dz = p.getRandom().nextDouble() - 0.5;
             }
-            target.knockback(knockback, dx, dz);
+            com.cnethuka.kegare.platform.EntityCompat.knockback(target, knockback, dx, dz);
             target.setDeltaMovement(target.getDeltaMovement().add(0, 0.15, 0));
             EntityCompat.markHurt(target);
             // No damage, but it lands on them: the Impact System reads its push from the knockback above.

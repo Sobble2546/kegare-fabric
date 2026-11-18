@@ -83,7 +83,7 @@ public final class AccelerateAbility extends TimeAbility {
         InnateTechnique technique = ctx.innateTechnique();
         CooldownRates.set(p, new CooldownRates.Rate(RATE, rate, key -> !key.equals(id()) && technique.findAbility(key).isPresent(), Long.MAX_VALUE));
         ON_SINCE.put(p.getUUID(), p.level().getGameTime());
-        TimeManipulation.sound(p, KegareSounds.TIME_WIND, 1f, 1f);
+        TimeManipulation.sound(p, KegareSounds.TIME_WIND.holder(), 1f, 1f);
     }
 
     @Override
@@ -91,7 +91,7 @@ public final class AccelerateAbility extends TimeAbility {
         ServerPlayer p = ctx.player();
         long now = p.level().getGameTime();
         if (now % 5 == 0) { // fast ticking, heard where each listener sees them (too fast for the eye, §3.30)
-            com.cnethuka.kegare.sight.DelayedSight.playSound(p, KegareSounds.TIME_TICK, net.minecraft.sounds.SoundSource.PLAYERS, 0.35f, 1.6f);
+            com.cnethuka.kegare.sight.DelayedSight.playSound(p, KegareSounds.TIME_TICK.holder(), net.minecraft.sounds.SoundSource.PLAYERS, 0.35f, 1.6f);
         }
         Long since = ON_SINCE.get(p.getUUID());
         if (since != null && now - since >= TimeAdvancements.OVERCLOCK_TICKS) TimeAdvancements.award(p, TimeAdvancements.OVERCLOCK);

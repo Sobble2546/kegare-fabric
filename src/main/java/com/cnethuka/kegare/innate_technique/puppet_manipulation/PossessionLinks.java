@@ -55,7 +55,7 @@ public final class PossessionLinks {
         }
 
         private void write(FriendlyByteBuf buf) {
-            buf.writeCollection(entries, (b, e) -> {
+            com.cnethuka.kegare.platform.net.Bufs.writeCollection(buf, entries, (b, e) -> {
                 b.writeUUID(e.player());
                 b.writeVarInt(e.shellId() + 1);
                 b.writeVarInt(e.tier());
@@ -64,7 +64,7 @@ public final class PossessionLinks {
         }
 
         private static StatePayload read(FriendlyByteBuf buf) {
-            return new StatePayload(buf.readList(b -> new Entry(b.readUUID(), b.readVarInt() - 1, b.readVarInt(), b.readInt())));
+            return new StatePayload(com.cnethuka.kegare.platform.net.Bufs.readList(buf, b -> new Entry(b.readUUID(), b.readVarInt() - 1, b.readVarInt(), b.readInt())));
         }
 
         @Override

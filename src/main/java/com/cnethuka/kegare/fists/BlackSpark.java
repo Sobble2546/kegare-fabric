@@ -171,7 +171,7 @@ public final class BlackSpark {
         due.forEach((target, attacker) -> {
             if (!target.isAlive() || target.level() != attacker.level()) return;
             Vec3 away = target.position().subtract(attacker.position());
-            target.knockback(strength, -away.x, -away.z);
+            com.cnethuka.kegare.platform.EntityCompat.knockback(target, strength, -away.x, -away.z);
             EntityCompat.markHurt(target);
         });
     }

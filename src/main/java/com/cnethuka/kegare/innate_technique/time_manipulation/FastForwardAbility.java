@@ -35,7 +35,7 @@ public final class FastForwardAbility extends TimeAbility.Special {
         ServerPlayer p = ctx.player();
         if (TimeManipulation.ACCELERATE.isActive(p)) CastManager.switchOff(p, TimeManipulation.ACCELERATE, EndReason.CONSUMED);
         AccelerateAbility.fastForward(p, ctx.innateTechnique(), TimeConfig.ticks(TimeConfig.FAST_FORWARD_SECONDS));
-        TimeManipulation.sound(p, KegareSounds.TIME_WHIRL, 1f, 1f);
+        TimeManipulation.sound(p, KegareSounds.TIME_WHIRL.holder(), 1f, 1f);
         TimeManipulation.fx(p, TimeManipulation.fx(TimeNet.Fx.Kind.FAST_FORWARD, p.getId(), List.of(), 0f, 0));
     }
 }

@@ -80,7 +80,7 @@ public class DecelerateEntity extends ThrowableProjectile {
         boolean wasCooling = target instanceof ServerPlayer player && cooling(player);
         // A target frozen in a Standstill has the hit held for the resume; the slow still goes on now.
         if (!target.hurtOrSimulate(TimeDamage.source(hand.level(), hand, caster), damage) && !TimeStops.holding(target)) return;
-        TimeManipulation.sound(target, KegareSounds.TIME_TICK, 1f, 0.55f);
+        TimeManipulation.sound(target, KegareSounds.TIME_TICK.holder(), 1f, 0.55f);
         if (TimeTargeting.immune(target)) return; // a boss takes the damage, never the slow
         int ticks = TimeConfig.ticks(TimeConfig.DECELERATE_SECONDS);
         if (ticks <= 0) return;

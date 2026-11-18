@@ -257,7 +257,7 @@ public final class ClientEventHooks {
         InputEvent.InteractionKeyMappingTriggered event = NeoForge.EVENT_BUS.post(new InputEvent.InteractionKeyMappingTriggered(kind, hand, key));
         if (!event.isCanceled()) return false;
         Minecraft mc = Minecraft.getInstance();
-        if (event.shouldSwingHand() && mc.player != null) mc.player.swing(hand);
+        if (event.shouldSwingHand() && mc.player != null) com.cnethuka.kegare.platform.EntityCompat.swing(mc.player, hand);
         return true;
     }
 

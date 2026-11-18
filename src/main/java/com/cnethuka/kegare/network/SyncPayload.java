@@ -117,25 +117,25 @@ public record SyncPayload(
         buf.writeFloat(current);
         buf.writeOptional(innateTechnique, FriendlyByteBuf::writeIdentifier);
         buf.writeVarInt(selectedSlot);
-        buf.writeCollection(cooldowns, (b, c) -> {
+        com.cnethuka.kegare.platform.net.Bufs.writeCollection(buf, cooldowns, (b, c) -> {
             b.writeIdentifier(c.ability());
             b.writeVarLong(c.endTick());
             b.writeVarInt(c.duration());
         });
-        buf.writeCollection(activeToggles, FriendlyByteBuf::writeIdentifier);
+        com.cnethuka.kegare.platform.net.Bufs.writeCollection(buf, activeToggles, FriendlyByteBuf::writeIdentifier);
         buf.writeOptional(casting, (b, c) -> {
             b.writeIdentifier(c.ability());
             b.writeVarLong(c.startTick());
             b.writeVarInt(c.maxTicks());
         });
-        buf.writeCollection(traits, FriendlyByteBuf::writeIdentifier);
+        com.cnethuka.kegare.platform.net.Bufs.writeCollection(buf, traits, FriendlyByteBuf::writeIdentifier);
         buf.writeFloat(environment.multiplier());
         buf.writeEnum(environment.icon());
-        buf.writeCollection(environment.factors(), (b, f) -> {
+        com.cnethuka.kegare.platform.net.Bufs.writeCollection(buf, environment.factors(), (b, f) -> {
             b.writeUtf(f.translationKey(), 128);
             b.writeFloat(f.multiplier());
         });
-        buf.writeCollection(costs, (b, c) -> {
+        com.cnethuka.kegare.platform.net.Bufs.writeCollection(buf, costs, (b, c) -> {
             b.writeIdentifier(c.ability());
             b.writeFloat(c.cost());
             b.writeFloat(c.upkeepPerSecond());
@@ -144,8 +144,8 @@ public record SyncPayload(
         buf.writeVarInt(maxFreezeStacks);
         buf.writeVarLong(frozenUntil);
         buf.writeVarLong(burntOutUntil);
-        buf.writeCollection(loadout, (b, slot) -> b.writeOptional(slot, FriendlyByteBuf::writeIdentifier));
-        buf.writeCollection(sharedUnlocked, FriendlyByteBuf::writeIdentifier);
+        com.cnethuka.kegare.platform.net.Bufs.writeCollection(buf, loadout, (b, slot) -> b.writeOptional(slot, FriendlyByteBuf::writeIdentifier));
+        com.cnethuka.kegare.platform.net.Bufs.writeCollection(buf, sharedUnlocked, FriendlyByteBuf::writeIdentifier);
         buf.writeBoolean(inCombat);
         progression.write(buf);
     }
@@ -159,16 +159,16 @@ public record SyncPayload(
                 buf.readFloat(),
                 buf.readOptional(FriendlyByteBuf::readIdentifier),
                 buf.readVarInt(),
-                buf.readList(b -> new CooldownEntry(b.readIdentifier(), b.readVarLong(), b.readVarInt())),
-                buf.readList(FriendlyByteBuf::readIdentifier),
+                com.cnethuka.kegare.platform.net.Bufs.readList(buf, b -> new CooldownEntry(b.readIdentifier(), b.readVarLong(), b.readVarInt())),
+                com.cnethuka.kegare.platform.net.Bufs.readList(buf, FriendlyByteBuf::readIdentifier),
                 buf.readOptional(b -> new CastingEntry(b.readIdentifier(), b.readVarLong(), b.readVarInt())),
-                buf.readList(FriendlyByteBuf::readIdentifier),
+                com.cnethuka.kegare.platform.net.Bufs.readList(buf, FriendlyByteBuf::readIdentifier),
                 new CostEnvironment(buf.readFloat(), buf.readEnum(CostEnvironment.Icon.class),
-                        buf.readList(b -> new CostEnvironment.Factor(b.readUtf(128), b.readFloat()))),
-                buf.readList(b -> new AbilityCost(b.readIdentifier(), b.readFloat(), b.readFloat())),
+                        com.cnethuka.kegare.platform.net.Bufs.readList(buf, b -> new CostEnvironment.Factor(b.readUtf(128), b.readFloat()))),
+                com.cnethuka.kegare.platform.net.Bufs.readList(buf, b -> new AbilityCost(b.readIdentifier(), b.readFloat(), b.readFloat())),
                 buf.readVarInt(), buf.readVarInt(), buf.readVarLong(), buf.readVarLong(),
-                buf.readList(b -> b.readOptional(FriendlyByteBuf::readIdentifier)),
-                buf.readList(FriendlyByteBuf::readIdentifier),
+                com.cnethuka.kegare.platform.net.Bufs.readList(buf, b -> b.readOptional(FriendlyByteBuf::readIdentifier)),
+                com.cnethuka.kegare.platform.net.Bufs.readList(buf, FriendlyByteBuf::readIdentifier),
                 buf.readBoolean(),
                 ProgressionSnapshot.read(buf));
     }

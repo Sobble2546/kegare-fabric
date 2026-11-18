@@ -49,7 +49,7 @@ public final class VanillaFallback {
 
     /** @param direction for directional specs: where the particles fly (unit vector), else ignored */
     static void spawn(Level level, Vec3 at, Vec3 direction, Spec spec, int count) {
-        RandomSource random = level.random;
+        RandomSource random = level.getRandom();
         for (int i = 0; i < count; i++) {
             double x = at.x + (random.nextDouble() - 0.5) * 2 * spec.spread();
             double y = at.y + (random.nextDouble() - 0.5) * 2 * spec.spread();

@@ -91,7 +91,7 @@ public final class TimeStopClient {
         int id = e.getId();
         if (id == stop.caster() || FREE.contains(id)) return false;
         if (e instanceof Player p && p.isSpectator()) return false;
-        if (e.getType().is(CombatHelper.BOSSES)) return false; // never stopped (DESIGN §4)
+        if (e.getType().builtInRegistryHolder().is(CombatHelper.BOSSES)) return false; // never stopped (DESIGN §4)
         for (Entity passenger : e.getPassengers()) if (passenger instanceof Player && !frozen(passenger)) return false;
         Integer flying = FLIGHT.get(id);
         if (flying != null && flying > 0) return false;

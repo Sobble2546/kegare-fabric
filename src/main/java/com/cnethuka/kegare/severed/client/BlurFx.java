@@ -97,7 +97,7 @@ final class BlurFx {
         if (ground.isAir() || count == 0) return;
         Vec3 motion = entity.getDeltaMovement();
         for (int i = 0; i < count; i++) {
-            double x = at.x + (level.random.nextDouble() - 0.5) * 0.5, z = at.z + (level.random.nextDouble() - 0.5) * 0.5;
+            double x = at.x + (level.getRandom().nextDouble() - 0.5) * 0.5, z = at.z + (level.getRandom().nextDouble() - 0.5) * 0.5;
             level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK, ground), x, at.y + 0.1, z, -motion.x * 0.4, 0.12 + speed * 0.1, -motion.z * 0.4);
         }
     }
