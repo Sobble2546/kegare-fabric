@@ -25,7 +25,6 @@ import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.fabricmc.fabric.api.networking.v1.EntityTrackingEvents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.phys.Vec3;
 
 /**
  * The Fabric callbacks that fire NeoForge-shaped events on {@link NeoForge#EVENT_BUS}. The events Fabric has no usable callback for
@@ -84,6 +83,9 @@ public final class ServerEventHooks {
         ServerPlayerEvents.AFTER_RESPAWN.register(KEGARE_AFTER_TRANSFER, (oldPlayer, newPlayer, alive) -> {
             com.cnethuka.kegare.platform.attachment.Attachments.dropRuntimeOnly(newPlayer);
             NeoForge.EVENT_BUS.post(new PlayerEvent.PlayerRespawnEvent(newPlayer, alive));
+            // Fabric follows this with the world-change callback only when the respawn changed level; if it did not, nothing will clear the marker
+            // and a later portal trip of this same player would be taken for part of the respawn.
+            if (oldPlayer.level() == newPlayer.level()) respawning = null;
         });
         ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
             if (player == respawning) {
@@ -105,12 +107,14 @@ public final class ServerEventHooks {
         AttackBlockCallback.EVENT.register((player, level, hand, pos, direction) ->
                 NeoForge.EVENT_BUS.post(new PlayerInteractEvent.LeftClickBlock(player, pos, direction)).isCanceled()
                         ? InteractionResult.FAIL : InteractionResult.PASS);
-        // One Fabric callback for Neo's EntityInteract and EntityInteractSpecific: Kegare treats them alike, so both are posted.
+        // Fabric calls this once per interaction packet: first the interact-at one (it carries where on the entity, hit != null), and only if
+        // that was not consumed the plain interact one (hit == null). NeoForge's EntityInteractSpecific and EntityInteract are those two, in
+        // that order, so each packet posts just its own event.
         UseEntityCallback.EVENT.register((player, level, hand, entity, hit) -> {
-            boolean plain = NeoForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteract(player, hand, entity)).isCanceled();
-            Vec3 local = hit == null ? Vec3.ZERO : hit.getLocation().subtract(entity.position());
-            boolean specific = NeoForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteractSpecific(player, hand, entity, local)).isCanceled();
-            return plain || specific ? InteractionResult.FAIL : InteractionResult.PASS;
+            boolean cancelled = hit != null
+                    ? NeoForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteractSpecific(player, hand, entity, hit.getLocation().subtract(entity.position()))).isCanceled()
+                    : NeoForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteract(player, hand, entity)).isCanceled();
+            return cancelled ? InteractionResult.FAIL : InteractionResult.PASS;
         });
 
         // ---- block breaking, both ways ----

@@ -1,5 +1,6 @@
 package com.cnethuka.kegare.mixin.client;
 
+import com.cnethuka.kegare.platform.net.ClientNet;
 import com.llamalad7.mixinextras.injector.WrapWithCondition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.ParticleOptions;
@@ -11,13 +12,15 @@ import org.spongepowered.asm.mixin.injection.At;
 /**
  * Your own effect particles (the swirls of Slowness, Speed and the rest) aren't spawned in first person: they rise round your body,
  * which is round your camera, so they drift right across the view (Rime's Slowness fills it with pale blue swirls mid-fight).
- * Everyone else still sees yours (they show who's slowed), and so do you in third person.
+ * Everyone else still sees yours (they show who's slowed), and so do you in third person. Only on a server that runs Kegare.
  */
 @Mixin(LivingEntity.class)
 public abstract class OwnEffectParticlesMixin {
     @WrapWithCondition(method = "tickEffects",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addParticle(Lnet/minecraft/core/particles/ParticleOptions;DDDDDD)V"))
     private boolean kegare$notInYourOwnEyes(Level level, ParticleOptions particle, double x, double y, double z, double dx, double dy, double dz) {
+        // Vanilla on a server that doesn't run Kegare.
+        if (!ClientNet.isActive()) return true;
         Minecraft mc = Minecraft.getInstance();
         return (Object) this != mc.player || !mc.options.getCameraType().isFirstPerson();
     }

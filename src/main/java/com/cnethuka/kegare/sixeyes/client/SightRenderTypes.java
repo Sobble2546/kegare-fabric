@@ -10,11 +10,11 @@ import net.minecraft.resources.Identifier;
 final class SightRenderTypes {
     private SightRenderTypes() {}
 
-    static final Function<Identifier, RenderType> THROUGH_WALLS = texture -> WorldTypes.glow(texture, DepthTestFunction.NO_DEPTH_TEST, true);
+    static final Function<Identifier, RenderType> THROUGH_WALLS = WorldTypes.glowTypes(DepthTestFunction.NO_DEPTH_TEST, true);
 
     /** Drawn only where something stands in front of it: what's behind a wall, never over what's in plain view. */
-    static final Function<Identifier, RenderType> BEHIND_WALLS = texture -> WorldTypes.glow(texture, DepthTestFunction.GREATER_DEPTH_TEST, true);
+    static final Function<Identifier, RenderType> BEHIND_WALLS = WorldTypes.glowTypes(DepthTestFunction.GREATER_DEPTH_TEST, true);
 
     /** Ordinary depth: in the open, round the body, under nothing. */
-    static final Function<Identifier, RenderType> IN_THE_OPEN = texture -> WorldTypes.glow(texture, DepthTestFunction.LEQUAL_DEPTH_TEST, true);
+    static final Function<Identifier, RenderType> IN_THE_OPEN = WorldTypes.glowTypes(DepthTestFunction.LEQUAL_DEPTH_TEST, true);
 }

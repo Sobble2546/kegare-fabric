@@ -2,6 +2,7 @@ package com.cnethuka.kegare.impact.client;
 
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.client.visual.FullscreenFx;
+import com.cnethuka.kegare.impact.ScreenEffects;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import java.util.HashMap;
@@ -27,7 +28,9 @@ import net.minecraft.resources.Identifier;
  * by that Amount. The impact frame is one; the server's screen effect hook plays others (grayscale for players a Standstill freezes;
  * its inverted frame comes from its own client code).</li>
  * </ul>
- * A shader that won't load (a driver that can't run it, or no such file) is logged once and skipped; the rest still play. 1.21.11 has no
+ * A shader that won't load (a driver that can't run it, or no such file) is logged once and skipped, and nothing is copied for it; the
+ * rest still play. Only Kegare's own effects ({@link ScreenEffects#ALL}) play: the id is the server's to name, never to point at another
+ * namespace's files. The two window-sized targets are let go on leaving a world, on a reload and after half a minute unused. 1.21.11 has no
  * JSON post chain to load any more (the old {@code shaders/post/*.json} format is gone), so an effect is a fragment shader alone.
  */
 public final class ScreenFx {
@@ -38,6 +41,9 @@ public final class ScreenFx {
     /** The freeze asked for, counted from the frame it's captured on: a slow frame must never eat it. */
     private static long holdMillis;
     private static long holdUntil;
+    /** When a target was last needed: a window-sized target is tens of megabytes at 4K, so an idle one is let go. */
+    private static long lastUsed;
+    private static final long IDLE_NANOS = 30_000_000_000L;
 
     private static final Map<Identifier, FullscreenFx> EFFECTS = new HashMap<>();
     private static final Set<Identifier> BROKEN = new HashSet<>();
@@ -73,8 +79,17 @@ public final class ScreenFx {
         return capturing || holding;
     }
 
+    /**
+     * Only Kegare's own screen effects ({@link ScreenEffects#ALL}) run: the id comes from the server, and it is never a way to make this
+     * client compile a shader out of some other namespace's resources, nor to fill its tables with names.
+     */
+    public static boolean allowed(Identifier effect) {
+        return ScreenEffects.ALL.contains(effect);
+    }
+
     /** Plays a screen effect for {@code millis}, fading in and out over {@code fadeMillis}. Replayed while showing: {@code millis} from now. */
     public static void play(Identifier effect, long millis, long fadeMillis) {
+        if (!allowed(effect)) return; // not logged: a server could send one a frame
         if (millis <= 0) {
             PLAYING.remove(effect);
             return;
@@ -98,6 +113,11 @@ public final class ScreenFx {
         Minecraft mc = Minecraft.getInstance();
         RenderTarget main = mc.getMainRenderTarget();
         long now = System.nanoTime();
+        if (!capturing && !holding && PLAYING.isEmpty()) {
+            if ((held != null || scratch != null) && now - lastUsed > IDLE_NANOS) releaseTargets();
+            return;
+        }
+        lastUsed = now;
         if (capturing) { // this frame is the one the hit landed on: keep it, and show it as it is
             capturing = false;
             holding = true;
@@ -117,7 +137,7 @@ public final class ScreenFx {
                 it.remove();
                 continue;
             }
-            FullscreenFx fx = effect(mc, e.getKey());
+            FullscreenFx fx = effect(mc, e.getKey()); // null for one that can't run: nothing is copied for it
             if (fx == null) continue;
             try {
                 TextureTarget before = scratch(main);
@@ -153,6 +173,12 @@ public final class ScreenFx {
         }
         fx = new FullscreenFx(effect.getNamespace() + "_" + effect.getPath(),
                 Identifier.fromNamespaceAndPath(effect.getNamespace(), "post/" + effect.getPath()), List.of("DiffuseSampler"), false);
+        if (!fx.isValid()) { // a shader that doesn't compile draws nothing and says nothing: don't copy the picture for it every frame
+            fx.close();
+            BROKEN.add(effect);
+            Kegare.LOGGER.warn("Screen effect {} doesn't compile; skipping it", effect);
+            return null;
+        }
         EFFECTS.put(effect, fx);
         return fx;
     }
@@ -164,16 +190,27 @@ public final class ScreenFx {
         Kegare.LOGGER.warn("Screen effect {} can't run ({}); skipping it", effect, error.toString());
     }
 
+    /** Lets go of the two window-sized targets; they are made again the next time one is needed. */
+    private static void releaseTargets() {
+        if (held != null) held.destroyBuffers();
+        if (scratch != null) scratch.destroyBuffers();
+        held = null;
+        scratch = null;
+    }
+
     /** Resource packs changed: the shaders load again. */
     public static void reload() {
         EFFECTS.values().forEach(FullscreenFx::close);
         EFFECTS.clear();
         BROKEN.clear();
+        releaseTargets();
     }
 
+    /** A world is left. */
     public static void clear() {
         capturing = holding = false;
         holdMillis = 0;
         PLAYING.clear();
+        releaseTargets();
     }
 }

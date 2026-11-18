@@ -1,10 +1,12 @@
 package com.cnethuka.kegare.platform.net;
 
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ServerCommonPacketListener;
@@ -21,6 +23,9 @@ final class VersionCompatClient {
         void send(CustomPacketPayload payload);
 
         void disconnect(Component reason);
+
+        /** The connection the hello came on: what the client's Kegare state is scoped to. */
+        Connection connection();
     }
 
     static <T extends CustomPacketPayload> void registerPlayReceiver(CustomPacketPayload.Type<T> type, IPayloadHandler<T> handler) {
@@ -39,14 +44,23 @@ final class VersionCompatClient {
             public void disconnect(Component reason) {
                 context.responseSender().disconnect(reason);
             }
+
+            @Override
+            public Connection connection() {
+                return ClientHooks.connectionOf(context.packetListener());
+            }
         }));
     }
 
-    /** Runs the callback whenever a connection starts configuring and whenever one ends (so the hello's effects never outlive a connection). */
-    static void registerResetHooks(Runnable reset) {
-        ClientConfigurationConnectionEvents.INIT.register((handler, client) -> reset.run());
-        ClientConfigurationConnectionEvents.DISCONNECT.register((handler, client) -> reset.run());
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> reset.run());
+    /**
+     * {@code started} runs for the connection that is beginning to configure, {@code ended} for each one that closes. The close callbacks can
+     * arrive late (Fabric fires them from the netty thread as well), after a newer connection has already started, which is why they name
+     * their connection.
+     */
+    static void registerResetHooks(Consumer<Connection> started, Consumer<Connection> ended) {
+        ClientConfigurationConnectionEvents.INIT.register((handler, client) -> started.accept(ClientHooks.connectionOf(handler)));
+        ClientConfigurationConnectionEvents.DISCONNECT.register((handler, client) -> ended.accept(ClientHooks.connectionOf(handler)));
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> ended.accept(handler.getConnection()));
     }
 
     static Packet<ServerCommonPacketListener> createC2SPacket(CustomPacketPayload payload) {

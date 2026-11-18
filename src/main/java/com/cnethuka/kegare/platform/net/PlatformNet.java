@@ -54,7 +54,8 @@ public final class PlatformNet {
             if (VersionCompat.canSendConfig(handler, KegareHello.S2C.TYPE)) {
                 VersionCompat.addConfigTask(handler, new HelloTask(handler, srv));
             } else {
-                handler.disconnect(net.minecraft.network.chat.Component.translatable("kegare.network.missing"));
+                handler.disconnect(net.minecraft.network.chat.Component.translatableWithFallback("kegare.network.missing",
+                        "This server needs the Kegare mod (network version %s).", com.cnethuka.kegare.network.KegareNetwork.VERSION));
                 return;
             }
             modBus.post(new RegisterConfigurationTasksEvent(handler, srv));
@@ -69,6 +70,7 @@ public final class PlatformNet {
         // every payload
         modBus.post(new RegisterPayloadHandlersEvent(new FabricBackend()));
         FabricLoader loader = FabricLoader.getInstance();
+        IdHooks.check(loader);
         if (loader.getEnvironmentType() == EnvType.CLIENT) {
             ClientHooks.init();
         } else {

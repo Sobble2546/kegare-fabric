@@ -348,7 +348,8 @@ public final class KegareLanguageProvider extends FabricLanguageProvider {
         add("itemGroup.kegare", "Kegare");
         add("disconnect.kegare.db.unreachable", "Kegare can't reach its database. Your data is safe; try again shortly.");
         // Kegare is needed on both sides (platform/net: the join handshake).
-        add("kegare.network.missing", "Kegare is required on this server. Install the Kegare mod (same version as the server).");
+        add("kegare.network.missing", "This server needs the Kegare mod (network version %s).");
+        add("kegare.network.hello_failed", "Kegare could not join this server: %s (see the log).");
         add("kegare.network.version", "Kegare network version mismatch: the server uses %s, your client uses %s. Use the same Kegare version as the server.");
         add("kegare.network.timeout", "The Kegare handshake timed out.");
         add("disconnect.kegare.db.held", "Your data is still being saved on another server. Try again in a moment.");
@@ -731,6 +732,7 @@ public final class KegareLanguageProvider extends FabricLanguageProvider {
         add("toast.kegare.unlocked", "Unlocked");
         add("toast.kegare.unlocked.special", "Special unlocked");
         add("toast.kegare.unlocked.ultimate", "Ultimate unlocked");
+        add("toast.kegare.initialized", "Kegare initialized");
         add("gui.kegare.settings.vfx", "Ability effects");
         add("gui.kegare.settings.vfx.full", "Full");
         add("gui.kegare.settings.vfx.reduced", "Reduced");

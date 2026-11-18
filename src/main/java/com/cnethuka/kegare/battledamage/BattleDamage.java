@@ -292,6 +292,7 @@ public final class BattleDamage {
     }
 
     private static void onEntityJoin(EntityJoinLevelEvent event) {
+        if (event.getLevel().isClientSide()) return;
         AABB area = swallowing;
         if (area != null && event.getEntity() instanceof ItemEntity item && area.contains(item.position())) event.setCanceled(true);
     }

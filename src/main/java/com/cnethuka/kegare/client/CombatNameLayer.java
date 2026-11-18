@@ -48,12 +48,35 @@ public final class CombatNameLayer implements HudElement {
         g.drawCenteredString(mc.font, name, g.guiWidth() / 2, y, (alpha << 24) | 0xFFFFFF);
     }
 
-    /** How far above the bottom of the screen the tallest of the left (hearts, armour) and right (food, air) status bars ends. */
+    /**
+     * How far above the bottom of the screen the tallest of the left (hearts, armour) and right (food, air) status bars ends. In
+     * Creative no bar is drawn, so the stack ends where the panel puts it, as {@code Gui.leftHeight} used to say.
+     */
     static int stackTop() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.gameMode != null && !mc.gameMode.canHurtPlayer()) return 39 + CombatPanelLayer.extraHeight();
         try {
-            return Math.max(HudStatusBarHeightRegistry.getHeight(PROBE_LEFT), HudStatusBarHeightRegistry.getHeight(PROBE_RIGHT));
+            return registryStackTop();
         } catch (IllegalStateException | IllegalArgumentException notReady) {
             return 39 + CombatPanelLayer.extraHeight() + 10; // the registry is not ready or has no camera player: assume one row
         }
+    }
+
+    /**
+     * How far Fabric itself lifts the action bar and the held item's name this frame: the registry's tallest stack beyond two rows
+     * (20 px), 0 when the registry is not ready. Fabric's formula, mirrored here so {@link HudClearance} can undo it. The registry's
+     * providers are static ("a bar exists"), so this does not look at Creative.
+     * Only providers resolved before the probes are seen, so a third-party status bar in a root after the info bar is not counted.
+     */
+    static int fabricTextLift() {
+        try {
+            return Math.max(0, registryStackTop() - 39 - 20);
+        } catch (IllegalStateException | IllegalArgumentException notReady) {
+            return 0;
+        }
+    }
+
+    private static int registryStackTop() {
+        return Math.max(HudStatusBarHeightRegistry.getHeight(PROBE_LEFT), HudStatusBarHeightRegistry.getHeight(PROBE_RIGHT));
     }
 }

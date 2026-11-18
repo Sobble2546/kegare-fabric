@@ -67,10 +67,8 @@ public final class SwapFx {
     private static final int RING_SEGMENTS = 40;
     /** Ticks a moved entity is watched for its teleport, to snap it there. */
     private static final int SNAP_WINDOW = 10;
-    /** Ticks a player's last drawn pose is kept. */
-    private static final int POSE_KEPT = 40;
 
-    /** A player as last drawn: the model's parts, which are shown, the skin and the body's facing. */
+    /** A player as drawn: the model's parts, which are shown, the skin and the body's facing. */
     record Pose(PartPose[] parts, boolean[] shown, boolean slim, Identifier skin, float bodyYaw, long tick) {}
 
     private record Afterimage(Pose pose, Vec3 feet, long born) {}
@@ -101,7 +99,6 @@ public final class SwapFx {
     /** Photon's part of an effect, played a tick late. */
     private record Later(Vec3 pos, Visual visual, long due) {}
 
-    private static final Map<Integer, Pose> POSES = new HashMap<>();
     private static final List<Afterimage> AFTERIMAGES = new ArrayList<>();
     private static final List<Ring> RINGS = new ArrayList<>();
     private static final Map<Integer, Snap> SNAP = new HashMap<>();
@@ -173,27 +170,19 @@ public final class SwapFx {
 
     // ---------------------------------------------------------------- poses
 
-    /** Every player drawn: remember the pose their model was drawn in (an ability's animation included). */
-    static void remember(AbstractClientPlayer player, PlayerModel model, float partialTick) {
-        POSES.put(player.getId(), capture(model, player, Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot)));
-    }
-
     /**
-     * The pose to leave behind: as last drawn if that was just now, else worked out now (e.g. your own body in first person): the
-     * player's render state is extracted (which tells SwapClient, which remembers the pose), or posed on a model of our own from it.
+     * The pose to leave behind, worked out when it is wanted: the player's render state is extracted (an ability's animation, a disguise's
+     * skin and the arms it rewrites are in it) and posed on a model of our own. Nothing is kept per frame, so nothing runs for the players
+     * of a server with no swap going on.
      */
     @Nullable
     private static Pose poseOf(AbstractClientPlayer player) {
-        Pose seen = POSES.get(player.getId());
-        if (seen != null && clock - seen.tick() <= 2) return seen;
         EntityRenderState extracted;
         try {
             extracted = Minecraft.getInstance().getEntityRenderDispatcher().extractEntity(player, 1f);
         } catch (RuntimeException odd) {
             return null;
         }
-        seen = POSES.get(player.getId());
-        if (seen != null && clock - seen.tick() <= 2) return seen;
         if (!(extracted instanceof AvatarRenderState state)) return null;
         PlayerModel model = model(state.skin.model() == PlayerModelType.SLIM);
         if (model == null) return null;
@@ -247,7 +236,6 @@ public final class SwapFx {
         if (!drawn()) tickTransfers(level);
         tickStreaks(level);
         TRANSFERS.removeIf(x -> clock - x.born() > x.ticks() + TRANSFER_FADE);
-        POSES.values().removeIf(p -> clock - p.tick() > POSE_KEPT);
         SNAP.values().removeIf(s -> s.until() < clock);
     }
 
@@ -282,7 +270,6 @@ public final class SwapFx {
     }
 
     static void clear() {
-        POSES.clear();
         AFTERIMAGES.clear();
         RINGS.clear();
         SNAP.clear();

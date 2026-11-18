@@ -1,13 +1,11 @@
 package com.cnethuka.kegare.client.gui;
 
 import com.cnethuka.kegare.Kegare;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Mth;
 
 /**
  * A vanilla button (same input, focus and narration) drawn with Kegare's inked sprites instead of the grey stone:
@@ -31,8 +29,12 @@ public final class InkButton extends Button {
         boolean lit = active && isHoveredOrFocused();
         g.blitSprite(RenderPipelines.GUI_TEXTURED, !active ? DISABLED : lit ? HIGHLIGHTED : NORMAL, getX(), getY(), getWidth(), getHeight(),
                 GuiDraw.fade(alpha));
+        // Hidden while it fades in or out: the GUI text path draws alpha under 4/255 as fully opaque, which would pop the label for a frame.
+        if (alpha < 0.02f) return;
         int rgb = !active ? TEXT_DISABLED : lit ? TEXT_HIGHLIGHTED : TEXT;
-        g.drawCenteredString(Minecraft.getInstance().font, getMessage(), getX() + getWidth() / 2, getY() + (getHeight() - 8) / 2,
-                rgb | Mth.ceil(alpha * 255f) << 24);
+        // Vanilla's label path: clipped to the button and scrolled when too long; the collector fades it with the widget's alpha.
+        // The colour is the base style, so a message that sets its own colour still wins, as with the old drawCenteredString.
+        renderScrollingStringOverContents(g.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE),
+                Component.empty().withColor(rgb).append(getMessage()), 2);
     }
 }

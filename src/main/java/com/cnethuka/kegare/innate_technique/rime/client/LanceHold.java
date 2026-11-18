@@ -1,5 +1,6 @@
 package com.cnethuka.kegare.innate_technique.rime.client;
 
+import com.cnethuka.kegare.melee.client.FistTell;
 import com.cnethuka.kegare.client.render.Avatars;
 import com.cnethuka.kegare.client.visual.PlayerLayers;
 import com.cnethuka.kegare.client.visual.ClientVisuals;
@@ -175,7 +176,11 @@ public final class LanceHold {
             pose.pushPose();
             (left ? getParentModel().leftArm : getParentModel().rightArm).translateAndRotate(pose);
             grip(pose, left);
-            draw(player, pose, collector, scales, light, true);
+            // A screen's preview of a player (the inventory) goes through this layer too, in its own space: it draws the lance but must not
+            // move where the world's lance is remembered to be (the aura, the crumble on cancel, the snaps).
+            Vector3f origin = pose.last().pose().transformPosition(new Vector3f());
+            if (FistTell.inWorld(player, origin, Avatars.partialTick(state, player))) draw(player, pose, collector, scales, light, true);
+            else LanceMesh.draw(collector, pose, LanceShape.PIECES, scales, light);
             pose.popPose();
         }
     }

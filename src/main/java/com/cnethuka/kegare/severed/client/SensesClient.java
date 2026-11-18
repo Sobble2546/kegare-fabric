@@ -61,6 +61,8 @@ public final class SensesClient {
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> {
             SENSED.clear();
             REAL.clear();
+            SilhouetteMask.close();
+            FlatBodies.clear();
         });
     }
 
@@ -74,10 +76,15 @@ public final class SensesClient {
         if (outline != null) outline.close();
         outline = null;
         broken = false;
+        SilhouetteMask.close();
     }
 
     private static void onRender(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_WEATHER || SENSED.isEmpty() || broken) return;
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_WEATHER) return;
+        if (SENSED.isEmpty() || broken) {
+            SilhouetteMask.idle(); // nothing sensed for a while: the mask is let go
+            return;
+        }
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
         if (level == null || mc.player == null) return;
@@ -91,6 +98,13 @@ public final class SensesClient {
 
     private static void draw(Minecraft mc, ClientLevel level, RenderLevelStageEvent event) {
         RenderTarget main = mc.getMainRenderTarget();
+        // A shader that doesn't compile draws nothing and says nothing: find out first, before a mask is drawn for it every frame.
+        if (outline == null) outline = new FullscreenFx("senses", SHADER, List.of("MaskSampler"), true);
+        if (!outline.isValid() || !SilhouetteMask.isValid()) {
+            broken = true;
+            Kegare.LOGGER.warn("Senses outline shader doesn't compile; not drawn");
+            return;
+        }
         float partial = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         Vec3 cam = event.getCamera().position();
         double range = Math.max(1.0, SeveredConfig.SENSES_RANGE.get());
@@ -103,16 +117,10 @@ public final class SensesClient {
             int grey = Math.round(shade * 255f);
             Vec3[] real = REAL.get(id); // sensing isn't seeing: where they really are, not where eyes see them
             Vec3 at = (real != null ? real[0].lerp(real[1], partial) : e.getPosition(partial)).subtract(cam);
-            boolean invisible = e.isInvisible();
-            if (invisible) e.setInvisible(false); // sensed, not seen: an invisible body is there all the same
-            try {
-                FlatBodies.draw(e, at, partial, out, new FlatBodies.Look(grey << 16 | grey << 8 | grey, 255, 0, false));
-            } finally {
-                if (invisible) e.setInvisible(true);
-            }
+            // Sensed, not seen: an invisible body is there all the same (drawn as visible, off its render state, not the entity).
+            FlatBodies.draw(e, at, partial, out, new FlatBodies.Look(grey << 16 | grey << 8 | grey, 255, 0, false).visible());
         }
         SilhouetteMask.end(); // draws the silhouettes into the mask
-        if (outline == null) outline = new FullscreenFx("senses", SHADER, List.of("MaskSampler"), true);
         outline.draw(main, new float[] {STRENGTH}, false, SilhouetteMask.view());
     }
 }

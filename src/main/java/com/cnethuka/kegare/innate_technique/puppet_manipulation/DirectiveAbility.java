@@ -63,8 +63,9 @@ public final class DirectiveAbility extends PuppetAbility {
             puppet.setOrder(order, goTarget);
             VisualService.playOnce(puppet, Visual.effect(PuppetIds.FX_DIRECTIVE_PULSE, Visual.Anchor.FEET));
         }
-        owner.displayClientMessage(Component.translatable("message.kegare.directive.order",
-                Component.translatable(order.translationKey()), heard.size()), true);
+        Component notice = Component.translatable("message.kegare.directive.order",
+                Component.translatable(order.translationKey()), heard.size());
+        owner.displayClientMessage(notice, true);
         owner.level().playSound(null, owner.getX(), owner.getY(), owner.getZ(), SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.PLAYERS,
                 0.7f, 0.8f + 0.2f * order.ordinal());
         PuppetHud.markDirty(owner);

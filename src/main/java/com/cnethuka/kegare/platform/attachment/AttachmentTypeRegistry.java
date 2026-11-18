@@ -12,6 +12,9 @@ import net.minecraft.resources.ResourceKey;
 public final class AttachmentTypeRegistry extends KRegistry<AttachmentType<?>> {
     public static final ResourceKey<Registry<AttachmentType<?>>> KEY = ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath("kegare", "platform/attachment_type"));
 
+    /** Every type, in registration order: rebuilt when one is added (at startup), so reading it costs nothing. */
+    private volatile java.util.List<AttachmentType<?>> all = java.util.List.of();
+
     public AttachmentTypeRegistry() {
         super(KEY, null);
     }
@@ -19,5 +22,13 @@ public final class AttachmentTypeRegistry extends KRegistry<AttachmentType<?>> {
     @Override
     protected void onPut(ResourceKey<AttachmentType<?>> entryKey, AttachmentType<?> value) {
         value.bind(entryKey.identifier());
+        synchronized (this) {
+            all = java.util.List.copyOf(values());
+        }
+    }
+
+    /** Every registered type, in registration order (an immutable snapshot; no copy per call). */
+    java.util.List<AttachmentType<?>> all() {
+        return all;
     }
 }

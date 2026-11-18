@@ -9,6 +9,7 @@
     "ServerboundCustomPayloadPacketMixin"
   ],
   "client": [
+    "client.ClientCommonPacketListenerImplAccessor",
     "client.ClientboundCustomPayloadPacketMixin"
   ],
   "injectors": {

@@ -8,13 +8,17 @@ import com.cnethuka.kegare.platform.bus.SubscribeEvent;
 import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
 import com.cnethuka.kegare.platform.client.event.RenderGuiLayerEvent;
 import com.cnethuka.kegare.platform.client.gui.VanillaGuiLayers;
+import com.cnethuka.kegare.platform.net.ClientNet;
 
 /**
  * While the combat panel is up: hides the vanilla hotbar, XP bar and level (the panel takes their place; the hotbar is
  * drawn as a column on the left) and moves the vanilla text above the hotbar (action-bar messages, the held item's name) and chat up by
- * as much as the panel raised hearts and food (chat also moves right, clear of the hotbar column). Fabric already lifts the two texts
- * above the tallest status bar once the panel has registered its height ({@link KegareClient}), but only once that stack is taller than
- * two rows; {@link #textLift} adds what is still missing so they rise by the full amount, as on NeoForge.
+ * as much as the panel raised hearts and food (chat also moves right, clear of the hotbar column). The open chat screen draws the chat
+ * itself, outside the HUD layer, so {@code ChatScreenMixin} applies the same shift there.
+ * <p>
+ * The two texts: as soon as the panel registers a status bar height ({@link KegareClient}), Fabric lifts them above the tallest status stack
+ * beyond two rows, which vanilla never does (armour on a horse, absorption), on any server. Off a Kegare server this layer undoes that lift
+ * ({@link CombatNameLayer#fabricTextLift}); on one, with the panel up, it adds what Fabric's lift leaves short of the panel's height.
  */
 @EventBusSubscriber(modid = Kegare.MODID, value = Dist.CLIENT)
 public final class HudClearance {
@@ -34,10 +38,21 @@ public final class HudClearance {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     static void pre(RenderGuiLayerEvent.Pre event) {
-        if (!moves(event.getName()) || event.isCanceled() || !CombatPanelLayer.shown()) return;
+        if (event.isCanceled()) return;
+        Identifier layer = event.getName();
+        float dx = 0, dy;
+        if (layer.equals(VanillaGuiLayers.CHAT)) {
+            if (!CombatPanelLayer.shown()) return;
+            dx = chatShiftX();
+            dy = -chatLift();
+        } else if (layer.equals(VanillaGuiLayers.OVERLAY_MESSAGE) || layer.equals(VanillaGuiLayers.SELECTED_ITEM_NAME)) {
+            dy = textShift();
+        } else {
+            return;
+        }
+        if (dx == 0 && dy == 0) return;
         event.getGuiGraphics().pose().pushMatrix();
-        boolean chat = event.getName().equals(VanillaGuiLayers.CHAT);
-        event.getGuiGraphics().pose().translate(chat ? CombatHotbarLayer.WIDTH + 2 : 0, -(chat ? CombatPanelLayer.extraHeight() : textLift()));
+        event.getGuiGraphics().pose().translate(dx, dy);
         shifted = true;
     }
 
@@ -55,12 +70,25 @@ public final class HudClearance {
     }
 
     /**
-     * What the action-bar message and the held item's name still have to rise by, on top of Fabric's own lift. Fabric moves them up by the
-     * height of the tallest status stack beyond two rows (20 px); the panel wants them {@link CombatPanelLayer#extraHeight} above where
-     * vanilla puts them, whatever the stack. The part of the stack above the 39 px baseline is what Fabric measures.
+     * Where the action-bar message and the held item's name go, relative to where Fabric already put them (positive is down). Off a Kegare
+     * server: undo Fabric's lift, so they sit where vanilla puts them. On one, with the panel up: whatever is still missing to rise by the
+     * panel's height (Fabric's lift counts toward it, and if the stack is taller than the panel's rise Fabric's higher lift stays, so the
+     * texts keep clear of the stack). Panel down: nothing.
      */
-    private static int textLift() {
-        int fabricLift = Math.max(0, CombatNameLayer.stackTop() - 39 - 20);
-        return Math.max(0, CombatPanelLayer.extraHeight() - fabricLift);
+    private static int textShift() {
+        int fabricLift = CombatNameLayer.fabricTextLift();
+        if (!ClientNet.isActive()) return fabricLift;
+        if (!CombatPanelLayer.shown()) return 0;
+        return -Math.max(0, CombatPanelLayer.extraHeight() - fabricLift);
+    }
+
+    /** How far chat moves right while the panel is up: clear of the hotbar column. Also used by the open chat screen ({@code ChatScreenMixin}). */
+    public static int chatShiftX() {
+        return CombatHotbarLayer.WIDTH + 2;
+    }
+
+    /** How far chat moves up while the panel is up (the panel raised hearts and food by as much). */
+    public static int chatLift() {
+        return CombatPanelLayer.extraHeight();
     }
 }

@@ -18,14 +18,18 @@ public final class KegareRegistries {
     public static final ResourceKey<Registry<InnateTechnique>> INNATE_TECHNIQUE_KEY = ResourceKey.createRegistryKey(Kegare.id("innate_technique"));
     public static final ResourceKey<Registry<Trait>> TRAIT_KEY = ResourceKey.createRegistryKey(Kegare.id("trait"));
 
-    // Made when this class is first used; the first thing mod initialisation does is call init(), so that is before registries freeze.
-    public static final KRegistry<InnateTechnique> INNATE_TECHNIQUE = KRegistry.create(INNATE_TECHNIQUE_KEY);
-    public static final KRegistry<Trait> TRAIT = KRegistry.create(TRAIT_KEY);
+    // Only the handles are made when this class is first used (so touching a key or a handle early is harmless); init() makes the Minecraft
+    // registries behind them. A handle used before init() throws and says so, instead of failing somewhere else with a buried cause.
+    public static final KRegistry<InnateTechnique> INNATE_TECHNIQUE = KRegistry.declare(INNATE_TECHNIQUE_KEY);
+    public static final KRegistry<Trait> TRAIT = KRegistry.declare(TRAIT_KEY);
 
     private KegareRegistries() {}
 
-    /** Makes sure both registries exist. Must run during mod initialisation, before any DeferredRegister for them is applied. */
-    public static void init() {}
+    /** Makes both registries. Must run during mod initialisation (before registries freeze), before any DeferredRegister for them is applied. */
+    public static void init() {
+        INNATE_TECHNIQUE.bind();
+        TRAIT.bind();
+    }
 
     /** Kept for the old call; the registries are made in static initialisation. */
     public static void register(IEventBus modBus) {

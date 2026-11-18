@@ -63,11 +63,14 @@ public class PuppetRenderer extends EntityRenderer<PuppetEntity, AvatarRenderSta
         state.setData(LOOK, new Look(possessed, puppet.isStandIn(), puppet.isInvisible(),
                 possessed ? 0f : PuppetFx.hop(puppet, partialTick), puppet.isSpinning(), puppet.spinSeconds(partialTick),
                 puppet.maliceColor(), puppet.tier().ordinal())); // a Directive's tug lifts it briefly on its strings
-        if (possessed) { // its possessor is drawn as it instead: nothing of it shows, not even its shadow or name
-            state.shadowRadius = 0f;
-            state.shadowPieces.clear();
-            state.nameTag = null;
-        }
+        if (possessed) state.nameTag = null; // its possessor is drawn as it instead: nothing of it shows, not even its shadow or name
+    }
+
+    /** The shadow is worked out after extraction (finalizeRenderState), so it is switched off here, from what extraction recorded. */
+    @Override
+    protected float getShadowRadius(AvatarRenderState state) {
+        Look look = state.getData(LOOK);
+        return look != null && look.possessed() ? 0f : super.getShadowRadius(state);
     }
 
     @Override

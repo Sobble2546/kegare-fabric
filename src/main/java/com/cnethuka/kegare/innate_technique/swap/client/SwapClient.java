@@ -13,10 +13,6 @@ import java.util.Iterator;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.model.player.PlayerModel;
-import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -29,7 +25,6 @@ import com.cnethuka.kegare.platform.client.event.EntityRenderersEvent;
 import com.cnethuka.kegare.platform.client.event.RenderFrameEvent;
 import com.cnethuka.kegare.platform.client.event.RenderLevelStageEvent;
 import com.cnethuka.kegare.platform.client.event.RegisterClientReloadListenersEvent;
-import com.cnethuka.kegare.platform.client.event.RenderPlayerEvent;
 import com.cnethuka.kegare.platform.NeoForge;
 
 /**
@@ -82,7 +77,6 @@ public final class SwapClient {
         NeoForge.EVENT_BUS.addListener(SwapClient::onFrame);
         NeoForge.EVENT_BUS.addListener(SwapClient::onTickPre);
         NeoForge.EVENT_BUS.addListener(SwapClient::onLogout);
-        NeoForge.EVENT_BUS.addListener(SwapClient::onRenderPlayer);
         NeoForge.EVENT_BUS.addListener(SwapClient::onRenderLevel);
         // Switchback's countdown ring is drawn by SwapFx, not Photon, so it drains in step with the swap back.
         ClientVisuals.drawnByMove(SwapIds.FX_SWITCHBACK_TIMER);
@@ -149,27 +143,6 @@ public final class SwapClient {
     private static void onFrame(RenderFrameEvent.Pre event) {
         ClientLevel level = Minecraft.getInstance().level;
         if (level != null) SwapFx.snap(level);
-    }
-
-    /** Models of our own, one per arm model, posed from a player's render state to read the pose they are drawn in. */
-    private static PlayerModel poseWide, poseSlim;
-
-    /**
-     * Every player drawn: SwapFx remembers the pose their model is drawn in. On 1.21.11 a player's model is posed from the render state
-     * when it is drawn, so it can't be read off the renderer afterwards: a model of our own is posed from the same (finished) state.
-     */
-    private static void onRenderPlayer(RenderPlayerEvent.Post event) {
-        if (!(event.getEntity() instanceof AbstractClientPlayer player)) return;
-        boolean slim = event.getRenderState().skin != null && event.getRenderState().skin.model() == PlayerModelType.SLIM;
-        PlayerModel model = slim ? poseSlim : poseWide;
-        if (model == null) {
-            Minecraft mc = Minecraft.getInstance();
-            model = new PlayerModel(mc.getEntityModels().bakeLayer(slim ? ModelLayers.PLAYER_SLIM : ModelLayers.PLAYER), slim);
-            if (slim) poseSlim = model;
-            else poseWide = model;
-        }
-        model.setupAnim(event.getRenderState());
-        SwapFx.remember(player, model, event.getPartialTick());
     }
 
     private static void onRenderLevel(RenderLevelStageEvent event) {

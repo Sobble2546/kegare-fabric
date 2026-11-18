@@ -135,7 +135,7 @@ public final class DashFeel {
         g.pose().scale(unit, unit);
         for (int k = 0; k < segments; k++) {
             int top = lengthU * k / segments, bottom = lengthU * (k + 1) / segments;
-            int half = Math.max(1, Math.round(widthU * (k + 1f) / segments));
+            int half = Math.max(1, Math.round(widthU * (k + 0.5f) / segments)); // the strip's mid-width: the strips sum to the triangle's area
             int from = Mth.lerpInt(k / (float) segments, inner, outer), to = Mth.lerpInt((k + 1f) / segments, inner, outer);
             g.fillGradient(-half, top, half, bottom, from << 24 | COLOR, to << 24 | COLOR);
         }

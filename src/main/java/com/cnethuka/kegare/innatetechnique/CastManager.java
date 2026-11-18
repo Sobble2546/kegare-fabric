@@ -454,8 +454,9 @@ public final class CastManager {
         double cost = ability.releaseCost(player, ctx.charge());
         if (!payCast(player, ability, cost)) {
             ability.onEnd(ctx, EndReason.OUT_OF_MALICE);
-            player.displayClientMessage(Component.translatable(CastResult.NOT_ENOUGH_MALICE.translationKey(),
-                    Integer.toString((int) Math.ceil(cost - 1.0e-6)), Integer.toString((int) Math.floor(MaliceService.get(player).current()))), true);
+            Component notice = Component.translatable(CastResult.NOT_ENOUGH_MALICE.translationKey(),
+                    Integer.toString((int) Math.ceil(cost - 1.0e-6)), Integer.toString((int) Math.floor(MaliceService.get(player).current())));
+            player.displayClientMessage(notice, true);
             return;
         }
         CastScope.run(player, ability, () -> ability.execute(ctx));

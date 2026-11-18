@@ -80,10 +80,28 @@ public final class PlayerDataCodec {
         for (String fileKey : new String[] {AttachmentHolder.NEOFORGE_NBT_KEY, AttachmentHolder.ATTACHMENTS_NBT_KEY}) {
             CompoundTag all = file.getCompoundOrEmpty(fileKey);
             for (String key : all.keySet()) {
-                if (ours(key)) out.put(key, toJson(all.get(key)));
+                if (ours(key) && !isEmptyDefault(key, all.get(key))) out.put(key, toJson(all.get(key)));
             }
         }
         return out;
+    }
+
+    /**
+     * Fabric saves an inactive attachment such as a possession that never began as an empty compound (NeoForge saved nothing for it), and
+     * it is not worth a database row. True for an empty compound of a type whose default value encodes to nothing; anything else (an unknown
+     * type, one that encodes to something, a failure to tell) is kept.
+     */
+    @SuppressWarnings("unchecked")
+    static boolean isEmptyDefault(String key, Tag tag) {
+        if (!(tag instanceof CompoundTag compound) || !compound.isEmpty()) return false;
+        Identifier id = Identifier.tryParse(key);
+        AttachmentType<Object> type = id == null ? null : (AttachmentType<Object>) NeoForgeRegistries.ATTACHMENT_TYPES.get(id);
+        if (type == null || !type.isSaved()) return false;
+        try {
+            return type.encode(type.create(), null) == null;
+        } catch (RuntimeException e) {
+            return false;
+        }
     }
 
     /** Puts rows on a player, replacing all their stored attachments. Decodes everything first, so a failure changes nothing. */

@@ -20,7 +20,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 import com.zigythebird.playeranim.accessors.IAvatarAnimationState;
-import com.zigythebird.playeranim.util.ClientUtil;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.world.entity.Avatar;
@@ -101,22 +100,13 @@ public final class PlayerAnimations {
 
     /**
      * Whether PAL is drawing {@code state}'s player as your own first-person view right now (an animation shown with
-     * {@code THIRD_PERSON_MODEL}). A layer on the player's body skips it: PAL hides the head and body there and shows the arms, but a
+     * {@code THIRD_PERSON_MODEL}). PAL flags this per drawn player, on the render state, so always ask with the state being drawn: its
+     * camera-wide helper is true for every player drawn in the frame. A layer on the player's body skips it: PAL hides the head and body there and shows the arms, but a
      * layer that draws its own copy of the parts (Freeze's frost, the Rime Shell, a possessor's glow) would put a head round the
      * camera and fill the view.
      */
     public static boolean firstPersonPass(EntityRenderState state) {
         return state instanceof IAvatarAnimationState animated && animated.playerAnimLib$isFirstPersonPass();
-    }
-
-    /**
-     * Whether the camera is, this frame, looking through a {@code THIRD_PERSON_MODEL} animation of its own entity. PAL on Minecraft 1.21.11
-     * flags the pass per drawn player (on the render state), so a layer should ask {@link #firstPersonPass(EntityRenderState)} with the state it
-     * is drawing; this one answers for the camera's player only and says yes for every player drawn while it holds, so it is a stand-in
-     * for code that has no state to hand.
-     */
-    public static boolean firstPersonPass() {
-        return ClientUtil.shouldBeFirstPersonPass();
     }
 
     /** Whether this layer last started {@code animation} on the player, and it hasn't been stopped. A play-once counts until something replaces it. */

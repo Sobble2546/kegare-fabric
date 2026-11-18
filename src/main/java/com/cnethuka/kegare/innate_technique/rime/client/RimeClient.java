@@ -138,6 +138,7 @@ public final class RimeClient {
             LanceMesh.forget();
             BlockMarks.forget();
             FreezeClient.forget();
+            com.cnethuka.kegare.client.visual.WorldTypes.forget(); // a texture or a sampler may differ: the glow types are made again
         });
     }
 

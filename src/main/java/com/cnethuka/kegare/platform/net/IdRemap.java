@@ -39,6 +39,7 @@ public final class IdRemap {
     private static final Map<Identifier, Table> NONE = Map.of();
     private static volatile Map<Identifier, Table> tables = NONE;
     private static final AtomicInteger HOOKED = new AtomicInteger();
+    private static final AtomicInteger HOLDER_HOOKED = new AtomicInteger();
 
     private IdRemap() {}
 
@@ -49,6 +50,20 @@ public final class IdRemap {
 
     public static boolean isHooked() {
         return HOOKED.get() > 0;
+    }
+
+    /** How often the id-registry hook has wrapped a codec (a probe compares before and after, see {@link IdHooks}). */
+    static int registryHooks() {
+        return HOOKED.get();
+    }
+
+    /** The sound-event holder codec hook ran: proof that the second injection applied. */
+    public static void noteHolderHooked() {
+        HOLDER_HOOKED.incrementAndGet();
+    }
+
+    static int holderHooks() {
+        return HOLDER_HOOKED.get();
     }
 
     public static boolean isActive() {

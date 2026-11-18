@@ -9,6 +9,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.gamerules.GameRules;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -47,10 +48,14 @@ public abstract class ServerLevelEventsMixin {
         if (NeoForge.EVENT_BUS.post(new EntityJoinLevelEvent(player, (ServerLevel) (Object) this)).isCanceled()) ci.cancel();
     }
 
-    /** Enough players slept through the night: just before they are woken (the time has been moved on by then). */
+    /**
+     * Enough players slept through the night: just before they are woken (the time has been moved on by then). Vanilla wakes them either way,
+     * but the night only passes when the advance_time rule is on, and NeoForge fired the event only then, so this does too.
+     */
     @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;wakeUpAllPlayers()V"))
     private void kegare$nightSlept(java.util.function.BooleanSupplier hasTimeLeft, CallbackInfo ci) {
         ServerLevel self = (ServerLevel) (Object) this;
+        if (!self.getGameRules().get(GameRules.ADVANCE_TIME)) return;
         NeoForge.EVENT_BUS.post(new SleepFinishedTimeEvent(self, self.getDayTime()));
     }
 }

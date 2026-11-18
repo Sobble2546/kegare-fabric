@@ -14,6 +14,9 @@ import net.minecraft.client.renderer.RenderPipelines;
 public final class GuiPipelines {
     private GuiPipelines() {}
 
+    /** Touching the class registers the pipelines; call it during client initialisation, before the first resource reload. */
+    public static void init() {}
+
     /** Vanilla's textured GUI pipeline with additive blending (source alpha x source color added to the screen). */
     public static final RenderPipeline GUI_ADDITIVE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
             .withLocation(Kegare.id("pipeline/gui_additive"))

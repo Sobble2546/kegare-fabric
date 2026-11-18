@@ -1,5 +1,6 @@
 package com.cnethuka.kegare.client.visual;
 
+import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.mixin.cworld.LivingEntityRendererInvoker;
 import com.cnethuka.kegare.platform.client.event.EntityRenderersEvent;
 import java.util.function.Function;
@@ -29,10 +30,19 @@ public final class PlayerLayers {
         for (PlayerModelType type : event.getSkins()) {
             EntityRenderer<?, ?> renderer = event.getSkin(type);
             if (!(renderer instanceof AvatarRenderer<?>)) continue;
+            if (!(renderer instanceof LivingEntityRendererInvoker invoker)) {
+                missingInvoker(renderer);
+                continue;
+            }
             @SuppressWarnings("unchecked")
             RenderLayerParent<AvatarRenderState, PlayerModel> parent = (RenderLayerParent<AvatarRenderState, PlayerModel>) renderer;
-            ((LivingEntityRendererInvoker) renderer).kegare$addLayer(layer.apply(parent));
+            invoker.kegare$addLayer(layer.apply(parent));
         }
+    }
+
+    /** The mixin config didn't apply: the layer is left off (logged), rather than the resource reload crashing. */
+    private static void missingInvoker(EntityRenderer<?, ?> renderer) {
+        Kegare.LOGGER.error("Can't add a layer to {}: the cworld mixin did not apply; that layer won't draw", renderer.getClass().getName());
     }
 
     /** Makes a layer for one player renderer; {@code slim} is its arm model, {@code models} bakes extra models for the layer. */
@@ -45,9 +55,13 @@ public final class PlayerLayers {
         for (PlayerModelType type : event.getSkins()) {
             EntityRenderer<?, ?> renderer = event.getSkin(type);
             if (!(renderer instanceof AvatarRenderer<?>)) continue;
+            if (!(renderer instanceof LivingEntityRendererInvoker invoker)) {
+                missingInvoker(renderer);
+                continue;
+            }
             @SuppressWarnings("unchecked")
             RenderLayerParent<AvatarRenderState, PlayerModel> parent = (RenderLayerParent<AvatarRenderState, PlayerModel>) renderer;
-            ((LivingEntityRendererInvoker) renderer).kegare$addLayer(layer.create(parent, event.getEntityModels(), type == PlayerModelType.SLIM));
+            invoker.kegare$addLayer(layer.create(parent, event.getEntityModels(), type == PlayerModelType.SLIM));
         }
     }
 

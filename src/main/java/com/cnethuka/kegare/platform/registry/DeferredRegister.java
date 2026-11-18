@@ -21,7 +21,7 @@ import net.minecraft.world.item.Item;
  * NeoForge fills the registry later from a RegisterEvent; Fabric registries are open during mod initialisation, so
  * {@code register(IEventBus)} registers everything right there, in declaration order. The bus is not used. Calling it again does nothing.
  * <p>
- * Entries land in a Minecraft registry (vanilla ones, or Kegare's own made by {@link KRegistry#create}) or in a {@link KRegistry#standalone}
+ * Entries land in a Minecraft registry (vanilla ones, or Kegare's own, bound by {@link KRegistry#bind}) or in a {@link KRegistry#standalone}
  * map (attachment types).
  */
 public class DeferredRegister<T> {

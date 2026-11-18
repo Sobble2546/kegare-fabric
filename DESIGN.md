@@ -347,13 +347,17 @@ All timestamps use **level game time**. They persist across restarts and are ide
     type, item and sound event registries, the raw id this server numbers it with. The client answers `KegareHello.C2S` with its own
     version. Same version: the task finishes and the connection is a "Kegare client" (`KegareClients`, kept per connection). Different
     version: the side that sees it disconnects with `kegare.network.version`. No answer in 30 s: disconnected (`kegare.network.timeout`).
-    A client without the mod gets no hello and is not refused by Kegare: Fabric's registry sync decides whether the entries it lacks
-    matter, and it never passes the gate, so it is sent no Kegare payload and its Kegare packets are dropped. The database login task
-    (§3.33) is added after the hello, so a mismatched client never reaches the database.
+    A client that cannot receive the hello (no Kegare) is disconnected with `kegare.network.missing` (Fabric's registry sync is turned off
+    on a Via server, and such a client would break later on the first Kegare item or entity it cannot decode). A hello the client cannot
+    handle (an exception while building its id table or answering) disconnects with `kegare.network.hello_failed` instead of timing out.
+    The database login task (§3.33) is added after the hello, so a mismatched client never reaches the database.
   - **The gate.** `PacketDistributor` sends a payload to a player only if their connection passed the hello and their client registered
     the channel (`Gate.ok`), and drops any Kegare C2S payload from a connection that did not pass. On the client, `ClientNet.isActive()`
     is true only after a matching hello and is reset on every disconnect and reconfiguration: until then `sendToServer` does nothing and
-    client code (screens, HUD, keys) must treat Kegare as off, so the mod is inert on a server that does not run it.
+    client code (screens, HUD, keys) must treat Kegare as off, so the mod is inert on a server that does not run it. That state, and the
+    id table below, belong to the connection whose hello passed: a connection's close callback names it and is ignored unless it is that
+    one, so a late close of an old connection (a quick reconnect) cannot switch a new one off. The switch-on is the last step, after the
+    answer was sent.
   - **Network thread.** Fabric runs every handler on the main thread. Sub-tick timing (§3.29) needs the connection's thread, so two small
     mixins (`ServerboundCustomPayloadPacketMixin`, `ClientboundCustomPayloadPacketMixin`) hook the packet's own `handle`, run the handler
     of the three `executesOn(NETWORK)` payloads as the packet arrives and cancel the rest. The ordinary receiver stays registered (it
@@ -367,6 +371,9 @@ All timestamps use **level game time**. They persist across restarts and are ide
     loaded and the flag is not on); Kegare's sounds are always sent as direct holders (the name on the wire); and a client whose hello
     table differs from its own ids remaps the entity type and item ids it decodes, and the ones it encodes, by name (`IdRemap`, applied
     through `ByteBufCodecsMixin` around vanilla's registry codecs). On the same version the table is empty and every codec is vanilla's own.
+    Both injections are optional (`require = 0`), so at startup `PlatformNet` builds one codec of each kind and logs
+    `Kegare id-codec hooks: registry=… holder=…`; a miss is logged as an error, stops the game when ViaFabric is loaded, and a client
+    whose hello needs the remap while the registry hook is missing is disconnected with `kegare.network.hello_failed`.
     Tested only in the lab with the spike (see the port notes), not yet with the real jar.
 - Network version `28` (the Fabric port: the hello above, `SightPayloads.Mobs.Dot` and `BattleDamagePayload` carry names instead of raw ids);
   `27` (since a disguise wears the face's eyewear, §3.19 and §3.32: `Disguises.StatePayload` carries it); `26` was Six Eyes'
@@ -391,12 +398,16 @@ All timestamps use **level game time**. They persist across restarts and are ide
     slot above it), items upright with vanilla's pick-up pop. Chat moves right to clear it.
   - Hearts, food, armour and air sit **on top of** the panel (Fabric: the panel registers its height with the status bar height
     registry, `HudStatusBarHeightRegistry`, through a no-draw layer `kegare:combat_stack` below the health bar; vanilla's
-    `Gui.leftHeight`/`rightHeight` are gone), and action-bar text and the held item's name move up with them: Fabric lifts those two
-    above the tallest status bar (once it is taller than two rows), and `HudClearance` adds the rest so they rise by the full
-    amount the hearts did. Chat moves up and right by `HudClearance` (chat sits just above the hearts, as in vanilla).
-    `kegare:combat_name` finds the top of the stack through two no-draw probe layers in the same registry. Because the panel registers
-    a height provider, Fabric wraps the vanilla bars for the whole session, so the action-bar text and the held item's name also rise
-    above a stack taller than two rows when the panel is down, the way it does on any Fabric client with a mod that adds a status bar.
+    `Gui.leftHeight`/`rightHeight` are gone). Action-bar text and the held item's name rise with them: because the panel registers a
+    height provider, Fabric lifts those two above any status stack taller than two rows, for the whole session, which vanilla never does.
+    Off a Kegare server `HudClearance` undoes that lift (the client is inert there); on one, with the panel up, it adds what Fabric's lift
+    leaves short, so they rise by at least the full amount the hearts did and keep clear of a taller stack. With the panel down on a Kegare
+    server Fabric's lift is left alone. Chat moves up and right by `HudClearance`
+    (chat sits just above the hearts, as in vanilla); while the chat box is open 1.21.11 draws the chat from the chat screen itself, so
+    `ChatScreenMixin` applies the same shift there (and to the click lookup, so links and hover text stay under the pointer).
+    The hidden "info bar" layer is vanilla's one contextual bar (XP, jump meter and the locator bar), so the panel hides all three.
+    `kegare:combat_name` finds the top of the stack through two no-draw probe layers in the same registry (in Creative, where no bars
+    are drawn, it sits where the panel puts the stack).
 
   The panel:
   - **crest**: freeze pips (pulsing while frozen);
@@ -561,11 +572,11 @@ Malice is always shown as whole numbers (floored, like the HUD); the stored valu
     (drawn by `InkButton`, a vanilla button with Kegare's sprites), and `divider` (a brush stroke, 3-slice).
     In 1.21.1 the edges and centre **tile**, they do not stretch, so they're seamless along the tile period, with every
     ornament inside the corners.
-  - **Plain sprites:** `sparkle`, `severed_emblem`, and the roll reveal's in `sprites/reveal/`: `talisman`, `flame_0`-`7`
+  - **Plain sprites:** `sparkle`, `severed_emblem`, `reveal_bg` (128×128 seamless smoke, `tile` scaling, so `GuiDraw.inkBackground`
+    draws the whole backdrop as one element), and the roll reveal's in `sprites/reveal/`: `talisman`, `flame_0`-`7`
     (a looping flame), `eye_0`-`5` (an eye opening), `glow`, `ring`, `ray`, `star`, `star_small`, `ash`.
     The flames, glow, ring, ray and stars are greyscale, tinted in code by rarity.
-  - **Textures:** the talisman item, `gui/malice_bar.png`, the combat panel's `gui/combat/*`, and
-    `gui/reveal_bg.png` (128×128 seamless smoke, tiled behind the reveal by `GuiDraw.inkBackground`).
+  - **Textures:** the talisman item, `gui/malice_bar.png` and the combat panel's `gui/combat/*`.
     - `malice_bar.png` is 32×30: rows 0–9 the empty bar, rows 10–19 the fill's shading in greyscale, rows 20–29 a
       white shine; 5px caps, a 22px middle that tiles. `GuiDraw.maliceBar` draws it for both the HUD and the
       Sorcerer screen, tinting the fill with the innate technique's Malice color (§3.3) and drawing the shine
@@ -781,6 +792,8 @@ things changed in how it is built; what the player sees is meant to be the same.
 - The progression toast is a vanilla `Toast` (`update` decides when it hides). Tooltips are queued for the end of the frame, so they
   always sit on top. Mob-effect icons on the Six Eyes read tags are vanilla's GUI sprites.
 - Effect tiers are untouched: Reduced and Vanilla still scale or drop the streaks and the other effects exactly as before.
+- Startup toast (`StartupToast`): "Kegare initialized" with a green pixel check (`toast_check` sprite; the default font has no emoji), shown
+  once per game launch when the main menu first appears and the loading overlay is gone. Client-only, independent of any server.
 
 ### 3.13 Animations and VFX (visual only)
 **Rule: visuals are cosmetic. The server acts first and never waits on an animation or an effect.**
@@ -792,6 +805,27 @@ things changed in how it is built; what the player sees is meant to be the same.
   `RenderStateDataKey`). A player layer (Mimic's flicker, Nosebleed, the fist tell, the held lance, Possession's glow, a disguise's
   eyewear, Rime's frost) finds its player through `client.render.Avatars` and reads the parent model's parts when it is submitted.
   What each effects setting shows is unchanged (Full, Reduced and Vanilla pick the same branches as before).
+
+- **World drawing on 1.21.11 (Fabric), and what differs from the NeoForge build.** The Aura, the Six Eyes' sight markers and the Senses
+  outline are drawn in frame-graph passes added after vanilla's weather pass (and the hit-stop/effect shaders after the world and hand).
+  In Fancy and Fabulous graphics the transparency composite comes after those passes, so water, clouds, weather and particles can tint or
+  cover them where they overlap. Afterimages (Time Manipulation, Blur, Swap) use vanilla's
+  item-entity translucent type, so in Fabulous they are depth-sorted against water and clouds like a dropped item, and a copy leaves out
+  armour layers that swell the body (a charged creeper's swirl, a breeze's wind). Screen effects are fragment shaders alone (no JSON post
+  chains), and only Kegare's own (`ScreenEffects.ALL`: `grayscale`, `impact_frame`, `invert`) play: the id comes from the server and is
+  never taken for a file of another namespace. A shader that does not compile on a driver is logged once and the effect skipped: the
+  impact frame, the Standstill gray, the inverted frame and the Senses outline then do not show, and nothing is copied or drawn for them.
+  The window-sized targets (the hit-stop's frozen frame, the effect's scratch copy, the Senses mask) are let go on leaving a world, on a
+  resource reload and after 30 s unused, and made again on next use (one frame's allocation). The glow types the Aura and the sight
+  markers draw with are remembered per texture and rebuilt on a resource reload. Effect tiers are unchanged: Time and Blur copies and
+  the Aura keep their Vanilla early-outs, and Senses and the screen effects ignore the tier, as before.
+
+- **Client hooks on 1.21.11 (Fabric).** `ClientPlayerNetworkEvent.LoggingOut` is posted on the client thread (Fabric's disconnect callback runs on
+  the network thread), with the player captured before the hop (and posted by the next client tick if the client's task queue dropped the hop). `InteractionKeyMappingTriggered` fires at the head of attack, use and pick
+  block, for the main hand only, before vanilla's own early-outs; one click is one ATTACK. `OwnEffectParticlesMixin` only acts on a server
+  that runs Kegare (`ClientNet.isActive()`); on any other it is vanilla. Swap's afterimage works its pose out when someone leaves (their state
+  is extracted and posed on a model of our own), not every frame for every player. The held Glacial Lance only records where it is drawn
+  for the world's pass, not for the inventory's preview of a player. A possessed puppet casts no shadow.
 
 - **Libraries:** player animations use Player Animation Library (PAL, by ZigyTheBird). VFX use Photon (by
   KilaBash), which needs LDLib2. All three are required mods; see README.
@@ -1486,7 +1520,7 @@ negative is positive energy, which is why it heals, and why its colors are white
     it filled. Background RMT shortens nothing while it's full. `BrainDamage.refusesDominion` is the hook for Dominions (later) to
     refuse to open. Six Eyes gets no exemption.
   - **Healing:** `brainHealPerSecond` (0.15) a second out of a fight (full to empty in about 11 minutes); a night slept through clears
-    it for everyone who slept it (`SleepFinishedTimeEvent`).
+    it for everyone who slept it (`SleepFinishedTimeEvent`, fired only when the night really passes: the advance-time game rule is on).
   - **The anchor:** Dominions don't exist yet, so a Domain's Burnout is assumed to be `dominionBurnoutAssumed` (60 s). From an empty
     meter, four full repairs fit (the meter at 17, 37, 60 and 87), and the fifth stops 41% of the way in (24.6 s of a 60 s Burnout,
     8.2 s of Standstill's 20 s): a fifth Domain, not a sixth. The count is the same for every technique and every Burnout length, and it
@@ -2372,7 +2406,8 @@ Each client plays its own part:
   (`shaders/post/impact_frame.fsh`, a full-screen fragment shader run by `client/visual/FullscreenFx`): brightness cut hard into black and white, read through a
   slight blur so textures don't turn to grain, with the outlines of shapes inked black. It's the first frame of the freeze.
   Everyone else sees the flash.
-- **The screen shader hook** (`ScreenEffects`, `ScreenFx`): any full-screen fragment shader (`assets/<ns>/shaders/post/<path>.fsh`, GLSL 330,
+- **The screen shader hook** (`ScreenEffects`, `ScreenFx`): a full-screen fragment shader of Kegare's (`assets/kegare/shaders/post/<path>.fsh`, GLSL 330,
+  one of `ScreenEffects.ALL`: the id is the server's to name, so the client plays no other, whatever namespace it points at; a new shipped effect is added to that list;
   the picture as `DiffuseSampler`) over one player's whole screen for a set time, from the server, fading in and out by its `Amount`
   (`Params.x` of the `KegareFx` block). On 1.21.11 the old JSON post chains and `EffectInstance` programs no longer exist, so an effect is a
   fragment shader alone; the hit-stop freeze copies the main target's colour and copies it back. Time Manipulation's Standstill uses it for its gray (`kegare:grayscale`, §3.26). `/kegare debug screen <player> <effect> <seconds>` plays one.
@@ -2547,7 +2582,7 @@ breaks the record. Runtime only.
   (`TimeStopClient`), so the old position is the position and nothing drifts between frames, and `LevelRendererMixin` draws them at
   a fixed partial tick so nothing shivers. Something that walks in during the stop freezes then.
 - **A frozen player** (their physics run from their connection) is also stunned (the shared stun: no casting), their attacks,
-  interactions, item use and block breaking are refused, and they're put back where they stood if they move. Their client blocks
+  interactions, item use and block breaking are refused (a spear's stab too: it posts the same attack event as a swing), and they're put back where they stood if they move. Their client blocks
   movement, attack and use keys, stops every sound at the freeze and plays none but Standstill's own three, and grays the screen
   (the server's `kegare:grayscale` screen effect, fading in, snapped off at the end). The stun they had before comes back as it was.
 - **Projectiles** the caster or the immune throw during it fly `projectileFlightTicks` (3) and then hang where they are, their speed
@@ -2560,8 +2595,8 @@ breaks the record. Runtime only.
   whole right after.
 - **Every hit on something frozen counts** toward its held hit. A player's swing at it is held, so `hurt()` says no, and vanilla's
   `Player.attack` would take that for a miss: no sweep (its hits on anything else frozen would be lost), no crit, the "no damage" sound, no
-  wear on the weapon. `mixin/PlayerAttackMixin` counts a held hit as landed, so the swing does all of that and the sweep's hits on
-  the frozen beside it are held too. A full iron-sword swing across two frozen zombies lands 5.9 on the one hit and 0.94 on
+  wear on the weapon. `mixin/PlayerAttackMixin` counts a held hit as landed (a spear's lunge or jab, `Player.stabAttack`, included), so
+  the swing does all of that and the sweep's hits on the frozen beside it are held too. A full iron-sword swing across two frozen zombies lands 5.9 on the one hit and 0.94 on
   the one swept. Full charge, a partial swing and a crit all add up on a zombie, skeleton, spider, iron golem, wolf,
   enderman and creeper alike.
 - **When time resumes** everything that was frozen has its hurt cooldown cleared: otherwise a mob hit just before the cast would keep the one that
@@ -2697,7 +2732,7 @@ works out who that is four times a second (nearest first; not armor stands, spec
 player alone (`SensesPayload`, only when it changes; an empty set once they stop being Severed); a Malice user is never sent one.
 Sensing isn't seeing: a Blurring or Accelerating player, whom eyes see behind where they are (§3.30), is outlined where they really
 are (`SensedPositionsPayload`, every tick).
-The client draws each sensed body's silhouette into a mask (invisible ones as if they weren't), its brightness how near it is, and
+The client draws each sensed body's silhouette into a mask (invisible ones as if they weren't: the flag is cleared on the extracted render state for that draw, never on the entity), its brightness how near it is, and
 `shaders/post/senses.fsh` (alpha-blended over the picture) lays a dim, pale, neutral two-pixel outline just outside each silhouette: never vanilla glowing, no team
 or Malice color, no names or labels, nothing that tells a technique or trait (§1). It shows at every effects setting, because it's
 what they play by.
@@ -2739,7 +2774,7 @@ Technique Mode, unchanged (`client/SeveredKeys`). Controls lists the key as "Tec
   dust-grey, see-through, lit by the world like the body itself, never glowing), and dust and grit kicked off the ground they run on
   (vanilla block particles of that block). Where they really are reads clearly: the body itself is drawn as always, a sharp, solid
   silhouette at the front, and no afterimage is drawn within 0.9 blocks of it, so a hit on what you see is a hit on the real box.
-  A copy of a body carries no name tag (`client/visual/FlatBodies` draws what the entity renderer submits through one flat colour and never takes its name, shadow, fire, glint or outline; also used by Senses and Time Manipulation's afterimages; `BodyCopies` still wraps the extraction).
+  A copy of a body carries no name tag (`client/visual/FlatBodies` draws what the entity renderer submits through one flat colour and never takes its name, shadow, fire, glint or outline; also used by Senses and Time Manipulation's afterimages). A copy is drawn as a copy (`BodyCopies`, extraction and submitting both): the entity's render state is extracted once per entity per frame and shared by all of its copies, and a layer that records where a body is drawn (the Glacial Spire's fist, the Rime Shell's plates) ignores a copy, so an afterimage is never taken for the body.
   Reduced draws three afterimages; Vanilla none, only the dust. No afterimage is drawn within 1.6 blocks of the camera looking at it,
   so your own smear shows in third person only, and someone blurring past or through you never fills your view with grey. **In first person** (`BlurFeel`): the view opens up to 12% wider the faster you go, and needle streaks run round the
   screen's edge, flowing from where you're headed; nothing is drawn inside the middle 60% of the screen. Half of it at Reduced, none

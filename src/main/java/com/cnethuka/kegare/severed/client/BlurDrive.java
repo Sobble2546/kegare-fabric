@@ -6,7 +6,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -69,8 +68,9 @@ public final class BlurDrive {
             velocity = horizontal(player.getDeltaMovement());
             return;
         }
-        Vec2 keys = player.input.getMoveVector(); // x is left, y is forward
-        float forward = keys.y, left = keys.x;
+        // What vanilla moves with: the keys after sneaking, using an item and square movement have scaled them (LocalPlayer.modifyInput),
+        // as of the last tick's aiStep, which is where the old Input's impulses stood before this tick's.
+        float forward = player.zza, left = player.xxa;
         double top = state.speed() * movementFactor(player);
         double speed = velocity.horizontalDistance();
         if (Math.abs(forward) + Math.abs(left) > 0.01f) {
@@ -92,7 +92,8 @@ public final class BlurDrive {
     /**
      * The push vanilla's own move adds from the movement keys ({@code LivingEntity.travel}: the keys at 0.98, at the ground's
      * friction-adjusted speed, or the air's), on top of any velocity set before it. Left in, Blur runs at its top speed plus a walk
-     * (16.5 blocks a second at 0.7 a tick). Read from this tick's keys as they stand before the move.
+     * (16.5 blocks a second at 0.7 a tick). Read from the movement input as the player's own move has it ({@code xxa}, {@code zza}:
+     * the keys already at 0.98 and slowed by sneaking or using an item), as they stand before this tick's.
      */
     static Vec3 walkingPush(LocalPlayer player) {
         float amount;
@@ -103,8 +104,7 @@ public final class BlurDrive {
         } else {
             amount = player.isSprinting() ? 0.025999999F : 0.02F;
         }
-        Vec2 keys = player.input.getMoveVector();
-        return inputVector(keys.x * 0.98F, keys.y * 0.98F, amount, player.getYRot());
+        return inputVector(player.xxa, player.zza, amount, player.getYRot());
     }
 
     /** Vanilla's {@code Entity.getInputVector} for the keys alone (no up or down), as it works it out. */

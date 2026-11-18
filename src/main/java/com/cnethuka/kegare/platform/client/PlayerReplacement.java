@@ -7,8 +7,9 @@ import javax.annotation.Nullable;
  * NeoForge reports as {@code ClientPlayerNetworkEvent.Clone} and Fabric does not report at all. Polled once per client tick.
  */
 public final class PlayerReplacement<P> {
+    /** Volatile: {@link #left()} may be called from the network thread while the client thread polls. */
     @Nullable
-    private P last;
+    private volatile P last;
 
     /** A connection became ready with this player (or none yet). */
     public void joined(@Nullable P player) {

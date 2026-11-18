@@ -13,6 +13,7 @@ public final class Attachments {
 
     /** Every registered attachment type, in registration order. */
     public static List<AttachmentType<?>> all() {
+        if (NeoForgeRegistries.ATTACHMENT_TYPES instanceof AttachmentTypeRegistry types) return types.all();
         return List.copyOf(NeoForgeRegistries.ATTACHMENT_TYPES.values());
     }
 

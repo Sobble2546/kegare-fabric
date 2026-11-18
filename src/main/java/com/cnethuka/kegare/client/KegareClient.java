@@ -34,6 +34,7 @@ public final class KegareClient implements ClientModInitializer {
     static void init(IEventBus modBus) {
         // Mods list > Kegare > Config edits both client and (in singleplayer) server configs (needs Mod Menu to be seen).
         ClientPlatform.registerConfigScreen();
+        com.cnethuka.kegare.client.gui.GuiPipelines.init(); // registers our GUI pipelines now, so the first resource reload precompiles them
         // The @EventBusSubscriber classes of the client: Fabric has no annotation scanning. Each is registered exactly once, here;
         // their static @SubscribeEvent methods take game-bus events only (none takes a mod-bus event).
         NeoForge.EVENT_BUS.register(ClientInput.class);
@@ -69,6 +70,7 @@ public final class KegareClient implements ClientModInitializer {
         com.cnethuka.kegare.impact.client.ImpactClient.init(modBus);
         com.cnethuka.kegare.battledamage.client.BattleDamageClient.init();
         BurnoutHud.init();
+        StartupToast.init(); // "Kegare initialized" on the first main menu
     }
 
     /** Emblem/icon art is looked up once per texture; forget the answers when resource packs change. */
@@ -80,6 +82,8 @@ public final class KegareClient implements ClientModInitializer {
     private static final HudElement NOTHING = (graphics, deltaTracker) -> {};
 
     private static void registerGuiLayers(RegisterGuiLayersEvent event) {
+        // Must run during onInitializeClient (it does: fireRegistrationEvents): Fabric's status bar height registry freezes at CLIENT_STARTED
+        // and addLeft/addRight below throw after that.
         // Technique Mode: the combat panel takes the hotbar's place (HudClearance hides the vanilla hotbar and XP);
         // hearts, armour, food and air are raised above it (the height provider below).
         // Fabric draws a layer only when vanilla reaches the element it is attached to: the hotbar's layers are skipped in spectator mode.

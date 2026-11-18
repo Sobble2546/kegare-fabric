@@ -32,6 +32,28 @@ repositories {
     maven { name = 'Fuzs'; url = 'https://raw.githubusercontent.com/Fuzss/modresources/main/maven/'; content { includeGroup 'fuzs.forgeconfigapiport' } }
 }
 
+// Targets with a `renames` file (26.x) compile a renamed copy of the shared sources: Mojang renamed many classes and methods without changing
+// them, and those spellings are swapped line by line (so compiler line numbers still match src/). See targets/26.renames.
+def renamesName = tp.getProperty('renames')
+def portedDir = { String set -> renamesName == null ? file("src/${set}/java") : layout.buildDirectory.dir("ported/${set}/java").get().asFile }
+if (renamesName != null) {
+    def renamesFile = file("targets/${renamesName}")
+    def rules = renamesFile.readLines('UTF-8').findAll { it && !it.startsWith('#') }.collect {
+        def parts = it.split('\t', 2)
+        [java.util.regex.Pattern.compile(parts[0]), parts.length > 1 ? parts[1] : '']
+    }
+    ['main', 'test'].each { set ->
+        def port = tasks.register("port${set.capitalize()}Sources", Sync) {
+            from "src/${set}/java"
+            into portedDir(set)
+            inputs.file renamesFile
+            filteringCharset = 'UTF-8'
+            filter { String line -> rules.each { line = it[0].matcher(line).replaceAll(it[1]) }; line }
+        }
+        sourceSets[set].java.srcDirs = [portedDir(set)]
+        tasks.named(set == 'main' ? 'compileJava' : 'compileTestJava') { dependsOn port }
+    }
+}
 sourceSets.main {
     java.srcDir "targets/${targetName}/java"
     resources {
@@ -44,7 +66,11 @@ sourceSets.main {
 sourceSets.test.java.srcDir "targets/${targetName}/testJava"
 
 def mc = tp.getProperty('minecraft_version')
-loom { accessWidenerPath = file('src/main/resources/kegare.accesswidener') }
+// One access widener source (Mojang names). 1.21.11 is remapped, so it stays "named"; 26.x is unobfuscated, where Mojang names are the "official" namespace.
+def awFile = layout.buildDirectory.file('aw/kegare.accesswidener').get().asFile
+awFile.parentFile.mkdirs()
+awFile.text = file('targets/kegare.accesswidener').text.replaceFirst('(?m)^accessWidener v2 named', remap ? 'accessWidener v2 named' : 'accessWidener v2 official')
+loom { accessWidenerPath = awFile }
 dependencies {
     minecraft "com.mojang:minecraft:${mc}"
     if (remap) mappings loom.officialMojangMappings()
@@ -91,6 +117,7 @@ java {
 }
 
 tasks.named('processResources') {
+    from(awFile) // fabric.mod.json names it; Loom reads it from build/aw, the jar needs its own copy
     def props = [mod_id: mod_id, mod_name: mod_name, mod_version: mod_version, mod_license: mod_license,
                  minecraft_version: mc, java_release: tp.getProperty('java_release')]
     inputs.properties props

@@ -37,6 +37,13 @@ public abstract class ServerPlayerEventsMixin {
         NeoForge.EVENT_BUS.post(new PlayerContainerEvent.Open(self, self.containerMenu));
     }
 
+    /** The nautilus' inventory is opened the same way as the horse's (a possessing player must not be able to open either). */
+    @Inject(method = "openNautilusInventory", at = @At("TAIL"))
+    private void kegare$openedNautilus(net.minecraft.world.entity.animal.nautilus.AbstractNautilus nautilus, net.minecraft.world.Container container, CallbackInfo ci) {
+        ServerPlayer self = (ServerPlayer) (Object) this;
+        NeoForge.EVENT_BUS.post(new PlayerContainerEvent.Open(self, self.containerMenu));
+    }
+
     /** A move to another dimension (ServerPlayer overrides Entity.teleport and returns the player). */
     @Inject(method = "teleport(Lnet/minecraft/world/level/portal/TeleportTransition;)Lnet/minecraft/server/level/ServerPlayer;",
             at = @At("HEAD"), cancellable = true)

@@ -63,6 +63,11 @@ public final class ClientEventHooks {
 
     private static final EventBus MOD_BUS = new EventBus();
     private static final PlayerReplacement<LocalPlayer> PLAYER = new PlayerReplacement<>();
+    /** A disconnect, waiting for the client thread to announce it. */
+    private record Leave(@Nullable LocalPlayer player, net.minecraft.network.Connection connection) {}
+
+    private static final HandOff<Leave> LEAVES = new HandOff<>();
+    private static int clientTicks;
     private static boolean initialised;
     private static boolean registered;
     private static int reloaders;
@@ -81,13 +86,19 @@ public final class ClientEventHooks {
         ClientCompat.registerTicks(ClientEventHooks::tickPre, ClientEventHooks::tickPost);
         ClientCompat.registerConnection(
                 (mc, handler) -> {
+                    postPendingLeaves(); // a leave from the last connection that never got its turn comes before this join
                     PLAYER.joined(mc.player);
                     NeoForge.EVENT_BUS.post(new ClientPlayerNetworkEvent.LoggingIn(mc.player, handler.getConnection()));
                 },
                 (mc, handler) -> {
+                    // Fabric's DISCONNECT runs on the Netty thread when the channel drops (Connection.channelInactive), and the listeners
+                    // clear collections and GPU targets the client thread owns: they run there, with the player captured before the hop.
+                    // The leave waits in a queue the client posts from as well as the hop: Minecraft.disconnect drops the client's task
+                    // queue (and the hop with it), so the next client tick, or the next join, posts what is still waiting.
                     LocalPlayer player = mc.player != null ? mc.player : PLAYER.last();
-                    PLAYER.left();
-                    NeoForge.EVENT_BUS.post(new ClientPlayerNetworkEvent.LoggingOut(player, handler.getConnection()));
+                    LEAVES.add(new Leave(player, handler.getConnection()));
+                    if (mc.isSameThread()) postPendingLeaves();
+                    else mc.execute(ClientEventHooks::postPendingLeaves);
                 });
         LevelStages.init();
     }
@@ -131,7 +142,23 @@ public final class ClientEventHooks {
 
     // ------------------------------------------------------------------------------------------------ ticks and players
 
+    /** Client thread: posts every disconnect that is waiting (each once, whoever gets here first). */
+    private static void postPendingLeaves() {
+        LEAVES.drain(leave -> {
+            com.cnethuka.kegare.Kegare.LOGGER.debug("Posting LoggingOut on thread {}", Thread.currentThread().getName());
+            PLAYER.left();
+            NeoForge.EVENT_BUS.post(new ClientPlayerNetworkEvent.LoggingOut(leave.player(), leave.connection()));
+        });
+    }
+
+    /** Client ticks since the game started: one per tick whatever the player or the level are doing. */
+    public static int clientTicks() {
+        return clientTicks;
+    }
+
     private static void tickPre() {
+        clientTicks++;
+        postPendingLeaves();
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer old = PLAYER.poll(mc.player);
         if (old != null) {

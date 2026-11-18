@@ -68,7 +68,7 @@ public final class ReadsClient {
     private static final Map<Integer, ReadsPayload.MobGlance> MOBS = new HashMap<>();
     @Nullable
     private static ReadsPayload.Focus focus;
-    private static Matrix4f projection = new Matrix4f(), view = new Matrix4f();
+    private static final Matrix4f projection = new Matrix4f(), view = new Matrix4f();
     private static Vec3 camera = Vec3.ZERO;
 
     private ReadsClient() {}
@@ -83,9 +83,9 @@ public final class ReadsClient {
         };
         modBus.addListener((RegisterGuiLayersEvent e) -> e.registerBelow(VanillaGuiLayers.CROSSHAIR, LAYER, ReadsClient::render));
         NeoForge.EVENT_BUS.addListener((RenderLevelStageEvent e) -> {
-            if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_WEATHER) return;
-            projection = new Matrix4f(e.getProjectionMatrix());
-            view = new Matrix4f(e.getModelViewMatrix());
+            if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_WEATHER || !ClientNet.isActive() || !SightClient.isBearer()) return;
+            projection.set(e.getProjectionMatrix());
+            view.set(e.getModelViewMatrix());
             camera = e.getCamera().position();
         });
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> {

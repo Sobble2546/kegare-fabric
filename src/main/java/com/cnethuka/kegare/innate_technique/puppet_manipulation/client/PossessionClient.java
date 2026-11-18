@@ -158,9 +158,9 @@ public final class PossessionClient {
             if (e == null || state.isInvisible) return;
             if (PlayerAnimations.firstPersonPass(state)) return; // first-person arms: the glow's head would wrap the camera
             float t = state.ageInTicks;
-            // Posed when drawn, from the same state as the body.
+            // Posed when drawn, from the same state as the body. Tint, no sprite, no outline, no crumbling (the short form's int is an outline).
             collector.submitModel(model, state, pose, RenderTypes.energySwirl(PuppetGlowLayer.TEXTURE, (t * 0.004f) % 1f, (t * 0.007f) % 1f), light,
-                    OverlayTexture.NO_OVERLAY, PuppetGlowLayer.color(e.color(), e.tier()), null);
+                    OverlayTexture.NO_OVERLAY, PuppetGlowLayer.color(e.color(), e.tier()), null, 0, null);
         }
     }
 

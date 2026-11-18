@@ -148,4 +148,18 @@ class PlayerDataCodecTest {
         assertTrue(file.getCompoundOrEmpty(AttachmentHolder.ATTACHMENTS_NBT_KEY).contains("curios:inventory"), "another mod's stays with the world");
         assertTrue(file.contains("Dimension"), "vanilla's stays too");
     }
+
+    @Test
+    void anInactivePossessionIsNotARowButAnEmptyMaliceIs(MinecraftServer server) {
+        CompoundTag attachments = new CompoundTag();
+        attachments.put("kegare:possession", new CompoundTag());
+        attachments.put("kegare:malice", new CompoundTag());
+        attachments.put("kegare:from_a_later_version", new CompoundTag());
+        CompoundTag file = new CompoundTag();
+        file.put(AttachmentHolder.ATTACHMENTS_NBT_KEY, attachments);
+        Map<String, String> rows = PlayerDataCodec.fromPlayerFile(file);
+        assertFalse(rows.containsKey("kegare:possession"), "Fabric writes {} for a possession that never began; NeoForge wrote nothing");
+        assertTrue(rows.containsKey("kegare:malice"), "a type whose default is data keeps its empty-looking row");
+        assertTrue(rows.containsKey("kegare:from_a_later_version"), "a type this version does not know is never dropped");
+    }
 }

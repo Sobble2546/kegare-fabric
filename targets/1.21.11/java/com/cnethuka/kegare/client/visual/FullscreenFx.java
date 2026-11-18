@@ -16,7 +16,9 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.OptionalInt;
 import net.minecraft.resources.Identifier;
 import org.lwjgl.system.MemoryStack;
@@ -33,10 +35,18 @@ import org.lwjgl.system.MemoryStack;
 public final class FullscreenFx implements AutoCloseable {
     public static final String BLOCK = "KegareFx";
 
+    /**
+     * One pipeline object per effect name, for good: a resource reload makes a new {@link FullscreenFx} (the shader is read again) but
+     * not a new pipeline, so the device's compiled-pipeline cache doesn't grow by one per reload.
+     */
+    private static final Map<String, RenderPipeline> PIPELINES = new HashMap<>();
+
     private final String name;
     private final RenderPipeline pipeline;
     private final List<String> samplers;
     private GpuBuffer ubo;
+    /** Whether the shader compiled: asked of the device once, the first time it's needed. */
+    private Boolean valid;
 
     /**
      * @param fragment shader id: {@code kegare:post/invert} is {@code assets/kegare/shaders/post/invert.fsh}
@@ -45,7 +55,12 @@ public final class FullscreenFx implements AutoCloseable {
      */
     public FullscreenFx(String name, Identifier fragment, List<String> samplers, boolean blend) {
         this.name = name;
-        this.samplers = List.copyOf(samplers);
+        List<String> kept = List.copyOf(samplers);
+        this.samplers = kept;
+        this.pipeline = PIPELINES.computeIfAbsent(name, n -> build(n, fragment, kept, blend));
+    }
+
+    private static RenderPipeline build(String name, Identifier fragment, List<String> samplers, boolean blend) {
         RenderPipeline.Builder b = RenderPipeline.builder()
                 .withLocation(Kegare.id("pipeline/fx_" + name))
                 .withVertexShader(Identifier.withDefaultNamespace("core/screenquad"))
@@ -55,17 +70,36 @@ public final class FullscreenFx implements AutoCloseable {
                 .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
                 .withCull(false)
                 .withVertexFormat(DefaultVertexFormat.EMPTY, VertexFormat.Mode.TRIANGLES);
-        for (String s : this.samplers) b.withSampler(s);
+        for (String s : samplers) b.withSampler(s);
         if (blend) b.withBlend(BlendFunction.TRANSLUCENT);
         else b.withoutBlend();
-        this.pipeline = b.build();
+        return b.build();
+    }
+
+    /**
+     * Whether the shader compiles and links here. A pipeline that doesn't isn't an error on the draw (the device logs it and draws
+     * nothing), so callers ask first and keep their expensive work (copying the picture, drawing a mask) for an effect that will show.
+     */
+    public boolean isValid() {
+        if (valid == null) valid = valid(pipeline);
+        return valid;
+    }
+
+    /** Whether the device can compile {@code pipeline} (it compiles it now if it hasn't yet): false for a shader that fails. */
+    public static boolean valid(RenderPipeline pipeline) {
+        try {
+            return RenderSystem.getDevice().precompilePipeline(pipeline).isValid();
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
     }
 
     /**
      * Runs the pass over all of {@code out}'s colour attachment. {@code inputs} are bound to the samplers in order (linear filtering when
-     * {@code linear}). Throws if the shader doesn't compile: callers catch it and skip the effect.
+     * {@code linear}). Throws if the shader doesn't compile: callers check {@link #isValid} first and skip the effect.
      */
     public void draw(RenderTarget out, float[] params, boolean linear, GpuTextureView... inputs) {
+        if (!isValid()) throw new IllegalStateException("shader " + name + " does not compile");
         CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
         writeBlock(encoder, params, out.width, out.height);
         FilterMode filter = linear ? FilterMode.LINEAR : FilterMode.NEAREST;
@@ -102,5 +136,6 @@ public final class FullscreenFx implements AutoCloseable {
     public void close() {
         if (ubo != null) ubo.close();
         ubo = null;
+        valid = null; // a reload may have mended the shader
     }
 }

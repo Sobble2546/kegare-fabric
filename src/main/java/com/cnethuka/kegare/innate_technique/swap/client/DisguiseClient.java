@@ -117,7 +117,9 @@ public final class DisguiseClient {
         Minecraft mc = Minecraft.getInstance();
         Player face = mc.level == null ? null : mc.level.getPlayerByUUID(as);
         AvatarRenderState state = event.getRenderState();
-        state.headEquipment = worn(face, EquipmentSlot.HEAD);
+        // What the state holds is what vanilla's extraction stores: a copy, and only armour that its layer would draw.
+        ItemStack head = face != null ? face.getItemBySlot(EquipmentSlot.HEAD) : ItemStack.EMPTY;
+        state.headEquipment = worn(head, EquipmentSlot.HEAD);
         state.chestEquipment = worn(face, EquipmentSlot.CHEST);
         state.legsEquipment = worn(face, EquipmentSlot.LEGS);
         state.feetEquipment = worn(face, EquipmentSlot.FEET);
@@ -125,11 +127,11 @@ public final class DisguiseClient {
         state.headItem.clear();
         state.wornHeadType = null;
         state.wornHeadProfile = null;
-        if (!HumanoidArmorLayer.shouldRender(state.headEquipment, EquipmentSlot.HEAD)) {
-            mc.getItemModelResolver().updateForLiving(state.headItem, state.headEquipment, ItemDisplayContext.HEAD, player);
-            if (state.headEquipment.getItem() instanceof BlockItem block && block.getBlock() instanceof AbstractSkullBlock skull) {
+        if (!HumanoidArmorLayer.shouldRender(head, EquipmentSlot.HEAD)) {
+            mc.getItemModelResolver().updateForLiving(state.headItem, head, ItemDisplayContext.HEAD, player);
+            if (head.getItem() instanceof BlockItem block && block.getBlock() instanceof AbstractSkullBlock skull) {
                 state.wornHeadType = skull.getType();
-                state.wornHeadProfile = state.headEquipment.get(DataComponents.PROFILE);
+                state.wornHeadProfile = head.get(DataComponents.PROFILE);
             }
         }
         // Hands: the face's main hand and off hand, on the wearer's arms as they hold theirs.
@@ -145,8 +147,13 @@ public final class DisguiseClient {
         state.leftArmPose = armPose(state.leftArmPose, state.leftHandItemStack);
     }
 
-    private static ItemStack worn(Player face, EquipmentSlot slot) {
-        return face != null ? face.getItemBySlot(slot) : ItemStack.EMPTY;
+    private static ItemStack worn(@Nullable Player face, EquipmentSlot slot) {
+        return face != null ? worn(face.getItemBySlot(slot), slot) : ItemStack.EMPTY;
+    }
+
+    /** A copy of the stack if the armour layer would draw it in this slot, else nothing (as vanilla stores it in the render state). */
+    private static ItemStack worn(ItemStack stack, EquipmentSlot slot) {
+        return HumanoidArmorLayer.shouldRender(stack, slot) ? stack.copy() : ItemStack.EMPTY;
     }
 
     private static HumanoidModel.ArmPose armPose(HumanoidModel.ArmPose own, ItemStack held) {

@@ -3,18 +3,27 @@ package com.cnethuka.kegare.client.visual;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -39,29 +48,99 @@ import org.joml.Quaternionf;
 public final class FlatBodies {
     private FlatBodies() {}
 
-    /** How a copy is coloured. {@code textured} is false for a position+colour target (the sensing mask), which gets no UV or light. */
-    public record Look(int rgb, int alpha, int light, boolean textured) {}
+    /**
+     * How a copy is coloured. {@code textured} is false for a position+colour target (the sensing mask), which gets no UV or light.
+     * {@code forceVisible} draws a body that is invisible as if it weren't (sensed, not seen), by clearing the flag on the extracted state
+     * for the draw: the entity itself is never touched.
+     */
+    public record Look(int rgb, int alpha, int light, boolean textured, boolean forceVisible) {
+        public Look(int rgb, int alpha, int light, boolean textured) {
+            this(rgb, alpha, light, textured, false);
+        }
+
+        public Look visible() {
+            return new Look(rgb, alpha, light, textured, true);
+        }
+    }
 
     /**
      * Draws {@code entity} at {@code at} (its feet, from the camera) into {@code out}, which must take quads of the entity vertex format
-     * when {@code look.textured()} and of position+colour otherwise. Nothing is drawn for a renderer that throws.
+     * when {@code look.textured()} and of position+colour otherwise. Nothing is drawn for a renderer that throws. The whole of it runs as
+     * a copy ({@link BodyCopies}): the entity's render state is extracted once per entity per frame and shared by every copy of it (the
+     * ten afterimages of one body cost one extraction, not ten).
      */
     public static void draw(Entity entity, Vec3 at, float partial, VertexConsumer out, Look look) {
         Minecraft mc = Minecraft.getInstance();
-        EntityRenderDispatcher dispatcher = mc.getEntityRenderDispatcher();
         try {
-            Holder<EntityRenderState> state = new Holder<>();
-            BodyCopies.draw(() -> state.value = dispatcher.extractEntity(entity, partial));
-            if (state.value == null) return;
-            Collector collector = new Collector(new Flat(out, look));
-            dispatcher.submit(state.value, cameraState(mc.gameRenderer.getMainCamera()), at.x, at.y, at.z, new PoseStack(), collector);
+            BodyCopies.draw(() -> submit(mc, entity, at, partial, out, look));
         } catch (RuntimeException ignored) {
             // An odd renderer: no copy of it, rather than a crash.
         }
     }
 
-    private static final class Holder<T> {
-        T value;
+    private static void submit(Minecraft mc, Entity entity, Vec3 at, float partial, VertexConsumer out, Look look) {
+        EntityRenderDispatcher dispatcher = mc.getEntityRenderDispatcher();
+        sync(mc, partial);
+        EntityRenderState state = extracted(dispatcher, entity, partial);
+        if (state == null) return;
+        boolean invisible = state.isInvisible;
+        boolean hidden = state instanceof LivingEntityRenderState living && living.isInvisibleToPlayer;
+        if (look.forceVisible()) {
+            state.isInvisible = false;
+            if (state instanceof LivingEntityRenderState living) living.isInvisibleToPlayer = false;
+        }
+        try {
+            dispatcher.submit(state, camera, at.x, at.y, at.z, new PoseStack(), new Collector(new Flat(out, look)));
+        } finally {
+            state.isInvisible = invisible; // the state is shared with the other copies of this body in the frame
+            if (state instanceof LivingEntityRenderState living) living.isInvisibleToPlayer = hidden;
+        }
+    }
+
+    // What one frame's copies share: the render state of each entity drawn, and what a renderer reads of the camera.
+    private static final Map<Integer, EntityRenderState> STATES = new HashMap<>();
+    private static CameraRenderState camera = new CameraRenderState();
+    private static ClientLevel frameLevel;
+    private static long frameTime = Long.MIN_VALUE;
+    private static float framePartial = Float.NaN;
+    private static Vec3 framePos;
+    private static final Quaternionf FRAME_ROT = new Quaternionf();
+
+    /** Starts a new frame's cache when the level, the tick, the partial tick or the camera is not what the last copy was drawn for. */
+    private static void sync(Minecraft mc, float partial) {
+        ClientLevel level = mc.level;
+        Camera main = mc.gameRenderer.getMainCamera();
+        long time = level == null ? Long.MIN_VALUE : level.getGameTime();
+        if (level == frameLevel && time == frameTime && partial == framePartial && main.position().equals(framePos)
+                && FRAME_ROT.equals(main.rotation())) return;
+        frameLevel = level;
+        frameTime = time;
+        framePartial = partial;
+        framePos = main.position();
+        FRAME_ROT.set(main.rotation());
+        STATES.clear();
+        camera = cameraState(main);
+    }
+
+    /** Drops what is cached (a world is left): nothing in it may outlive the level. */
+    public static void clear() {
+        STATES.clear();
+        frameLevel = null;
+        frameTime = Long.MIN_VALUE;
+        framePos = null;
+    }
+
+    @Nullable
+    private static EntityRenderState extracted(EntityRenderDispatcher dispatcher, Entity entity, float partial) {
+        if (STATES.containsKey(entity.getId())) return STATES.get(entity.getId());
+        EntityRenderState state = null;
+        try {
+            state = dispatcher.extractEntity(entity, partial);
+        } catch (RuntimeException odd) {
+            // Remembered as no state: the rest of the frame's copies of it don't try again.
+        }
+        STATES.put(entity.getId(), state);
+        return state;
     }
 
     /** What a renderer reads of the camera while it submits. */
@@ -107,6 +186,15 @@ public final class FlatBodies {
         @Override public VertexConsumer setLineWidth(float width) { return this; }
     }
 
+    /** Pipelines of what an entity submits that is not its body (matched by pipeline, not by name). */
+    private static final Set<RenderPipeline> NOT_THE_BODY = new HashSet<>(List.of(
+            RenderPipelines.ENTITY_SHADOW, RenderPipelines.GLINT, RenderPipelines.LEASH, RenderPipelines.CRUMBLING,
+            RenderPipelines.LINES, RenderPipelines.LINES_TRANSLUCENT,
+            RenderPipelines.TEXT, RenderPipelines.GUI_TEXT, RenderPipelines.TEXT_BACKGROUND, RenderPipelines.TEXT_INTENSITY,
+            RenderPipelines.GUI_TEXT_INTENSITY, RenderPipelines.TEXT_POLYGON_OFFSET, RenderPipelines.TEXT_SEE_THROUGH,
+            RenderPipelines.TEXT_BACKGROUND_SEE_THROUGH, RenderPipelines.TEXT_INTENSITY_SEE_THROUGH,
+            RenderPipelines.ENERGY_SWIRL, RenderPipelines.BREEZE_WIND)); // the swirl and the wind are bigger than the body
+
     /** Draws what's submitted straight through {@link Flat}; the body's quads only. */
     private static final class Collector implements SubmitNodeCollector {
         private final Flat flat;
@@ -115,12 +203,9 @@ public final class FlatBodies {
             this.flat = flat;
         }
 
-        /** The body's own quads go in; its name, glint, lines, shadow and outline don't. */
+        /** The body's own quads go in; its name, glint, lines, shadow, leash and outline don't, nor the armour layers that swell it. */
         private static boolean drawn(RenderType type) {
-            if (type.mode() != VertexFormat.Mode.QUADS || type.isOutline()) return false;
-            String name = type.pipeline().getLocation().getPath();
-            return !name.contains("text") && !name.contains("glint") && !name.contains("shadow") && !name.contains("outline")
-                    && !name.contains("leash") && !name.contains("lines");
+            return type.mode() == VertexFormat.Mode.QUADS && !type.isOutline() && !NOT_THE_BODY.contains(type.pipeline());
         }
 
         @Override

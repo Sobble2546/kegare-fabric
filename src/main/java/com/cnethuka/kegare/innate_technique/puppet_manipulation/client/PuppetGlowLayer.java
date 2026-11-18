@@ -43,9 +43,10 @@ public class PuppetGlowLayer extends RenderLayer<AvatarRenderState, PlayerModel>
         PuppetRenderer.Look look = state.getData(PuppetRenderer.LOOK);
         if (look == null || look.invisible() || look.standIn()) return; // a Stand-In looks exactly like its owner
         float t = state.ageInTicks;
-        // The shell is posed when drawn, from the same state as the body, so it moves exactly with it.
+        // The shell is posed when drawn, from the same state as the body, so it moves exactly with it. The 8-argument submitModel's int is the
+        // OUTLINE colour (its tint stays white), so the tint goes through the full form: tint, no sprite, no outline, no crumbling.
         collector.submitModel(model, state, pose, RenderTypes.energySwirl(TEXTURE, (t * 0.004f) % 1f, (t * 0.007f) % 1f), light,
-                OverlayTexture.NO_OVERLAY, color(look.maliceColor(), look.tier()), null);
+                OverlayTexture.NO_OVERLAY, color(look.maliceColor(), look.tier()), null, 0, null);
     }
 
     /** The glow's ARGB for a Malice color at a tier (additive, so brightness is strength). */

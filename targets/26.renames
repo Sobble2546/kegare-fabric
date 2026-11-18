@@ -1,0 +1,39 @@
+# Source renames applied to src/main/java and src/test/java when compiling for 26.x (build.gradle, task portSources).
+# One rule per line: Java regex, a tab, the replacement. Applied in order to every line. Names that only moved or were renamed by
+# Mojang go here; code that had to change shape lives in targets/<target>/java instead.
+\bcom\.mojang\.blaze3d\.buffers\.GpuBufferSlice\b	com.mojang.renderpearl.api.buffers.GpuBufferSlice
+\bcom\.mojang\.blaze3d\.pipeline\.(BlendFunction|RenderPipeline)\b	com.mojang.renderpearl.api.pipeline.$1
+\bnet\.minecraft\.advancements\.(CriteriaTriggers|Criterion)\b	net.minecraft.advancements.triggers.$1
+\bnet\.minecraft\.advancements\.criterion\.ImpossibleTrigger\b	net.minecraft.advancements.triggers.ImpossibleTrigger
+\bnet\.minecraft\.client\.renderer\.block\.model\.BakedQuad\b	net.minecraft.client.resources.model.geometry.BakedQuad
+\bnet\.minecraft\.client\.renderer\.block\.model\.BlockStateModel\b	net.minecraft.client.renderer.block.dispatch.BlockStateModel
+\bnet\.minecraft\.client\.renderer\.state\.CameraRenderState\b	net.minecraft.client.renderer.state.level.CameraRenderState
+\bnet\.minecraft\.world\.entity\.monster\.EnderMan\b	net.minecraft.world.entity.monster.Enderman
+\bEnderMan\b	Enderman
+\bnet\.minecraft\.client\.renderer\.LightTexture\b	net.minecraft.util.LightCoordsUtil
+\bLightTexture\b	LightCoordsUtil
+\bnet\.minecraft\.client\.gui\.GuiGraphics\b	net.minecraft.client.gui.GuiGraphicsExtractor
+\bGuiGraphics\b	GuiGraphicsExtractor
+\.drawCenteredString\(	.centeredText(
+\.drawStringWithBackdrop\(	.textWithBackdrop(
+\.drawString\(	.text(
+\.drawWordWrap\(	.textWithWordWrap(
+\.hLine\(	.horizontalLine(
+\.vLine\(	.verticalLine(
+\.renderOutline\(	.outline(
+\.renderFakeItem\(	.fakeItem(
+\.renderItemDecorations\(	.itemDecorations(
+\.submitEntityRenderState\(	.entity(
+\.mulPose\(	.rotate(
+\.displayClientMessage\((.*), true\);	.sendOverlayMessage($1);
+\.displayClientMessage\((.*), false\);	.sendSystemMessage($1);
+\.getMainCamera\(\)	.mainCamera()
+\b(mc|minecraft|Minecraft\.getInstance\(\))\.screen\b	$1.gui.screen()
+\b(mc|minecraft|Minecraft\.getInstance\(\))\.setScreen\(	$1.gui.setScreen(
+\b(mc|minecraft|Minecraft\.getInstance\(\))\.getToastManager\(\)	$1.gui.toastManager()
+\b(mc|minecraft|Minecraft\.getInstance\(\))\.getOverlay\(\)	$1.gui.overlay()
+\b(mc|minecraft|Minecraft\.getInstance\(\))\.getMainRenderTarget\(\)	$1.mainRenderTarget()
+\b(mc|minecraft)\.options\.hideGui\b	$1.gui.hud.isHidden()
+\borg\.lwjgl\.glfw\.GLFW\b	com.mojang.blaze3d.platform.InputConstants
+\bGLFW\.GLFW_	InputConstants.
+\bRenderTypes\.entityCutoutNoCull\(	RenderTypes.entityCutout(

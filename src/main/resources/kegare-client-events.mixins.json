@@ -12,6 +12,7 @@
     "GameRendererEventsMixin",
     "CameraAnglesMixin",
     "ToastManagerMixin",
+    "ChatScreenMixin",
     "SoundEngineMixin",
     "ItemInHandRendererEventsMixin",
     "EntityRenderDispatcherMixin",

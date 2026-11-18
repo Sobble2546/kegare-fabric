@@ -22,8 +22,13 @@ import net.minecraft.client.renderer.rendertype.RenderType;
  * mask); a 26.x variant of this class, same members, replaces it.
  */
 public final class SilhouetteMask {
+    /** Released after this long unused: a window-sized target is tens of megabytes at 4K. */
+    private static final long IDLE_NANOS = 30_000_000_000L;
+
     @Nullable private static TextureTarget mask;
+    @Nullable private static ByteBufferBuilder builder;
     @Nullable private static MultiBufferSource.BufferSource buffers;
+    private static long lastUsed;
 
     private SilhouetteMask() {}
 
@@ -37,18 +42,41 @@ public final class SilhouetteMask {
                 .build()).setOutputTarget(new OutputTarget("kegare_senses_mask", () -> mask)).createRenderSetup());
     }
 
+    /** Whether the mask's pipeline compiles (so a Severed player's senses aren't drawn into a mask nothing will read). */
+    public static boolean isValid() {
+        return FullscreenFx.valid(Type.TYPE.pipeline());
+    }
+
     /** Clears the mask (sized to {@code main}) and returns where to draw into it; call {@link #end} when done. */
     public static VertexConsumer begin(RenderTarget main) {
         if (mask == null) mask = new TextureTarget("kegare_senses_mask", main.width, main.height, false);
         else if (mask.width != main.width || mask.height != main.height) mask.resize(main.width, main.height);
         RenderSystem.getDevice().createCommandEncoder().clearColorTexture(mask.getColorTexture(), 0);
-        if (buffers == null) buffers = MultiBufferSource.immediate(new ByteBufferBuilder(1 << 18));
+        if (buffers == null) {
+            builder = new ByteBufferBuilder(1 << 18);
+            buffers = MultiBufferSource.immediate(builder);
+        }
+        lastUsed = System.nanoTime();
         return buffers.getBuffer(Type.TYPE);
     }
 
     /** Draws what was written since {@link #begin} into the mask. */
     public static void end() {
         if (buffers != null) buffers.endBatch();
+    }
+
+    /** Called every frame the mask isn't wanted: lets go of it once it has been unused for a while. */
+    public static void idle() {
+        if (mask != null && System.nanoTime() - lastUsed > IDLE_NANOS) close();
+    }
+
+    /** Lets go of the mask target and the vertex memory (a world is left, resources reload, or it is long unused); {@link #begin} builds them again. */
+    public static void close() {
+        if (mask != null) mask.destroyBuffers();
+        mask = null;
+        buffers = null;
+        if (builder != null) builder.close();
+        builder = null;
     }
 
     /** The mask, to sample. */

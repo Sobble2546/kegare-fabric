@@ -317,6 +317,11 @@ public class PuppetEntity extends PathfinderMob implements Puppet {
         return entityData.get(OWNER_NAME);
     }
 
+    /** The owner's skin property as the server sent it (empty for none): what {@link #ownerProfile()} is built from, cheap to compare. */
+    public String skinValue() {
+        return entityData.get(SKIN_VALUE);
+    }
+
     /** A profile carrying the owner's skin property (if the server had one), for the client to load the skin from. */
     public GameProfile ownerProfile() {
         UUID id = ownerId();

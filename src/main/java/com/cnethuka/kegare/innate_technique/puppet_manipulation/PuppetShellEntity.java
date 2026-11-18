@@ -76,6 +76,11 @@ public class PuppetShellEntity extends LivingEntity implements com.cnethuka.kega
         return entityData.get(OWNER).map(EntityReference::getUUID).orElse(null);
     }
 
+    /** The owner's skin property as the server sent it (empty for none): what {@link #ownerProfile()} is built from, cheap to compare. */
+    public String skinValue() {
+        return entityData.get(SKIN_VALUE);
+    }
+
     /** A profile carrying the owner's skin property, for the client to draw them. */
     public GameProfile ownerProfile() {
         UUID id = ownerId();

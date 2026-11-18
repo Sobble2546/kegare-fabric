@@ -35,6 +35,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import org.joml.Matrix3x2f;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -292,6 +293,7 @@ public final class RevealScreen extends Screen {
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         super.render(g, mouseX, mouseY, partialTick);
+        raised.clear(); // a frame that threw before its flush must not leave its text for this one
         long now = now();
         if (startMillis < 0) startMillis = now;
         float dt = lastFrameMillis == 0 ? 0f : Math.min(0.1f, (now - lastFrameMillis) / 1000f);
@@ -727,7 +729,7 @@ public final class RevealScreen extends Screen {
         int x = centerX - font.width(full) * scale / 2;
         int y = centerY - font.lineHeight * scale / 2;
         String typed = full.substring(0, chars);
-        raised.add(() -> {
+        raise(g, () -> {
             g.pose().pushMatrix();
             g.pose().translate(x, y);
             g.pose().scale(scale, scale);
@@ -803,7 +805,7 @@ public final class RevealScreen extends Screen {
         float details = phase(age, detailFrom, Math.max(300L, nameLength - detailFrom));
         renderStarRow(g, c, details);
         if (details > 0f) {
-            raised.add(() -> {
+            raise(g, () -> {
                 int y = c.descY();
                 for (FormattedCharSequence line : c.desc()) {
                     g.drawString(font, line, centerX - font.width(line) / 2, y, color(0xBDB7C6, details), true);
@@ -856,7 +858,7 @@ public final class RevealScreen extends Screen {
         int textW = font.width(line);
         int rowW = n * 10 + 4 + textW;
         int x = centerX - rowW / 2;
-        raised.add(() -> {
+        raise(g, () -> {
             for (int i = 0; i < n; i++) tinted(g, STAR_SMALL, x + i * 10, c.starsY() + 1, 9, 9, rgb, alpha);
             g.drawString(font, line.getVisualOrderText(), x + n * 10 + 4, c.starsY() + 2, color(0xFFFFFF, alpha), true);
         });
@@ -868,7 +870,7 @@ public final class RevealScreen extends Screen {
         int n = abilities.size();
         int slot = CombatPanelLayer.SLOT_SIZE;
         int x0 = RevealLayout.rowStart(n, slot, c.iconStep(), centerX);
-        raised.add(() -> {
+        raise(g, () -> {
             for (int i = 0; i < n; i++) {
                 float a = clamp01(alpha * (n + 2f) - i);
                 if (a <= 0f) continue;
@@ -913,7 +915,7 @@ public final class RevealScreen extends Screen {
 
     private void lineAt(GuiGraphics g, Component text, int y, int rgb, float alpha) {
         FormattedCharSequence seq = text.getVisualOrderText();
-        raised.add(() -> g.drawString(font, seq, centerX - font.width(seq) / 2, y, color(rgb, alpha), true));
+        raise(g, () -> g.drawString(font, seq, centerX - font.width(seq) / 2, y, color(rgb, alpha), true));
     }
 
     private MaliceTier tier() {
@@ -956,28 +958,36 @@ public final class RevealScreen extends Screen {
         float body = 180f - 28f, look = 180f - 40f;
         float yBody = player.yBodyRot, yBodyO = player.yBodyRotO, yaw = player.getYRot(), yawO = player.yRotO;
         float pitch = player.getXRot(), pitchO = player.xRotO, head = player.yHeadRot, headO = player.yHeadRotO;
-        player.yBodyRot = player.yBodyRotO = body;
-        player.setYRot(look);
-        player.yRotO = look;
-        player.setXRot(4f);
-        player.xRotO = 4f;
-        player.yHeadRot = player.yHeadRotO = look;
+        EntityRenderState state;
+        try {
+            player.yBodyRot = player.yBodyRotO = body;
+            player.setYRot(look);
+            player.yRotO = look;
+            player.setXRot(4f);
+            player.xRotO = 4f;
+            player.yHeadRot = player.yHeadRotO = look;
 
-        // Vanilla's inventory call, minus the mouse: extract the real local player (a real partial tick, so PAL's animation is smooth) into a
-        // render state while the head and body are turned to face the emblem, then hand the state to the GUI to draw in its own pass.
-        EntityRenderState state = minecraft.getEntityRenderDispatcher().extractEntity(player, partialTick);
+            // Vanilla's inventory call, minus the mouse: extract the real local player (a real partial tick, so PAL's animation is smooth) into a
+            // render state while the head and body are turned to face the emblem, then hand the state to the GUI to draw in its own pass.
+            state = minecraft.getEntityRenderDispatcher().extractEntity(player, partialTick);
+        } finally {
+            // Always give the player back their real aim, even if an extract mixin threw: the next move packet would send the reveal's pose.
+            player.yBodyRot = yBody;
+            player.yBodyRotO = yBodyO;
+            player.setYRot(yaw);
+            player.yRotO = yawO;
+            player.setXRot(pitch);
+            player.xRotO = pitchO;
+            player.yHeadRot = head;
+            player.yHeadRotO = headO;
+        }
+        // What vanilla's InventoryScreen does to the state: lit as in a menu (not as the world at the player's feet), no shadow, no outline
+        // (the GUI entity pass has no outline target), no name tag.
+        state.lightCoords = 0xF000F0;
         state.shadowRadius = 0f;
         state.shadowPieces.clear();
+        state.outlineColor = EntityRenderState.NO_OUTLINE;
         state.nameTag = null;
-
-        player.yBodyRot = yBody;
-        player.yBodyRotO = yBodyO;
-        player.setYRot(yaw);
-        player.yRotO = yawO;
-        player.setXRot(pitch);
-        player.xRotO = pitchO;
-        player.yHeadRot = head;
-        player.yHeadRotO = headO;
 
         // The GUI draws the model into its own picture-in-picture box, which ignores the canvas's pose: work in GUI units.
         Vector2f feet = g.pose().transformPosition(x, feetY, new Vector2f());
@@ -1108,7 +1118,7 @@ public final class RevealScreen extends Screen {
         y += line + 4;
         for (FormattedCharSequence text : desc) {
             int ty = y;
-            raised.add(() -> g.drawString(font, text, centerX - font.width(text) / 2, ty, color(0xAAAAAA, 1f), true));
+            raise(g, () -> g.drawString(font, text, centerX - font.width(text) / 2, ty, color(0xAAAAAA, 1f), true));
             y += line;
         }
         y += 4;
@@ -1133,10 +1143,26 @@ public final class RevealScreen extends Screen {
 
     // ---------------------------------------------------------------- drawing helpers
 
+    /**
+     * Queues a draw for {@link #flushRaised}, to run under the pose that is current now (a copy), not whatever is current at the flush,
+     * so a caller may queue from inside its own push.
+     */
+    private void raise(GuiGraphics g, Runnable draw) {
+        Matrix3x2f pose = new Matrix3x2f(g.pose());
+        raised.add(() -> {
+            g.pose().pushMatrix();
+            g.pose().set(pose);
+            try {
+                draw.run();
+            } finally {
+                g.pose().popMatrix();
+            }
+        });
+    }
+
     private void flushRaised() {
-        List<Runnable> now = new ArrayList<>(raised);
+        for (Runnable draw : raised) draw.run();
         raised.clear();
-        now.forEach(Runnable::run);
     }
 
     /** Dims the ink background, nearly to black in the darkest scenes. */
@@ -1147,7 +1173,7 @@ public final class RevealScreen extends Screen {
     /** A centered one-pixel line, brightest in the middle and fading out toward both ends. */
     private void hairline(GuiGraphics g, int w, int y, int rgb, float alpha) {
         if (w < 4 || alpha <= 0f) return;
-        raised.add(() -> {
+        raise(g, () -> {
             int steps = 6;
             for (int i = 0; i < steps; i++) {
                 int half = w / 2 - i * w / (2 * steps);
@@ -1162,7 +1188,7 @@ public final class RevealScreen extends Screen {
         int half = Math.min(cw / 2, textWidth / 2 + 28);
         int steps = 7;
         int perStep = (int) (alpha * 34);
-        raised.add(() -> {
+        raise(g, () -> {
             for (int i = 0; i < steps; i++) {
                 int inset = i * 4;
                 g.fill(centerX - half + inset, y, centerX + half - inset, y + h, perStep << 24 | 0x05030A);
@@ -1173,7 +1199,7 @@ public final class RevealScreen extends Screen {
     /** Text centered on a point, at any scale. Whole-number scales at a whole-number point stay crisp. */
     private void centeredText(GuiGraphics g, FormattedCharSequence text, float x, float y, float scale, int rgb, float alpha) {
         if (alpha <= 0.02f) return; // Font treats near-zero alpha as opaque
-        raised.add(() -> {
+        raise(g, () -> {
             g.pose().pushMatrix();
             g.pose().translate(Math.round(x), Math.round(y));
             g.pose().scale(scale, scale);

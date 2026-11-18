@@ -1,5 +1,6 @@
 package com.cnethuka.kegare.innate_technique.rime.client;
 
+import com.cnethuka.kegare.client.visual.BodyCopies;
 import com.cnethuka.kegare.client.visual.ClientVisuals;
 import com.cnethuka.kegare.client.visual.PlayerAnimations;
 import com.cnethuka.kegare.client.visual.PlayerLayers;
@@ -213,7 +214,9 @@ public final class ShellClient {
             float partialTick = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
             ClientVisuals.LoopTime time = ClientVisuals.loopTime(player, LOOP, partialTick);
             long now = player.level().getGameTime();
+            boolean copy = BodyCopies.active(); // an afterimage or a sensed outline of this body: drawn like it, never taken for it
             if (time == null) {
+                if (copy) return;
                 DRAWN.remove(player.getId());
                 // A Shatter Shell with no shell up: a whole set bursts off the body as it's drawn, nothing is left on it.
                 if (inWorld && PENDING.remove(player.getId()) != null) {
@@ -227,7 +230,7 @@ public final class ShellClient {
             Map<String, Drawn> drawn = place(pose, player, state, time.ticks(), poses, names);
             LanceMesh.SHELL.draw(collector, poses, names, light);
             // Only where it's drawn in the world: the inventory's little figure is drawn with the same layer, in the screen's space.
-            if (inWorld) DRAWN.put(player.getId(), new Body(now, drawn));
+            if (inWorld && !copy) DRAWN.put(player.getId(), new Body(now, drawn));
         }
 
         /**

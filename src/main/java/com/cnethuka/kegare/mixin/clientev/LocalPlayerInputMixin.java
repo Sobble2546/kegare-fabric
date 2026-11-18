@@ -24,6 +24,7 @@ public abstract class LocalPlayerInputMixin {
 
     @Inject(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/ClientInput;tick()V", shift = At.Shift.AFTER))
     private void kegare$movementInput(CallbackInfo ci) {
+        if (!com.cnethuka.kegare.platform.net.ClientNet.isActive()) return; // inert off a Kegare server
         Input keys = input.keyPresses;
         Vec2 move = input.getMoveVector();
         MovementInputUpdateEvent.Input view = ClientEventHooks.movementInput(new MovementInputUpdateEvent.Input(keys.forward(), keys.backward(),

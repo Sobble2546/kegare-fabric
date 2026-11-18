@@ -53,7 +53,7 @@ final class HelpCommand {
         }
 
         boolean visibleTo(CommandSourceStack source) {
-            return CommandArgs.allowed(source, permission) && (!devClient || !FMLEnvironment.production);
+            return CommandArgs.allowed(source, permission) && (!devClient || !FMLEnvironment.production());
         }
     }
 

@@ -101,8 +101,14 @@ public final class FistTell {
     private static final Map<Integer, MeleeTell.Look> STRIKE = new HashMap<>();
     /** What's burning on each hand that has something on it, by {@link #key}: the look, where the fist is, its curls. */
     private static final Map<Long, Shown> SHOWN = new HashMap<>();
-    /** A player at rest, for posing a model to read one arm off it. */
+    /**
+     * A player at rest, for posing a model to read one arm off it. It belongs to no entity (id -1) and carries no animation manager, so the
+     * Player Animation Library leaves the pose alone: it keeps its animation in the state itself, never looked up by id.
+     */
     private static final AvatarRenderState NEUTRAL = new AvatarRenderState();
+    static {
+        NEUTRAL.id = -1;
+    }
     private static PlayerModel restWide, restSlim;
     private static float mainHandSwing;
     private static float mainHandEquip;
@@ -249,8 +255,8 @@ public final class FistTell {
         return pose.pose().transformPosition(x, y, z, new Vector3f());
     }
 
-    /** Is this fist being drawn in the world? A screen's preview of a player goes through the same layer, in its own space. */
-    static boolean inWorld(Player player, Vector3f relative, float partialTick) {
+    /** Is this fist (or what a hand holds, given its camera-relative position) being drawn in the world? A screen's preview of a player goes through the same layer, in its own space. */
+    public static boolean inWorld(Player player, Vector3f relative, float partialTick) {
         Vec3 at = Minecraft.getInstance().gameRenderer.getMainCamera().position().add(relative.x, relative.y, relative.z);
         return at.distanceToSqr(player.getPosition(partialTick)) < FARTHEST_FIST * FARTHEST_FIST;
     }

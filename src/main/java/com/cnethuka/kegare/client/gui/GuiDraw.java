@@ -38,8 +38,8 @@ public final class GuiDraw {
     public static final Identifier FREEZE_PIP = Kegare.id("freeze_pip");
     public static final Identifier FREEZE_PIP_EMPTY = Kegare.id("freeze_pip_empty");
 
-    private static final Identifier INK_BACKGROUND = Kegare.id("textures/gui/reveal_bg.png");
-    private static final int INK_BACKGROUND_SIZE = 128;
+    /** A GUI sprite with tile scaling (128 px), so the whole background is one draw. */
+    private static final Identifier INK_BACKGROUND = Kegare.id("reveal_bg");
 
     /**
      * Malice bar texture: 32x30. Rows 0-9 the empty bar, 10-19 the fill's shading in greyscale (tinted with the
@@ -136,13 +136,8 @@ public final class GuiDraw {
 
     /** Full-screen, opaque smoky ink (tiled) that darkens in steps toward the edges. */
     public static void inkBackground(GuiGraphics g, int w, int h) {
-        // opaque, tiled (a draw call no longer repeats its UVs, so lay the tiles out)
-        for (int ty = 0; ty < h; ty += INK_BACKGROUND_SIZE) {
-            for (int tx = 0; tx < w; tx += INK_BACKGROUND_SIZE) {
-                blit(g, INK_BACKGROUND, tx, ty, 0f, 0f, Math.min(INK_BACKGROUND_SIZE, w - tx), Math.min(INK_BACKGROUND_SIZE, h - ty),
-                        INK_BACKGROUND_SIZE, INK_BACKGROUND_SIZE);
-            }
-        }
+        // opaque and tiled by the sprite's own scaling: one element, not one per tile
+        sprite(g, INK_BACKGROUND, 0, 0, w, h);
         int steps = 8;
         int band = Math.max(2, Math.min(w, h) / 20);
         for (int i = 0; i < steps; i++) {

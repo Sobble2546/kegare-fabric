@@ -6,7 +6,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.phys.AABB;
 
-/** How far a mob's melee reaches in 1.21.11: its held weapon's attack range, or the mob default. The box is vanilla's own, overrides included. */
+/** How far a mob's melee reaches in 1.21.11: its weapon's attack range (the item in use, else the main hand: vanilla's own {@code getActiveItem}), or the mob default. The box is vanilla's own, overrides included. */
 public final class MobReach {
     private MobReach() {}
 
@@ -14,7 +14,7 @@ public final class MobReach {
     private static final double DEFAULT_REACH = Math.sqrt(2.04) - 0.6;
 
     public static double reach(Mob mob) {
-        AttackRange range = mob.getMainHandItem().get(DataComponents.ATTACK_RANGE);
+        AttackRange range = mob.getActiveItem().get(DataComponents.ATTACK_RANGE);
         return range == null ? DEFAULT_REACH : range.effectiveMaxRange(mob);
     }
 

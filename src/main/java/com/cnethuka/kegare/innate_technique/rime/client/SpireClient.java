@@ -1,5 +1,6 @@
 package com.cnethuka.kegare.innate_technique.rime.client;
 
+import com.cnethuka.kegare.client.visual.BodyCopies;
 import com.cnethuka.kegare.client.visual.ClientVisuals;
 import com.cnethuka.kegare.client.visual.PlayerLayers;
 import com.cnethuka.kegare.config.KegareClientConfig;
@@ -221,6 +222,7 @@ public final class SpireClient {
 
         @Override
         public void submit(PoseStack pose, SubmitNodeCollector collector, int light, AvatarRenderState state, float yRot, float xRot) {
+            if (BodyCopies.active()) return; // a copy of the body (an afterimage) is not where the fist is
             Minecraft mc = Minecraft.getInstance();
             if (!(PlayerLayers.entity(state) instanceof AbstractClientPlayer player)) return;
             if (ClientVisuals.loopTime(player, CHARGE, mc.getDeltaTracker().getGameTimeDeltaPartialTick(false)) == null) return;

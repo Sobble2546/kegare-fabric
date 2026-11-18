@@ -14,5 +14,5 @@ import net.minecraft.resources.Identifier;
 final class AuraRenderTypes {
     private AuraRenderTypes() {}
 
-    static final Function<Identifier, RenderType> SMOOTH = texture -> WorldTypes.glow(texture, DepthTestFunction.LEQUAL_DEPTH_TEST, true);
+    static final Function<Identifier, RenderType> SMOOTH = WorldTypes.glowTypes(DepthTestFunction.LEQUAL_DEPTH_TEST, true);
 }

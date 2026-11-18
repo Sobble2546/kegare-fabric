@@ -61,6 +61,7 @@ public final class IdRemapCodecs {
                                                                             StreamCodec<? super RegistryFriendlyByteBuf, T> direct,
                                                                             StreamCodec<RegistryFriendlyByteBuf, Holder<T>> original) {
         if (!SOUND_EVENT.equals(key.identifier())) return original;
+        IdRemap.noteHolderHooked();
         return new StreamCodec<>() {
             @Override
             public Holder<T> decode(RegistryFriendlyByteBuf buf) {
