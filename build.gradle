@@ -24,7 +24,7 @@ base { archivesName = "${mod_id}-${tp.getProperty('minecraft_version')}" }
 
 repositories {
     mavenCentral()
-    maven { name = 'RedlanceMinecraft'; url = 'https://repo.redlance.org/public'; content { includeGroupByRegex 'com\\.zigythebird(\\..*)?'; includeGroup 'org.redlance.mochafloats' } }
+    maven { name = 'RedlanceMinecraft'; url = 'https://repo.redlance.org/public'; content { includeGroupByRegex 'com\\.zigythebird(\\..*)?'; includeGroup 'org.redlance.mochafloats'; includeGroup 'org.redlance.common-utils' } }
     maven { name = 'Modrinth'; url = 'https://api.modrinth.com/maven'; content { includeGroup 'maven.modrinth' } }
     // Forge Config API Port (Fuzs): ModConfigSpec and the config screen, as in NeoForge.
     maven { name = 'Fuzs'; url = 'https://raw.githubusercontent.com/Fuzss/modresources/main/maven/'; content { includeGroup 'fuzs.forgeconfigapiport' } }
