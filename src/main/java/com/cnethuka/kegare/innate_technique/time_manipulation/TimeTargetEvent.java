@@ -3,8 +3,8 @@ package com.cnethuka.kegare.innate_technique.time_manipulation;
 import com.cnethuka.kegare.innatetechnique.Ability;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.bus.api.Event;
-import net.neoforged.bus.api.ICancellableEvent;
+import com.cnethuka.kegare.platform.bus.Event;
+import com.cnethuka.kegare.platform.bus.ICancellableEvent;
 
 /**
  * Fired on {@code NeoForge.EVENT_BUS} (server side) before Time Manipulation reaches into someone's own time: before a Rewind snaps

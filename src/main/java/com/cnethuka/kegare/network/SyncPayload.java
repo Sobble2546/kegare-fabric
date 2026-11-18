@@ -25,7 +25,7 @@ import java.util.Optional;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
@@ -39,30 +39,30 @@ public record SyncPayload(
         int tier,
         int capacity,
         float current,
-        Optional<ResourceLocation> innateTechnique,
+        Optional<Identifier> innateTechnique,
         int selectedSlot,
         List<CooldownEntry> cooldowns,
-        List<ResourceLocation> activeToggles,
+        List<Identifier> activeToggles,
         Optional<CastingEntry> casting,
-        List<ResourceLocation> traits,
+        List<Identifier> traits,
         CostEnvironment environment,
         List<AbilityCost> costs,
         int freezeStacks,
         int maxFreezeStacks,
         long frozenUntil,
         long burntOutUntil,
-        List<Optional<ResourceLocation>> loadout,
-        List<ResourceLocation> sharedUnlocked,
+        List<Optional<Identifier>> loadout,
+        List<Identifier> sharedUnlocked,
         boolean inCombat,
         ProgressionSnapshot progression
 ) implements CustomPacketPayload {
-    public record CooldownEntry(ResourceLocation ability, long endTick, int duration) {}
+    public record CooldownEntry(Identifier ability, long endTick, int duration) {}
 
     /** Current Malice cost and upkeep of an ability where the player stands (environment included). */
-    public record AbilityCost(ResourceLocation ability, float cost, float upkeepPerSecond) {}
+    public record AbilityCost(Identifier ability, float cost, float upkeepPerSecond) {}
 
     /** @param maxTicks CHARGED: ticks to full charge; CHANNELED: max duration (0 = unlimited) */
-    public record CastingEntry(ResourceLocation ability, long startTick, int maxTicks) {}
+    public record CastingEntry(Identifier ability, long startTick, int maxTicks) {}
 
     public static final Type<SyncPayload> TYPE = new Type<>(Kegare.id("sync"));
     public static final StreamCodec<FriendlyByteBuf, SyncPayload> STREAM_CODEC = StreamCodec.ofMember(SyncPayload::write, SyncPayload::read);
@@ -78,7 +78,7 @@ public record SyncPayload(
         });
 
         CastState cast = CastManager.state(player);
-        List<ResourceLocation> toggles = new ArrayList<>(cast.toggles().keySet());
+        List<Identifier> toggles = new ArrayList<>(cast.toggles().keySet());
         Optional<CastingEntry> casting = Optional.ofNullable(cast.casting()).map(active -> new CastingEntry(
                 active.ability().id(),
                 active.startTick(),

@@ -16,7 +16,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
@@ -36,7 +36,7 @@ import org.joml.Vector3f;
  * to the camera. Reduced: fewer arcs and sparks, sooner gone. Vanilla: black dust, dust in the color, and crit sparks.
  */
 public final class BlackSparkClient {
-    private static final ResourceLocation WHITE = ResourceLocation.withDefaultNamespace("textures/misc/white.png");
+    private static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
     private static final RenderType TYPE = RenderType.entityTranslucentEmissive(WHITE);
     private static final int BLACK = 0x050307;
     /** How big it is, in blocks: the arcs' reach. */

@@ -13,10 +13,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
-import net.neoforged.bus.api.IEventBus;
+import com.cnethuka.kegare.platform.bus.IEventBus;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
@@ -29,7 +29,7 @@ import net.neoforged.neoforge.common.NeoForge;
  * sharp); a collapse's dark flash; and the uncovered edge's spark on whoever is about to cast. All private: nobody else is sent any of it.
  */
 public final class StrainClient {
-    static final ResourceLocation LAYER = Kegare.id("six_eyes_headache");
+    static final Identifier LAYER = Kegare.id("six_eyes_headache");
     private static final int BAR_W = 40;
     /** A heartbeat every this many ticks at the top. */
     private static final int BEAT_TICKS = 16;

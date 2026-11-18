@@ -20,7 +20,7 @@ import com.cnethuka.kegare.player.BirthService;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.testframework.junit.EphemeralTestServerProvider;
@@ -77,7 +77,7 @@ class LoadoutTest {
 
             // Abilities of another innate technique, or unknown ones, are not available.
             assertEquals(LoadoutResult.UNAVAILABLE, edit(p, LoadoutService.Action.SET, 0, 0, Swap.POSITIONS.id()));
-            assertEquals(LoadoutResult.UNAVAILABLE, edit(p, LoadoutService.Action.SET, 0, 0, ResourceLocation.fromNamespaceAndPath("kegare", "nope")));
+            assertEquals(LoadoutResult.UNAVAILABLE, edit(p, LoadoutService.Action.SET, 0, 0, Identifier.fromNamespaceAndPath("kegare", "nope")));
 
             // Mid-cast and in combat: refused, nothing changes.
             InnateTechniqueService.select(p, 2);
@@ -86,7 +86,7 @@ class LoadoutTest {
             CastManager.stopAll(p, EndReason.CANCELLED);
             InnateTechniqueService.clearCooldowns(p);
             CombatHelper.markCombat(p);
-            List<Optional<ResourceLocation>> snapshot = List.copyOf(LoadoutService.slots(p));
+            List<Optional<Identifier>> snapshot = List.copyOf(LoadoutService.slots(p));
             assertEquals(LoadoutResult.IN_COMBAT, edit(p, LoadoutService.Action.CLEAR, 0, 0, null));
             assertEquals(LoadoutResult.IN_COMBAT, edit(p, LoadoutService.Action.RESET, 0, 0, null));
             assertEquals(snapshot, LoadoutService.slots(p));
@@ -122,17 +122,17 @@ class LoadoutTest {
 
     /** A nine-slot bar: these entries, then empty slots. */
     @SafeVarargs
-    static List<Optional<ResourceLocation>> bar(Optional<ResourceLocation>... first) {
-        List<Optional<ResourceLocation>> out = new java.util.ArrayList<>(List.of(first));
+    static List<Optional<Identifier>> bar(Optional<Identifier>... first) {
+        List<Optional<Identifier>> out = new java.util.ArrayList<>(List.of(first));
         while (out.size() < LoadoutService.SLOTS) out.add(Optional.empty());
         return out;
     }
 
-    static LoadoutResult edit(ServerPlayer p, LoadoutService.Action action, int slot, int other, ResourceLocation ability) {
+    static LoadoutResult edit(ServerPlayer p, LoadoutService.Action action, int slot, int other, Identifier ability) {
         return LoadoutService.edit(p, action, slot, other, Optional.ofNullable(ability));
     }
 
-    static Optional<ResourceLocation> id(com.cnethuka.kegare.innatetechnique.Ability ability) {
+    static Optional<Identifier> id(com.cnethuka.kegare.innatetechnique.Ability ability) {
         return Optional.of(ability.id());
     }
 

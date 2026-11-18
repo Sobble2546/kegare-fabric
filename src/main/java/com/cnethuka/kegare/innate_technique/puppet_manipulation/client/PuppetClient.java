@@ -8,7 +8,7 @@ import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetTier;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
-import net.neoforged.bus.api.IEventBus;
+import com.cnethuka.kegare.platform.bus.IEventBus;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;

@@ -18,7 +18,7 @@ import com.cnethuka.kegare.trait.KegareTraits;
 import com.cnethuka.kegare.trait.TraitService;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -39,8 +39,8 @@ import net.minecraft.server.level.ServerPlayer;
  * Dividation, each told every tick it runs.
  */
 public final class BackgroundRmt extends BackgroundTask {
-    public static final ResourceLocation ID = Kegare.id("background_rmt");
-    public static final ResourceLocation ALWAYS_ON = KegareAdvancements.ALWAYS_ON;
+    public static final Identifier ID = Kegare.id("background_rmt");
+    public static final Identifier ALWAYS_ON = KegareAdvancements.ALWAYS_ON;
 
     /** Told every tick Background RMT runs on a player (for the Six Eyes step and Oxidation's continuous Dividation). */
     @FunctionalInterface

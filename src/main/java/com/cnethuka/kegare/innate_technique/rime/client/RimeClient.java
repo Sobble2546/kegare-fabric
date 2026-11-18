@@ -18,7 +18,7 @@ import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.IEventBus;
+import com.cnethuka.kegare.platform.bus.IEventBus;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;

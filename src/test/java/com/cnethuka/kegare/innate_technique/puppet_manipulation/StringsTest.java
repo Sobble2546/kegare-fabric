@@ -672,7 +672,7 @@ class StringsTest {
         });
     }
 
-    private static boolean has(MinecraftServer server, ServerPlayer player, net.minecraft.resources.ResourceLocation id) {
+    private static boolean has(MinecraftServer server, ServerPlayer player, net.minecraft.resources.Identifier id) {
         return TestServer.hasAdvancement(server, player, id);
     }
 

@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -49,10 +49,10 @@ public final class FxKit {
     private FxKit() {}
 
     /** Writes every effect under {@code <assetsRoot>/<namespace>/fx/<path>.fx}. Returns the files written. */
-    public static List<Path> export(Map<ResourceLocation, Supplier<FX>> effects, Path assetsRoot) throws IOException {
+    public static List<Path> export(Map<Identifier, Supplier<FX>> effects, Path assetsRoot) throws IOException {
         List<Path> written = new java.util.ArrayList<>();
-        for (Map.Entry<ResourceLocation, Supplier<FX>> e : effects.entrySet()) {
-            ResourceLocation id = e.getKey();
+        for (Map.Entry<Identifier, Supplier<FX>> e : effects.entrySet()) {
+            Identifier id = e.getKey();
             Path file = assetsRoot.resolve(id.getNamespace()).resolve("fx").resolve(id.getPath() + FX.SUFFIX);
             CompoundTag tag = e.getValue().get().serializeNBT(Platform.getFrozenRegistry());
             tag.putInt("version", FXProject.VERSION);

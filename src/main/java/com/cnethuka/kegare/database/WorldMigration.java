@@ -34,7 +34,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
 
@@ -67,9 +67,9 @@ public final class WorldMigration {
     public record Exported(int players, int written, int created, int online, List<String> failures, int bearers, int pending, int revoked) {}
 
     /** What the world's trait record holds, taken on the server thread. */
-    private record WorldTraits(Map<ResourceLocation, UUID> bearers, Map<ResourceLocation, UniqueTraitSavedData.Pending> pending, Map<UUID, Set<ResourceLocation>> revoked, Map<UUID, Long> seen, long gameTime) {
+    private record WorldTraits(Map<Identifier, UUID> bearers, Map<Identifier, UniqueTraitSavedData.Pending> pending, Map<UUID, Set<Identifier>> revoked, Map<UUID, Long> seen, long gameTime) {
         static WorldTraits of(UniqueTraitSavedData world, long gameTime) {
-            Map<UUID, Set<ResourceLocation>> revoked = new HashMap<>();
+            Map<UUID, Set<Identifier>> revoked = new HashMap<>();
             world.revokedView().forEach((player, traits) -> revoked.put(player, Set.copyOf(traits)));
             return new WorldTraits(Map.copyOf(world.bearers()), new LinkedHashMap<>(world.pendingView()), revoked, Map.copyOf(world.lastSeenView()), gameTime);
         }
@@ -148,7 +148,7 @@ public final class WorldMigration {
     /** Only what isn't there: what the database already has stands. Returns bearers, pending, revoked, seen, conflicts. */
     private static int[] writeTraits(Connection connection, WorldTraits world, boolean dry) throws SQLException {
         int bearers = 0, pending = 0, revoked = 0, seen = 0, conflicts = 0;
-        for (Map.Entry<ResourceLocation, UUID> entry : world.bearers().entrySet()) {
+        for (Map.Entry<Identifier, UUID> entry : world.bearers().entrySet()) {
             UUID there = bearerOf(connection, entry.getKey().toString());
             if (there != null) {
                 if (!there.equals(entry.getValue())) conflicts++;
@@ -160,7 +160,7 @@ public final class WorldMigration {
             }
         }
         long now = System.currentTimeMillis();
-        for (Map.Entry<ResourceLocation, UniqueTraitSavedData.Pending> entry : world.pending().entrySet()) {
+        for (Map.Entry<Identifier, UniqueTraitSavedData.Pending> entry : world.pending().entrySet()) {
             String trait = entry.getKey().toString();
             if (hasPending(connection, trait) || bearerOf(connection, trait) != null) continue;
             pending++;
@@ -169,8 +169,8 @@ public final class WorldMigration {
             execute(connection, "INSERT INTO kegare.trait_pending (trait, previous, killer, due_at) VALUES (?, ?, ?, ?) ON CONFLICT (trait) DO NOTHING",
                     trait, entry.getValue().previousBearer(), entry.getValue().killer().orElse(null), new Timestamp(now + left * 50));
         }
-        for (Map.Entry<UUID, Set<ResourceLocation>> entry : world.revoked().entrySet()) {
-            for (ResourceLocation trait : entry.getValue()) {
+        for (Map.Entry<UUID, Set<Identifier>> entry : world.revoked().entrySet()) {
+            for (Identifier trait : entry.getValue()) {
                 try (PreparedStatement exists = connection.prepareStatement("SELECT 1 FROM kegare.trait_revoked WHERE player = ? AND trait = ?")) {
                     exists.setObject(1, entry.getKey());
                     exists.setString(2, trait.toString());
@@ -281,7 +281,7 @@ public final class WorldMigration {
     /** The world's trait record becomes the database's, with its wall-clock times back in game time. */
     private static void writeWorldTraits(Target target, NetworkTraits.Snapshot traits) {
         long gameTime = target.gameTime().get(), nowTicks = System.currentTimeMillis() / 50;
-        Map<ResourceLocation, UniqueTraitSavedData.Pending> pending = new LinkedHashMap<>();
+        Map<Identifier, UniqueTraitSavedData.Pending> pending = new LinkedHashMap<>();
         traits.pending().forEach((trait, entry) -> pending.put(trait, new UniqueTraitSavedData.Pending(entry.previousBearer(), entry.killer(), gameTime + Math.max(0, entry.dueTick() - nowTicks))));
         UniqueTraitSavedData world = target.worldTraits().get();
         world.replaceAll(traits.bearers(), pending, traits.revoked(), traits.seen(), Set.of());

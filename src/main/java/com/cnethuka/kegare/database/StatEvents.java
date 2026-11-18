@@ -7,7 +7,7 @@ import com.cnethuka.kegare.progression.FightTracker;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.bus.api.EventPriority;
+import com.cnethuka.kegare.platform.bus.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;

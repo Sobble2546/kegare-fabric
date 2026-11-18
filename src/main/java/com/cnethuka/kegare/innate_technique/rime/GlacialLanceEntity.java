@@ -8,7 +8,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -75,7 +75,7 @@ public class GlacialLanceEntity extends RimeProjectile implements com.cnethuka.k
     }
 
     @Override
-    protected ResourceLocation trailEffect() {
+    protected Identifier trailEffect() {
         return RimeIds.FX_GLACIAL_LANCE_TRAIL;
     }
 
@@ -97,7 +97,7 @@ public class GlacialLanceEntity extends RimeProjectile implements com.cnethuka.k
      */
     @Override
     protected void impactVisual(Vec3 at, @Nullable HitResult hit) {
-        ResourceLocation effect = hit instanceof BlockHitResult ? RimeIds.FX_GLACIAL_LANCE_STICK : RimeIds.FX_GLACIAL_LANCE_IMPACT;
+        Identifier effect = hit instanceof BlockHitResult ? RimeIds.FX_GLACIAL_LANCE_STICK : RimeIds.FX_GLACIAL_LANCE_IMPACT;
         // An entity hit reports the target's feet, and the lance is still where this tick's move began (up to a whole move short),
         // so it bursts where its path enters the target instead.
         Vec3 where = hit instanceof EntityHitResult e ? struck(e.getEntity()) : at;

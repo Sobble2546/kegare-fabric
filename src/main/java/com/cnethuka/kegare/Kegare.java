@@ -11,8 +11,8 @@ import com.cnethuka.kegare.registry.KegareItems;
 import com.cnethuka.kegare.registry.KegareRegistries;
 import com.cnethuka.kegare.innate_technique.rime.Rime;
 import com.cnethuka.kegare.trait.KegareTraits;
-import net.minecraft.resources.ResourceLocation;
-import net.neoforged.bus.api.IEventBus;
+import net.minecraft.resources.Identifier;
+import com.cnethuka.kegare.platform.bus.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
@@ -64,7 +64,7 @@ public final class Kegare {
         container.registerConfig(ModConfig.Type.CLIENT, KegareClientConfig.SPEC);
     }
 
-    public static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MODID, path);
+    public static Identifier id(String path) {
+        return Identifier.fromNamespaceAndPath(MODID, path);
     }
 }

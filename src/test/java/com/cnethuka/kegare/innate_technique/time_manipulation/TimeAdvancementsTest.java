@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.OptionalInt;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.DisplayInfo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -42,7 +42,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(EphemeralTestServerProvider.class)
 class TimeAdvancementsTest {
     private static final double Y = 120;
-    private static final List<ResourceLocation> ALL = List.of(TimeAdvancements.THE_WORLD_STOOD_STILL, TimeAdvancements.OVERCLOCK,
+    private static final List<Identifier> ALL = List.of(TimeAdvancements.THE_WORLD_STOOD_STILL, TimeAdvancements.OVERCLOCK,
             TimeAdvancements.SECOND_CHANCE, TimeAdvancements.SLOW_MOTION, TimeAdvancements.NOT_SO_FAST, TimeAdvancements.FROZEN_IN_FLIGHT,
             TimeAdvancements.SAME_CLOCK, TimeAdvancements.PRE_PLANNED);
 
@@ -57,14 +57,14 @@ class TimeAdvancementsTest {
         return p;
     }
 
-    private static boolean has(MinecraftServer server, ServerPlayer p, ResourceLocation id) {
+    private static boolean has(MinecraftServer server, ServerPlayer p, Identifier id) {
         return TestServer.hasAdvancement(server, p, id);
     }
 
     @Test
     void everyOneIsHiddenAndSilent(MinecraftServer server) throws Exception {
         TestServer.onServerThread(server, () -> {
-            for (ResourceLocation id : ALL) {
+            for (Identifier id : ALL) {
                 AdvancementHolder holder = server.getAdvancements().get(id);
                 assertNotNull(holder, id + " loads");
                 DisplayInfo display = holder.value().display().orElseThrow();

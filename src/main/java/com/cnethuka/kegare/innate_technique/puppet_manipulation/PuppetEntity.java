@@ -46,7 +46,7 @@ public class PuppetEntity extends PathfinderMob implements Puppet {
     private static final EntityDataAccessor<Boolean> SPINNING = SynchedEntityData.defineId(PuppetEntity.class, EntityDataSerializers.BOOLEAN);
     /** Stand-In: grown to its owner's size, copying them. Never saved. */
     private static final EntityDataAccessor<Boolean> STAND_IN = SynchedEntityData.defineId(PuppetEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final net.minecraft.resources.ResourceLocation STAND_IN_SCALE = com.cnethuka.kegare.Kegare.id("stand_in_scale");
+    private static final net.minecraft.resources.Identifier STAND_IN_SCALE = com.cnethuka.kegare.Kegare.id("stand_in_scale");
     /** Someone is inside it (Possess): hidden, untouchable, carried along with them. Never saved. */
     private static final EntityDataAccessor<Boolean> POSSESSED = SynchedEntityData.defineId(PuppetEntity.class, EntityDataSerializers.BOOLEAN);
     /** The owner's name and skin property, so the owner's look is drawn even while they are offline. */

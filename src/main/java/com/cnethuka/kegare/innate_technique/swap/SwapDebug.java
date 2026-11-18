@@ -4,9 +4,9 @@ import com.cnethuka.kegare.Kegare;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
+import com.cnethuka.kegare.platform.bus.EventPriority;
+import com.cnethuka.kegare.platform.bus.SubscribeEvent;
+import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
 
 /**
  * DEBUG (op command {@code /kegare debug swap unswappable <player> <on>}): a stand-in for a future immunity.

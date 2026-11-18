@@ -21,7 +21,7 @@ import java.util.Set;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.attachment.AttachmentHolder;
@@ -64,7 +64,7 @@ public class RemovedTechniqueTest {
         assertFalse(TestServer.hasAdvancement(player.server, player, KegareAdvancements.REAWAKENING), "it's not a talisman's reroll");
     }
 
-    private static boolean removed(ResourceLocation id) {
+    private static boolean removed(Identifier id) {
         return id.getPath().startsWith("test_");
     }
 
@@ -92,7 +92,7 @@ public class RemovedTechniqueTest {
                 checkRerolled(player, before);
 
                 // Logging in again doesn't roll again.
-                ResourceLocation rolled = InnateTechniqueService.current(player).orElseThrow().id();
+                Identifier rolled = InnateTechniqueService.current(player).orElseThrow().id();
                 PlayerEvents.handleLogin(player);
                 assertEquals(rolled, InnateTechniqueService.current(player).orElseThrow().id(), "once only");
             } catch (Exception e) {

@@ -4,7 +4,7 @@ import com.cnethuka.kegare.innatetechnique.InnateTechnique;
 import com.cnethuka.kegare.registry.KegareRegistries;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 
 /**
@@ -15,12 +15,12 @@ public final class VisualHooks {
     /** Starts a projectile's trail at a size; says false to be asked again next tick (not clear of its owner's eyes yet). */
     @FunctionalInterface
     public interface TrailStarter {
-        boolean start(Entity projectile, ResourceLocation effect, float scale, double clearOfOwnEyes);
+        boolean start(Entity projectile, Identifier effect, float scale, double clearOfOwnEyes);
     }
 
     /** Set by the client entry point; stays null on a dedicated server. */
     private static TrailStarter trailStarter;
-    private static final Set<ResourceLocation> EXTRA_EFFECTS = new LinkedHashSet<>();
+    private static final Set<Identifier> EXTRA_EFFECTS = new LinkedHashSet<>();
 
     private VisualHooks() {}
 
@@ -29,7 +29,7 @@ public final class VisualHooks {
     }
 
     /** Client side only (projectile entities call this on their first client tick). */
-    public static void startTrail(Entity projectile, ResourceLocation effect) {
+    public static void startTrail(Entity projectile, Identifier effect) {
         startTrail(projectile, effect, 1f, 0);
     }
 
@@ -39,19 +39,19 @@ public final class VisualHooks {
      *
      * @return false if it hasn't started yet: call again next tick
      */
-    public static boolean startTrail(Entity projectile, ResourceLocation effect, float scale, double clearOfOwnEyes) {
+    public static boolean startTrail(Entity projectile, Identifier effect, float scale, double clearOfOwnEyes) {
         if (!projectile.level().isClientSide || trailStarter == null) return true;
         return trailStarter.start(projectile, effect, scale, clearOfOwnEyes);
     }
 
     /** Effects used outside ability phases (status effects such as freezing), for preloading. */
-    public static void registerEffect(ResourceLocation effect) {
+    public static void registerEffect(Identifier effect) {
         EXTRA_EFFECTS.add(effect);
     }
 
     /** Every effect any ability or status uses. */
-    public static Set<ResourceLocation> allEffects() {
-        Set<ResourceLocation> out = new LinkedHashSet<>(EXTRA_EFFECTS);
+    public static Set<Identifier> allEffects() {
+        Set<Identifier> out = new LinkedHashSet<>(EXTRA_EFFECTS);
         for (InnateTechnique innateTechnique : KegareRegistries.INNATE_TECHNIQUE) {
             innateTechnique.everyAbility().forEach(a -> out.addAll(a.visuals().effects()));
         }

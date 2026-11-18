@@ -18,7 +18,7 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.ImpossibleTrigger;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.common.data.AdvancementProvider;
@@ -35,9 +35,9 @@ import net.neoforged.neoforge.common.data.ExistingFileHelper;
  * to chat, and generation fails if one slips through.
  */
 public final class KegareAdvancementGenerator implements AdvancementProvider.AdvancementGenerator {
-    private static final ResourceLocation BASE_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/block/obsidian.png");
-    private static final ResourceLocation SIX_EYES_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/block/amethyst_block.png");
-    private static final ResourceLocation INNATE_TECHNIQUE_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/block/black_concrete.png");
+    private static final Identifier BASE_BACKGROUND = Identifier.withDefaultNamespace("textures/block/obsidian.png");
+    private static final Identifier SIX_EYES_BACKGROUND = Identifier.withDefaultNamespace("textures/block/amethyst_block.png");
+    private static final Identifier INNATE_TECHNIQUE_BACKGROUND = Identifier.withDefaultNamespace("textures/block/black_concrete.png");
 
     @Override
     public void generate(HolderLookup.Provider registries, Consumer<AdvancementHolder> output, ExistingFileHelper files) {
@@ -103,7 +103,7 @@ public final class KegareAdvancementGenerator implements AdvancementProvider.Adv
 
         // ---- One tab per innate technique: root unlocks on the first roll. ----
         // Silent in chat: announcing it would tell every opponent which innate technique a player rolled.
-        java.util.Map<ResourceLocation, AdvancementHolder> techniqueRoots = new java.util.HashMap<>();
+        java.util.Map<Identifier, AdvancementHolder> techniqueRoots = new java.util.HashMap<>();
         for (InnateTechnique innateTechnique : KegareRegistries.INNATE_TECHNIQUE) {
             if (!innateTechnique.id().getNamespace().equals(Kegare.MODID)) continue;
             AdvancementHolder techniqueRoot = Advancement.Builder.advancement()
@@ -179,8 +179,8 @@ public final class KegareAdvancementGenerator implements AdvancementProvider.Adv
      * A tab root. Secret-identity IDs are never announced and are hidden, except roots listed in
      * {@link KegareAdvancements#SECRET_VISIBLE_ROOTS}.
      */
-    private static AdvancementHolder root(Consumer<AdvancementHolder> saver, ResourceLocation id, String key, String criterion, ItemLike icon,
-                                          ResourceLocation background, AdvancementType type, boolean hidden) {
+    private static AdvancementHolder root(Consumer<AdvancementHolder> saver, Identifier id, String key, String criterion, ItemLike icon,
+                                          Identifier background, AdvancementType type, boolean hidden) {
         boolean secret = KegareAdvancements.SECRET_IDENTITY.contains(id);
         boolean forceHidden = secret && !KegareAdvancements.SECRET_VISIBLE_ROOTS.contains(id);
         return Advancement.Builder.advancement()
@@ -190,7 +190,7 @@ public final class KegareAdvancementGenerator implements AdvancementProvider.Adv
     }
 
     /** Secret-identity IDs are always hidden and never announced to chat, whatever the caller passes. */
-    private static AdvancementHolder child(Consumer<AdvancementHolder> saver, AdvancementHolder parent, ResourceLocation id, String key,
+    private static AdvancementHolder child(Consumer<AdvancementHolder> saver, AdvancementHolder parent, Identifier id, String key,
                                            ItemLike icon, AdvancementType type, boolean hidden) {
         boolean secret = KegareAdvancements.SECRET_IDENTITY.contains(id);
         return Advancement.Builder.advancement()
@@ -201,7 +201,7 @@ public final class KegareAdvancementGenerator implements AdvancementProvider.Adv
     }
 
     /** An innate technique tab's advancement: hidden until earned and never announced (it would reveal the technique). */
-    private static AdvancementHolder techniqueChild(Consumer<AdvancementHolder> saver, AdvancementHolder parent, ResourceLocation id,
+    private static AdvancementHolder techniqueChild(Consumer<AdvancementHolder> saver, AdvancementHolder parent, Identifier id,
                                                     String key, ItemLike icon, AdvancementType type) {
         return Advancement.Builder.advancement()
                 .parent(parent)
@@ -210,7 +210,7 @@ public final class KegareAdvancementGenerator implements AdvancementProvider.Adv
                 .save(saver, id.toString());
     }
 
-    private static boolean announces(ResourceLocation id) {
+    private static boolean announces(Identifier id) {
         return !KegareAdvancements.SECRET_IDENTITY.contains(id) && !KegareAdvancements.SILENT.contains(id);
     }
 
@@ -219,7 +219,7 @@ public final class KegareAdvancementGenerator implements AdvancementProvider.Adv
      * without being an explicitly listed tab root (KegareAdvancements.SECRET_VISIBLE_ROOTS, no parent).
      */
     private static void enforceSecretIdentityRule(AdvancementHolder holder) {
-        ResourceLocation id = holder.id();
+        Identifier id = holder.id();
         // Innate technique tabs: nothing in them is ever announced (it would reveal who rolled what).
         if (id.getPath().startsWith("innate_technique/") && holder.value().display().map(d -> d.shouldAnnounceChat()).orElse(false)) {
             throw new IllegalStateException("Advancement " + id + " is in an innate technique tab and must never be announced to chat");

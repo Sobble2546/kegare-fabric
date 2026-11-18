@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.OptionalInt;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.LongTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.attachment.AttachmentHolder;
@@ -37,7 +37,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 class PlayerDataCodecTest {
     @SuppressWarnings("unchecked")
     private static void giveEverything(ServerPlayer player) {
-        for (ResourceLocation id : PlayerDataCodec.savedAttachments()) {
+        for (Identifier id : PlayerDataCodec.savedAttachments()) {
             player.getData((AttachmentType<Object>) NeoForgeRegistries.ATTACHMENT_TYPES.get(id));
         }
     }
@@ -54,7 +54,7 @@ class PlayerDataCodecTest {
                 List<String> missing = new ArrayList<>();
                 int serialized = 0;
                 for (var entry : NeoForgeRegistries.ATTACHMENT_TYPES.entrySet()) {
-                    ResourceLocation id = entry.getKey().location();
+                    Identifier id = entry.getKey().location();
                     if (!id.getNamespace().equals(Kegare.MODID)) continue;
                     var serializer = (net.neoforged.neoforge.attachment.IAttachmentSerializer<?, Object>) ((AttachmentTypeAccessor) (Object) entry.getValue()).kegare$serializer();
                     if (serializer == null) continue;

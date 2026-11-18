@@ -24,7 +24,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -40,7 +40,7 @@ import net.neoforged.neoforge.common.NeoForge;
  * you play by.
  */
 public final class SensesClient {
-    private static final ResourceLocation CHAIN = Kegare.id("shaders/post/senses.json");
+    private static final Identifier CHAIN = Kegare.id("shaders/post/senses.json");
     /** How bright the farthest outline is, against the nearest. */
     private static final float FAR = 0.3f;
     private static final Set<Integer> SENSED = new HashSet<>();

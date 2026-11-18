@@ -9,10 +9,10 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.neoforged.bus.api.IEventBus;
+import com.cnethuka.kegare.platform.bus.IEventBus;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
@@ -25,7 +25,7 @@ import org.joml.Matrix4f;
  * Vanilla, and the kick answers to vanilla's own FOV Effects slider too. No screen shake: that's for the Impact System.
  */
 public final class DashFeel {
-    private static final ResourceLocation LAYER = Kegare.id("dash_streaks");
+    private static final Identifier LAYER = Kegare.id("dash_streaks");
     private static final int STREAKS_FULL = 22;
     private static final int STREAKS_REDUCED = 10;
     private static final int COLOR = 0xFFFFFF;

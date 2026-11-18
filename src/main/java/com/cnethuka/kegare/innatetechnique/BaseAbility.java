@@ -1,19 +1,19 @@
 package com.cnethuka.kegare.innatetechnique;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /** Convenience base holding an ability's ID and cast type. */
 public abstract class BaseAbility implements Ability {
-    private final ResourceLocation id;
+    private final Identifier id;
     private final CastType castType;
 
-    protected BaseAbility(ResourceLocation id, CastType castType) {
+    protected BaseAbility(Identifier id, CastType castType) {
         this.id = id;
         this.castType = castType;
     }
 
     @Override
-    public final ResourceLocation id() {
+    public final Identifier id() {
         return id;
     }
 

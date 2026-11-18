@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.testframework.junit.EphemeralTestServerProvider;
@@ -63,9 +63,9 @@ class TechniqueUnlocksTest {
         return p;
     }
 
-    private static List<ResourceLocation> bar(ServerPlayer p) {
-        List<ResourceLocation> out = new ArrayList<>();
-        for (Optional<ResourceLocation> slot : LoadoutService.slots(p)) slot.ifPresent(out::add);
+    private static List<Identifier> bar(ServerPlayer p) {
+        List<Identifier> out = new ArrayList<>();
+        for (Optional<Identifier> slot : LoadoutService.slots(p)) slot.ifPresent(out::add);
         return out;
     }
 

@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Shared abilities (the {@link AbilityCategory#MALICE} and {@link AbilityCategory#MELEE} categories): not tied to any innate technique. A player unlocks them once
@@ -15,9 +15,9 @@ import net.minecraft.resources.ResourceLocation;
  * mod construction, in display order. Reverse Malice Technique is the first.
  */
 public final class SharedAbilities {
-    private static final Map<ResourceLocation, Ability> ALL = new LinkedHashMap<>();
+    private static final Map<Identifier, Ability> ALL = new LinkedHashMap<>();
     /** The ones every Malice user has, with nothing to unlock (Reinforced Fists). */
-    private static final java.util.Set<ResourceLocation> EVERYONE = new java.util.HashSet<>();
+    private static final java.util.Set<Identifier> EVERYONE = new java.util.HashSet<>();
 
     private SharedAbilities() {}
 
@@ -33,7 +33,7 @@ public final class SharedAbilities {
         return ability;
     }
 
-    public static boolean forEveryone(ResourceLocation id) {
+    public static boolean forEveryone(Identifier id) {
         return EVERYONE.contains(id);
     }
 
@@ -42,16 +42,16 @@ public final class SharedAbilities {
     }
 
     /** A shared ability by ID (not its special). */
-    public static Optional<Ability> get(ResourceLocation id) {
+    public static Optional<Ability> get(Identifier id) {
         return Optional.ofNullable(ALL.get(id));
     }
 
-    public static boolean isShared(ResourceLocation id) {
+    public static boolean isShared(Identifier id) {
         return ALL.containsKey(id);
     }
 
     /** A shared ability or the special of one, by ID. */
-    public static Optional<Ability> find(ResourceLocation id) {
+    public static Optional<Ability> find(Identifier id) {
         Ability direct = ALL.get(id);
         if (direct != null) return Optional.of(direct);
         for (Ability a : ALL.values()) {

@@ -21,7 +21,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -46,7 +46,7 @@ import org.joml.Vector3f;
  * Reduced draws fewer afterimages and a coarser dome; Vanilla draws none of it and puts small bronze and silver dust in its place.
  */
 public final class TimeFx {
-    static final ResourceLocation WHITE = ResourceLocation.withDefaultNamespace("textures/misc/white.png");
+    static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
     static final int BRONZE = 0xB08D57, BRONZE_DARK = 0x7A6038, BRONZE_PALE = 0xD9BC8A, SILVER = 0xE9E6DF, BRIGHT = 0xFFFCF2;
     static final DustParticleOptions BRONZE_DUST = new DustParticleOptions(new Vector3f(0.69f, 0.55f, 0.34f), 0.6f);
     static final DustParticleOptions SILVER_DUST = new DustParticleOptions(new Vector3f(0.91f, 0.9f, 0.87f), 0.5f);

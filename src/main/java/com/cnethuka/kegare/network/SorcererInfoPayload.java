@@ -21,7 +21,7 @@ import java.util.Optional;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
@@ -32,17 +32,17 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 public record SorcererInfoPayload(
         int capacity, float current, int tier, boolean severed,
         float regenPerSecond, float regenPercent, boolean regenPaused,
-        Optional<ResourceLocation> innateTechnique, List<AbilityInfo> abilities, List<AbilityInfo> shared,
-        List<ResourceLocation> traits,
+        Optional<Identifier> innateTechnique, List<AbilityInfo> abilities, List<AbilityInfo> shared,
+        List<Identifier> traits,
         int rollsSinceLegendary, int totalRolls, int hardPity, int rollsUntilSoftPity, int rollsUntilHardPity,
         int legendaryWeight, int baseLegendaryWeight
 ) implements CustomPacketPayload {
     /** @param castType ordinal of {@code CastType} */
-    public record AbilityInfo(ResourceLocation id, int castType, float cost, float upkeepPerSecond, int cooldownTicks, boolean ultimate,
+    public record AbilityInfo(Identifier id, int castType, float cost, float upkeepPerSecond, int cooldownTicks, boolean ultimate,
                               Optional<SpecialInfo> special) {}
 
     /** An ability's special (R). {@code available}: every requirement is met right now. */
-    public record SpecialInfo(ResourceLocation id, int castType, float cost, float upkeepPerSecond, boolean available) {}
+    public record SpecialInfo(Identifier id, int castType, float cost, float upkeepPerSecond, boolean available) {}
 
     public static final Type<SorcererInfoPayload> TYPE = new Type<>(Kegare.id("sorcerer_info"));
     public static final StreamCodec<FriendlyByteBuf, SorcererInfoPayload> STREAM_CODEC = StreamCodec.ofMember(SorcererInfoPayload::write, SorcererInfoPayload::read);

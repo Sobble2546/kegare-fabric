@@ -14,7 +14,7 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +34,7 @@ class TimeVisualsTest {
     @Test
     void palLoadsEveryAnimationTheCodePlays() throws IOException {
         Map<String, Animation> loaded = UniversalAnimLoader.loadAnimations(file());
-        for (ResourceLocation id : TimeIds.ANIMATIONS) {
+        for (Identifier id : TimeIds.ANIMATIONS) {
             Animation animation = loaded.get(id.getPath());
             assertNotNull(animation, id + " is in the file");
             assertTrue(animation.length() > 0f, id + " has a length");

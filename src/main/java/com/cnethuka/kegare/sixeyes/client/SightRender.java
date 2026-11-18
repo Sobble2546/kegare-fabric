@@ -9,7 +9,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -28,8 +28,8 @@ import org.joml.Vector3f;
  * </ul>
  */
 public final class SightRender {
-    static final ResourceLocation MARKER = Kegare.id("textures/entity/sight_marker.png");
-    static final ResourceLocation VOID = Kegare.id("textures/entity/void_distortion.png");
+    static final Identifier MARKER = Kegare.id("textures/entity/sight_marker.png");
+    static final Identifier VOID = Kegare.id("textures/entity/void_distortion.png");
     static final int VOID_FRAMES = 8;
     /** The marker's texture has three frames side by side: its color, its edge, its backing. */
     private static final float FRAME = 1f / 3f;

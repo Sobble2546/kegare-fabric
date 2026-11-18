@@ -5,7 +5,7 @@ import com.cnethuka.kegare.advancement.KegareAdvancements;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,19 +18,19 @@ import net.minecraft.world.entity.Entity;
  * PLAYER on the other side (DESIGN §4).
  */
 public final class PuppetAdvancements {
-    public static final ResourceLocation ROOT = KegareAdvancements.innateTechniqueRoot(Kegare.id("puppet_manipulation"));
-    public static final ResourceLocation PULLING_STRINGS = id("pulling_strings");
-    public static final ResourceLocation OUT_OF_BODY = id("out_of_body");
-    public static final ResourceLocation KURU_KURU = id("kuru_kuru");
-    public static final ResourceLocation NOBODY_HOME = id("nobody_home");
-    public static final ResourceLocation DECOY = id("decoy");
-    public static final ResourceLocation WHOS_REAL = id("whos_real");
-    public static final ResourceLocation CURIOSITY_KILLED = id("curiosity_killed");
-    public static final ResourceLocation LITTLE_ME = id("little_me");
-    public static final ResourceLocation GET_OVER_HERE = id("get_over_here");
-    public static final ResourceLocation TIED_UP = id("tied_up");
-    public static final ResourceLocation WALKIES = id("walkies");
-    public static final ResourceLocation STRINGS_ATTACHED = id("strings_attached");
+    public static final Identifier ROOT = KegareAdvancements.innateTechniqueRoot(Kegare.id("puppet_manipulation"));
+    public static final Identifier PULLING_STRINGS = id("pulling_strings");
+    public static final Identifier OUT_OF_BODY = id("out_of_body");
+    public static final Identifier KURU_KURU = id("kuru_kuru");
+    public static final Identifier NOBODY_HOME = id("nobody_home");
+    public static final Identifier DECOY = id("decoy");
+    public static final Identifier WHOS_REAL = id("whos_real");
+    public static final Identifier CURIOSITY_KILLED = id("curiosity_killed");
+    public static final Identifier LITTLE_ME = id("little_me");
+    public static final Identifier GET_OVER_HERE = id("get_over_here");
+    public static final Identifier TIED_UP = id("tied_up");
+    public static final Identifier WALKIES = id("walkies");
+    public static final Identifier STRINGS_ATTACHED = id("strings_attached");
 
     /** Kuru Kuru: this many of your puppets spinning at once. */
     public static final int KURU_KURU_PUPPETS = 10;
@@ -39,12 +39,12 @@ public final class PuppetAdvancements {
 
     private PuppetAdvancements() {}
 
-    private static ResourceLocation id(String name) {
+    private static Identifier id(String name) {
         return Kegare.id("innate_technique/puppet_manipulation/" + name);
     }
 
     /** Only a player who currently holds Puppet Manipulation earns these (so the tab never opens for anyone else). */
-    public static void award(ServerPlayer player, ResourceLocation id) {
+    public static void award(ServerPlayer player, Identifier id) {
         if (PuppetManipulation.holds(player)) KegareAdvancements.award(player, id);
     }
 

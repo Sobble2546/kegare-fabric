@@ -22,7 +22,7 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
@@ -49,7 +49,7 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
  */
 public final class FieldClient {
     /** Two patches of the same frost, so the mat doesn't repeat. */
-    static final ResourceLocation FROST = Kegare.id("field_frost"), FROST_B = Kegare.id("field_frost_b");
+    static final Identifier FROST = Kegare.id("field_frost"), FROST_B = Kegare.id("field_frost_b");
     static final String CHANNEL = VisualService.key(Rime.FROST_FIELD, VisualPhase.CHANNEL_LOOP);
     /** How fast the frost races out from the caster when the channel starts: ticks a block. */
     static final float RACE_TICKS_PER_BLOCK = 0.8f;

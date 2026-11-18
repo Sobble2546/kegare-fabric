@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Per-player innate technique state (attachment {@code kegare:innate_technique}, kept on death):
@@ -22,27 +22,27 @@ public final class InnateTechniqueData {
     }
 
     public static final Codec<InnateTechniqueData> CODEC = RecordCodecBuilder.create(i -> i.group(
-            ResourceLocation.CODEC.optionalFieldOf("innate_technique").forGetter(d -> Optional.ofNullable(d.innateTechniqueId)),
+            Identifier.CODEC.optionalFieldOf("innate_technique").forGetter(d -> Optional.ofNullable(d.innateTechniqueId)),
             Codec.INT.optionalFieldOf("selected", 0).forGetter(d -> d.selectedSlot),
-            Codec.unboundedMap(ResourceLocation.CODEC, Cooldown.CODEC).optionalFieldOf("cooldowns", Map.of()).forGetter(d -> d.cooldowns)
+            Codec.unboundedMap(Identifier.CODEC, Cooldown.CODEC).optionalFieldOf("cooldowns", Map.of()).forGetter(d -> d.cooldowns)
     ).apply(i, (innateTechnique, selected, cooldowns) -> new InnateTechniqueData(innateTechnique.orElse(null), selected, new HashMap<>(cooldowns))));
 
     @Nullable
-    private ResourceLocation innateTechniqueId;
+    private Identifier innateTechniqueId;
     private int selectedSlot;
-    private final Map<ResourceLocation, Cooldown> cooldowns;
+    private final Map<Identifier, Cooldown> cooldowns;
 
     public InnateTechniqueData() {
         this(null, 0, new HashMap<>());
     }
 
-    private InnateTechniqueData(@Nullable ResourceLocation innateTechniqueId, int selectedSlot, Map<ResourceLocation, Cooldown> cooldowns) {
+    private InnateTechniqueData(@Nullable Identifier innateTechniqueId, int selectedSlot, Map<Identifier, Cooldown> cooldowns) {
         this.innateTechniqueId = innateTechniqueId;
         this.selectedSlot = selectedSlot;
         this.cooldowns = cooldowns;
     }
 
-    public Optional<ResourceLocation> innateTechniqueId() {
+    public Optional<Identifier> innateTechniqueId() {
         return Optional.ofNullable(innateTechniqueId);
     }
 
@@ -50,12 +50,12 @@ public final class InnateTechniqueData {
         return selectedSlot;
     }
 
-    public Map<ResourceLocation, Cooldown> cooldowns() {
+    public Map<Identifier, Cooldown> cooldowns() {
         return Collections.unmodifiableMap(cooldowns);
     }
 
     // Mutators are package-private: go through InnateTechniqueService / CastManager.
-    void setInnateTechnique(@Nullable ResourceLocation id) {
+    void setInnateTechnique(@Nullable Identifier id) {
         this.innateTechniqueId = id;
         this.selectedSlot = 0;
         this.cooldowns.clear();
@@ -65,11 +65,11 @@ public final class InnateTechniqueData {
         this.selectedSlot = slot;
     }
 
-    void putCooldown(ResourceLocation ability, Cooldown cooldown) {
+    void putCooldown(Identifier ability, Cooldown cooldown) {
         cooldowns.put(ability, cooldown);
     }
 
-    void removeCooldown(ResourceLocation ability) {
+    void removeCooldown(Identifier ability) {
         cooldowns.remove(ability);
     }
 

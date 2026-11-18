@@ -3,7 +3,7 @@ package com.cnethuka.kegare.client.gui;
 import com.cnethuka.kegare.client.ClientData;
 import com.cnethuka.kegare.network.SyncPayload;
 import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * An ability's CURRENT Malice cost where you stand (the server includes environment multipliers such as Rime's cold
@@ -13,7 +13,7 @@ public final class CostTooltip {
     private CostTooltip() {}
 
     @Nullable
-    public static SyncPayload.AbilityCost cost(ResourceLocation ability) {
+    public static SyncPayload.AbilityCost cost(Identifier ability) {
         SyncPayload data = ClientData.get();
         if (data == null) return null;
         for (SyncPayload.AbilityCost c : data.costs()) if (c.ability().equals(ability)) return c;

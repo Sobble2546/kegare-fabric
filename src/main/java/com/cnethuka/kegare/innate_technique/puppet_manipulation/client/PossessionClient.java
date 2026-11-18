@@ -25,12 +25,12 @@ import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.IEventBus;
+import com.cnethuka.kegare.platform.bus.IEventBus;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
@@ -46,8 +46,8 @@ public final class PossessionClient {
     /** Vanilla effects quality: specks along the thread every this many ticks, this many blocks apart (Full and Reduced use PuppetFx). */
     private static final int SPECKS_EVERY_TICKS = 3;
     private static final double SPECK_SPACING = 0.8;
-    private static final ResourceLocation HEART = ResourceLocation.withDefaultNamespace("hud/heart/full");
-    private static final ResourceLocation HEART_EMPTY = ResourceLocation.withDefaultNamespace("hud/heart/container");
+    private static final Identifier HEART = Identifier.withDefaultNamespace("hud/heart/full");
+    private static final Identifier HEART_EMPTY = Identifier.withDefaultNamespace("hud/heart/container");
 
     private static final Map<UUID, Link> POSSESSING = new HashMap<>();
 

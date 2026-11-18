@@ -4,7 +4,6 @@ import com.cnethuka.kegare.config.KegareClientConfig;
 import com.cnethuka.kegare.config.KegareClientConfig.VfxQuality;
 import com.cnethuka.kegare.innatetechnique.visual.Visual;
 import com.cnethuka.kegare.network.VisualPayload;
-import com.lowdragmc.photon.client.fx.FXEffectExecutor;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -16,7 +15,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.Vec3;
@@ -32,14 +31,14 @@ public final class ClientVisuals {
 
     private static final class Loop {
         final Visual visual;
-        @Nullable final FXEffectExecutor executor;
+        @Nullable final PhotonEffects.Playing executor;
         final int growTicks;
         final long startTick;
         final boolean animation;
         /** Projectile trails fade out; every other loop shows a state and must vanish the moment it ends. */
         final boolean trail;
 
-        Loop(Visual visual, @Nullable FXEffectExecutor executor, int growTicks, long startTick, boolean animation, boolean trail) {
+        Loop(Visual visual, @Nullable PhotonEffects.Playing executor, int growTicks, long startTick, boolean animation, boolean trail) {
             this.visual = visual;
             this.executor = executor;
             this.growTicks = growTicks;
@@ -56,7 +55,7 @@ public final class ClientVisuals {
 
     private static final Map<Integer, Map<String, Loop>> LOOPS = new HashMap<>();
     /** Effects their move draws itself: neither Photon nor vanilla particles, see {@link #drawnByMove}. */
-    private static final Set<ResourceLocation> DRAWN_BY_MOVE = new HashSet<>();
+    private static final Set<Identifier> DRAWN_BY_MOVE = new HashSet<>();
     private static final String TRAIL_KEY = "trail";
 
     private ClientVisuals() {}
@@ -94,7 +93,7 @@ public final class ClientVisuals {
         });
         visual.effect().filter(effect -> !DRAWN_BY_MOVE.contains(effect)).map(effect -> firstPersonVariant(entity, effect)).ifPresent(effect -> {
             VfxQuality quality = KegareClientConfig.VFX_QUALITY.get();
-            FXEffectExecutor executor = quality == VfxQuality.VANILLA ? null
+            PhotonEffects.Playing executor = quality == VfxQuality.VANILLA ? null
                     : PhotonEffects.onEntity(effect, entity, visual.anchor(), quality == VfxQuality.REDUCED, false);
             PhotonEffects.tint(executor, visual.tint());
             if (executor == null) {
@@ -121,7 +120,7 @@ public final class ClientVisuals {
             animation = true;
         }
         boolean trail = TRAIL_KEY.equals(key) || visual.linger();
-        FXEffectExecutor executor = null;
+        PhotonEffects.Playing executor = null;
         if (visual.effect().isPresent() && !DRAWN_BY_MOVE.contains(visual.effect().get())) {
             VfxQuality quality = KegareClientConfig.VFX_QUALITY.get();
             if (quality != VfxQuality.VANILLA) {
@@ -165,23 +164,23 @@ public final class ClientVisuals {
 
     /** Positional effects closer than this to a first-person camera are skipped (they would block the view). */
     private static final double NEAR_CAMERA = 2.0;
-    private static final Map<ResourceLocation, Double> NEAR_CAMERA_OVERRIDES = new HashMap<>();
+    private static final Map<Identifier, Double> NEAR_CAMERA_OVERRIDES = new HashMap<>();
 
-    private static final Map<ResourceLocation, ResourceLocation> FIRST_PERSON_VARIANTS = new HashMap<>();
+    private static final Map<Identifier, Identifier> FIRST_PERSON_VARIANTS = new HashMap<>();
 
     /** An effect riding a player that would fill their own screen: in first person, they see {@code variant} instead. Everyone else sees {@code effect}. */
-    public static void setFirstPersonVariant(ResourceLocation effect, ResourceLocation variant) {
+    public static void setFirstPersonVariant(Identifier effect, Identifier variant) {
         FIRST_PERSON_VARIANTS.put(effect, variant);
     }
 
-    private static ResourceLocation firstPersonVariant(Entity entity, ResourceLocation effect) {
+    private static Identifier firstPersonVariant(Entity entity, Identifier effect) {
         Minecraft mc = Minecraft.getInstance();
         if (entity != mc.player || !mc.options.getCameraType().isFirstPerson()) return effect;
         return FIRST_PERSON_VARIANTS.getOrDefault(effect, effect);
     }
 
     /** An effect that has to be seen from closer than usual (a hit landing on someone at arm's length). */
-    public static void setNearCameraDistance(ResourceLocation effect, double distance) {
+    public static void setNearCameraDistance(Identifier effect, double distance) {
         NEAR_CAMERA_OVERRIDES.put(effect, distance);
     }
 
@@ -191,7 +190,7 @@ public final class ClientVisuals {
             // On your own body in first person (you got hit, you broke free): anything there, even small particles,
             // would sit right in front of your eyes. Skip it; you still get the hurt flash, overlays, HUD and sound.
             if (nearFirstPersonCamera(pos, NEAR_CAMERA_OVERRIDES.getOrDefault(effect, NEAR_CAMERA))) return;
-            FXEffectExecutor executor = quality == VfxQuality.VANILLA ? null
+            PhotonEffects.Playing executor = quality == VfxQuality.VANILLA ? null
                     : PhotonEffects.at(effect, level, pos, quality == VfxQuality.REDUCED);
             PhotonEffects.tint(executor, visual.tint());
             if (executor == null) {
@@ -207,19 +206,19 @@ public final class ClientVisuals {
      * its own vanilla stand-in.
      */
     @Nullable
-    public static PositionalEffect startAt(ResourceLocation effect, Vec3 pos) {
+    public static PositionalEffect startAt(Identifier effect, Vec3 pos) {
         ClientLevel level = Minecraft.getInstance().level;
         VfxQuality quality = KegareClientConfig.VFX_QUALITY.get();
         if (level == null || quality == VfxQuality.VANILLA) return null;
-        PhotonEffects.MovableEffect executor = PhotonEffects.movableAt(effect, level, pos, quality == VfxQuality.REDUCED);
+        PhotonEffects.Movable executor = PhotonEffects.movableAt(effect, level, pos, quality == VfxQuality.REDUCED);
         return executor == null ? null : new PositionalEffect(executor);
     }
 
     /** Handle to a {@link #startAt} effect. */
     public static final class PositionalEffect {
-        private final PhotonEffects.MovableEffect executor;
+        private final PhotonEffects.Movable executor;
 
-        private PositionalEffect(PhotonEffects.MovableEffect executor) {
+        private PositionalEffect(PhotonEffects.Movable executor) {
             this.executor = executor;
         }
 
@@ -244,7 +243,7 @@ public final class ClientVisuals {
     }
 
     /** A projectile's trail, started by the projectile itself on the client; ends when the projectile is gone. */
-    public static void startTrail(Entity projectile, ResourceLocation effect) {
+    public static void startTrail(Entity projectile, Identifier effect) {
         startLoop(projectile, TRAIL_KEY, Visual.effect(effect, Visual.Anchor.MOTION), 0);
     }
 
@@ -257,7 +256,7 @@ public final class ClientVisuals {
      *
      * @return false if it's waiting for that
      */
-    public static boolean startTrail(Entity projectile, ResourceLocation effect, float scale, double clearOfOwnEyes) {
+    public static boolean startTrail(Entity projectile, Identifier effect, float scale, double clearOfOwnEyes) {
         if (clearOfOwnEyes > 0 && projectile.tickCount < TRAIL_WAIT_TICKS && projectile instanceof Projectile p) {
             Minecraft mc = Minecraft.getInstance();
             if (p.getOwner() == mc.player && mc.options.getCameraType().isFirstPerson()
@@ -304,11 +303,11 @@ public final class ClientVisuals {
      * {@code effect} is drawn by its move (found through a {@link Listener}): a loop of it is kept and timed as usual, and a
      * one-shot still reaches the listeners, but neither plays a Photon effect or vanilla particles.
      */
-    public static void drawnByMove(ResourceLocation effect) {
+    public static void drawnByMove(Identifier effect) {
         DRAWN_BY_MOVE.add(effect);
     }
 
-    public static boolean isDrawnByMove(ResourceLocation effect) {
+    public static boolean isDrawnByMove(Identifier effect) {
         return DRAWN_BY_MOVE.contains(effect);
     }
 
@@ -331,9 +330,9 @@ public final class ClientVisuals {
         boolean handle(ClientLevel level, Vec3 pos, int entityId, Visual visual);
     }
 
-    private static final Map<ResourceLocation, PlayAtHandler> PLAY_AT_HANDLERS = new HashMap<>();
+    private static final Map<Identifier, PlayAtHandler> PLAY_AT_HANDLERS = new HashMap<>();
 
-    public static void onPlayAt(ResourceLocation effect, PlayAtHandler handler) {
+    public static void onPlayAt(Identifier effect, PlayAtHandler handler) {
         PLAY_AT_HANDLERS.put(effect, handler);
     }
 
@@ -341,10 +340,10 @@ public final class ClientVisuals {
      * An effect at a position at a size: Photon, or vanilla particles for {@code vfxQuality = VANILLA}, and nothing at all if it's
      * right by your own first-person camera.
      */
-    public static void playAt(ClientLevel level, Vec3 pos, ResourceLocation effect, int tint, float scale) {
+    public static void playAt(ClientLevel level, Vec3 pos, Identifier effect, int tint, float scale) {
         if (nearFirstPersonCamera(pos, NEAR_CAMERA_OVERRIDES.getOrDefault(effect, NEAR_CAMERA))) return;
         VfxQuality quality = KegareClientConfig.VFX_QUALITY.get();
-        FXEffectExecutor executor = quality == VfxQuality.VANILLA ? null : PhotonEffects.at(effect, level, pos, quality == VfxQuality.REDUCED);
+        PhotonEffects.Playing executor = quality == VfxQuality.VANILLA ? null : PhotonEffects.at(effect, level, pos, quality == VfxQuality.REDUCED);
         PhotonEffects.tint(executor, tint);
         if (executor != null && scale != 1f) PhotonEffects.scale(executor, scale);
         if (executor == null) {

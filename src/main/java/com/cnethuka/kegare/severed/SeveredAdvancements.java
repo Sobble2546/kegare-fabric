@@ -12,10 +12,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.bus.api.EventPriority;
+import com.cnethuka.kegare.platform.bus.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
@@ -34,8 +34,8 @@ import net.neoforged.neoforge.event.server.ServerStoppedEvent;
  * </ul>
  */
 public final class SeveredAdvancements {
-    public static final ResourceLocation HOW_CRUEL = Kegare.id("how_cruel");
-    public static final ResourceLocation JUST_GETTING_STARTED = Kegare.id("just_getting_started");
+    public static final Identifier HOW_CRUEL = Kegare.id("how_cruel");
+    public static final Identifier JUST_GETTING_STARTED = Kegare.id("just_getting_started");
 
     private record Kill(UUID victim, long tick) {}
 
@@ -59,7 +59,7 @@ public final class SeveredAdvancements {
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> clear());
     }
 
-    static void award(ServerPlayer player, ResourceLocation id) {
+    static void award(ServerPlayer player, Identifier id) {
         if (Severed.is(player)) KegareAdvancements.award(player, id);
     }
 

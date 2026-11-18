@@ -20,7 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 /** "Bush Camper" and "Something's Missing". */
 @ExtendWith(EphemeralTestServerProvider.class)
 class SixEyesAdvancementsTest {
-    private static boolean has(MinecraftServer server, ServerPlayer p, net.minecraft.resources.ResourceLocation id) {
+    private static boolean has(MinecraftServer server, ServerPlayer p, net.minecraft.resources.Identifier id) {
         return TestServer.hasAdvancement(server, p, id);
     }
 

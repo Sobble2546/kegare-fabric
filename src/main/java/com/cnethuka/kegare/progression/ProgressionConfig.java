@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 /** Every progression number: section {@code [progression]} of {@code kegare-server.toml}. Times are in seconds. */
@@ -14,7 +14,7 @@ public final class ProgressionConfig {
     public static ModConfigSpec.BooleanValue REQUIRE_REFINEMENT;
     public static ModConfigSpec.ConfigValue<List<? extends String>> UNLOCK_OVERRIDES;
     private static List<? extends String> parsedFrom;
-    private static Map<ResourceLocation, Integer> parsedOverrides = Map.of();
+    private static Map<Identifier, Integer> parsedOverrides = Map.of();
     // Fights
     public static ModConfigSpec.DoubleValue FIGHT_TIMEOUT;
     public static ModConfigSpec.DoubleValue WIN_SHARE;
@@ -256,10 +256,10 @@ public final class ProgressionConfig {
         return entry instanceof String s && parseOverride(s) != null;
     }
 
-    private static Map.Entry<ResourceLocation, Integer> parseOverride(String entry) {
+    private static Map.Entry<Identifier, Integer> parseOverride(String entry) {
         int split = entry.lastIndexOf('=');
         if (split <= 0) return null;
-        ResourceLocation id = ResourceLocation.tryParse(entry.substring(0, split).trim());
+        Identifier id = Identifier.tryParse(entry.substring(0, split).trim());
         if (id == null) return null;
         try {
             return Map.entry(id, Math.max(0, Integer.parseInt(entry.substring(split + 1).trim())));
@@ -269,12 +269,12 @@ public final class ProgressionConfig {
     }
 
     /** The configured level for this ability, if the server overrides it. Parsed once per config load. */
-    static OptionalInt unlockOverride(ResourceLocation ability) {
+    static OptionalInt unlockOverride(Identifier ability) {
         List<? extends String> current = UNLOCK_OVERRIDES.get();
         if (current != parsedFrom) {
-            Map<ResourceLocation, Integer> parsed = new HashMap<>();
+            Map<Identifier, Integer> parsed = new HashMap<>();
             for (String entry : current) {
-                Map.Entry<ResourceLocation, Integer> override = parseOverride(entry);
+                Map.Entry<Identifier, Integer> override = parseOverride(entry);
                 if (override != null) parsed.put(override.getKey(), override.getValue());
             }
             parsedOverrides = parsed;

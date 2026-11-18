@@ -3,7 +3,7 @@ package com.cnethuka.kegare.progression;
 import com.cnethuka.kegare.innatetechnique.Ability;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.network.ProgressionToastPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -27,7 +27,7 @@ public final class ProgressionToasts {
         send(player, kind, ability.id().toString());
     }
 
-    static void unlocked(ServerPlayer player, ResourceLocation id) {
+    static void unlocked(ServerPlayer player, Identifier id) {
         send(player, ProgressionToastPayload.Kind.UNLOCK, id.toString());
     }
 }

@@ -7,11 +7,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /** Every Background Task, in the order they're shown (DESIGN §3.31). Registering one registers its unlock too. */
 public final class BackgroundTasks {
-    private static final Map<ResourceLocation, BackgroundTask> TASKS = new LinkedHashMap<>();
+    private static final Map<Identifier, BackgroundTask> TASKS = new LinkedHashMap<>();
 
     private BackgroundTasks() {}
 
@@ -22,7 +22,7 @@ public final class BackgroundTasks {
     }
 
     /** For tests, whose tasks mustn't outlive them: the task and its unlock entry go. */
-    static void unregister(ResourceLocation id) {
+    static void unregister(Identifier id) {
         if (TASKS.remove(id) != null) Unlocks.unregister(id);
     }
 
@@ -30,7 +30,7 @@ public final class BackgroundTasks {
         return Collections.unmodifiableList(new ArrayList<>(TASKS.values()));
     }
 
-    public static Optional<BackgroundTask> find(ResourceLocation id) {
+    public static Optional<BackgroundTask> find(Identifier id) {
         return Optional.ofNullable(TASKS.get(id));
     }
 }

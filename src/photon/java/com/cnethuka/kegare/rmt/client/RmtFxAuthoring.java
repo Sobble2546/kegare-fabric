@@ -14,7 +14,7 @@ import com.lowdragmc.photon.client.gameobject.emitter.particle.ParticleRendererS
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.joml.Vector3f;
 
 /**
@@ -31,8 +31,8 @@ public final class RmtFxAuthoring {
 
     private RmtFxAuthoring() {}
 
-    public static Map<ResourceLocation, Supplier<FX>> effects() {
-        Map<ResourceLocation, Supplier<FX>> out = new LinkedHashMap<>();
+    public static Map<Identifier, Supplier<FX>> effects() {
+        Map<Identifier, Supplier<FX>> out = new LinkedHashMap<>();
         out.put(RmtIds.FX_CHANNEL_AURA, () -> channelAura(false));
         out.put(RmtIds.FX_CHANNEL_AURA_SELF, () -> channelAura(true));
         out.put(RmtIds.FX_HEAL_PULSE, () -> healPulse(false));

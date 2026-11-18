@@ -11,7 +11,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
@@ -28,7 +28,7 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class PathClient {
     /** Two patches of the same ice, so the band doesn't repeat. */
-    static final ResourceLocation ICE = Kegare.id("path_ice"), ICE_B = Kegare.id("path_ice_b");
+    static final Identifier ICE = Kegare.id("path_ice"), ICE_B = Kegare.id("path_ice_b");
     /** A new patch once the feet are this far from the last one (the server merges its points closer than 0.4). */
     static final double SPACING = 0.45;
     /** Ice only on ground at most this far under the feet, as the server's trail. */

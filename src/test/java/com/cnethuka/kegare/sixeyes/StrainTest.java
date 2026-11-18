@@ -69,7 +69,7 @@ class StrainTest {
                 assertEquals(Eyewear.SUNGLASSES, Eyewear.of(plain));
                 assertFalse(SixEyes.isBearer(plain), "and it proves nothing");
                 assertTrue(new ItemStack(KegareItems.BLINDFOLD.get()).is(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM,
-                        net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("curios", Eyewear.SLOT))), "Curios' slot takes it");
+                        net.minecraft.resources.Identifier.fromNamespaceAndPath("curios", Eyewear.SLOT))), "Curios' slot takes it");
             } finally {
                 TestServer.removePlayers(server);
             }

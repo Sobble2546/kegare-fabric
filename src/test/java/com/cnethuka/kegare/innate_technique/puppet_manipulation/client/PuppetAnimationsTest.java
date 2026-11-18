@@ -17,7 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
  * plays, and {@link PuppetPoses} samples the spin the same way on the puppet.
  */
 class PuppetAnimationsTest {
-    private static final List<ResourceLocation> PLAYED = List.of(PuppetIds.ANIM_CREATE_CHARGE, PuppetIds.ANIM_CREATE_RELEASE,
+    private static final List<Identifier> PLAYED = List.of(PuppetIds.ANIM_CREATE_CHARGE, PuppetIds.ANIM_CREATE_RELEASE,
             PuppetIds.ANIM_POSSESS_CAST, PuppetIds.ANIM_POSSESS_RETURN, PuppetIds.ANIM_DIRECTIVE_CAST, PuppetIds.ANIM_FOCUS_POINT,
             PuppetIds.ANIM_CURIO_BURST_CAST, PuppetIds.ANIM_CHAIN_BURST_CAST, PuppetIds.ANIM_UNDERSTUDY_CAST,
             PuppetIds.ANIM_STAND_IN_CAST, PuppetIds.ANIM_PUPPET_IDLE_SPIN);
@@ -41,7 +41,7 @@ class PuppetAnimationsTest {
     @Test
     void palLoadsEveryAnimationTheCodePlays() throws IOException {
         Map<String, Animation> loaded = UniversalAnimLoader.loadAnimations(file());
-        for (ResourceLocation id : PLAYED) {
+        for (Identifier id : PLAYED) {
             Animation animation = loaded.get(id.getPath());
             assertNotNull(animation, id + " is in the file");
             assertTrue(animation.length() > 0f, id + " has a length");

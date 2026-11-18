@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.function.Function;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * The aura's render type: see-through, unlit (it's Malice, it glows), both faces, no depth written, and the texture filtered smoothly
@@ -16,7 +16,7 @@ final class AuraRenderTypes extends RenderType {
         super(name, format, mode, size, crumbling, sort, setup, clear);
     }
 
-    static final Function<ResourceLocation, RenderType> SMOOTH = Util.memoize(texture -> create("kegare_aura", DefaultVertexFormat.NEW_ENTITY,
+    static final Function<Identifier, RenderType> SMOOTH = Util.memoize(texture -> create("kegare_aura", DefaultVertexFormat.NEW_ENTITY,
             VertexFormat.Mode.QUADS, 1536, false, true, CompositeState.builder()
                     .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
                     .setTextureState(new TextureStateShard(texture, true, false))

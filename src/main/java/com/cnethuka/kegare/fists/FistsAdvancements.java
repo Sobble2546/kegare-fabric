@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -32,11 +32,11 @@ import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
  * </ul>
  */
 public final class FistsAdvancements {
-    public static final ResourceLocation LOCKED_IN = Kegare.id("locked_in");
-    public static final ResourceLocation ONE_TWENTY_PERCENT = Kegare.id("120_percent");
-    public static final ResourceLocation NOTHING_TO_CELEBRATE = Kegare.id("nothing_to_celebrate");
-    public static final ResourceLocation BLESSED_BY_THE_SPARKS = Kegare.id("blessed_by_the_sparks");
-    public static final ResourceLocation LIGHTS_OUT = Kegare.id("lights_out");
+    public static final Identifier LOCKED_IN = Kegare.id("locked_in");
+    public static final Identifier ONE_TWENTY_PERCENT = Kegare.id("120_percent");
+    public static final Identifier NOTHING_TO_CELEBRATE = Kegare.id("nothing_to_celebrate");
+    public static final Identifier BLESSED_BY_THE_SPARKS = Kegare.id("blessed_by_the_sparks");
+    public static final Identifier LIGHTS_OUT = Kegare.id("lights_out");
     public static final int LOCKED_IN_STRIKES = 3;
     public static final int CHAIN_120 = 2, CHAIN_NOTHING_TO_CELEBRATE = 4, CHAIN_BLESSED = 7;
 
@@ -58,7 +58,7 @@ public final class FistsAdvancements {
         FightTracker.addListener(report -> STREAK.remove(report.player().getUUID())); // one fight
     }
 
-    static void award(ServerPlayer player, ResourceLocation id) {
+    static void award(ServerPlayer player, Identifier id) {
         KegareAdvancements.award(player, id);
     }
 

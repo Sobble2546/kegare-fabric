@@ -25,7 +25,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -46,7 +46,7 @@ import org.joml.Vector3f;
  * </ul>
  */
 public final class SwapFx {
-    static final ResourceLocation WHITE = ResourceLocation.withDefaultNamespace("textures/misc/white.png");
+    static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
     /** Swap's teal drawn as light: its hue at full brightness. */
     static final int GLOW = 0x2EF2DA;
     static final int PALE = 0xCCFBF1;
@@ -64,7 +64,7 @@ public final class SwapFx {
     private static final int POSE_KEPT = 40;
 
     /** A player as last drawn: the model's parts, which are shown, the skin and the body's facing. */
-    record Pose(PartPose[] parts, boolean[] shown, boolean slim, ResourceLocation skin, float bodyYaw, long tick) {}
+    record Pose(PartPose[] parts, boolean[] shown, boolean slim, Identifier skin, float bodyYaw, long tick) {}
 
     private record Afterimage(Pose pose, Vec3 feet, long born) {}
 

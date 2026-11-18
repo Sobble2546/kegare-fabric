@@ -42,7 +42,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -68,8 +68,8 @@ public final class RimeFxAuthoring {
     private RimeFxAuthoring() {}
 
     /** Every Rime effect, by ID. */
-    public static Map<ResourceLocation, Supplier<FX>> effects() {
-        Map<ResourceLocation, Supplier<FX>> out = new LinkedHashMap<>();
+    public static Map<Identifier, Supplier<FX>> effects() {
+        Map<Identifier, Supplier<FX>> out = new LinkedHashMap<>();
         out.put(RimeIds.FX_FROST_SHARD_TRAIL, RimeFxAuthoring::frostShardTrail);
         out.put(RimeIds.FX_FROST_SHARD_IMPACT, RimeFxAuthoring::frostShardImpact);
         out.put(RimeIds.FX_GLACIAL_LANCE_CHARGE, RimeFxAuthoring::glacialLanceCharge);

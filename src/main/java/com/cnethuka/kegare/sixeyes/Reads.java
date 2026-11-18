@@ -25,7 +25,7 @@ import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -164,11 +164,11 @@ public final class Reads {
         if (body instanceof ServerPlayer player && MaliceService.isSevered(player)) return new ReadsPayload.Focus(body.getId(), Optional.empty());
         Optional<ReadsPayload.Cast> cast = Optional.empty();
         List<ReadsPayload.Cooldown> cooldowns = new ArrayList<>();
-        List<ResourceLocation> toggles = new ArrayList<>();
+        List<Identifier> toggles = new ArrayList<>();
         if (body instanceof ServerPlayer other) {
             cast = CastManager.currentCast(other).map(active -> cast(other, active));
             long now = other.level().getGameTime();
-            for (Map.Entry<ResourceLocation, InnateTechniqueData.Cooldown> e : InnateTechniqueService.get(other).cooldowns().entrySet()) {
+            for (Map.Entry<Identifier, InnateTechniqueData.Cooldown> e : InnateTechniqueService.get(other).cooldowns().entrySet()) {
                 long left = e.getValue().endTick() - now;
                 if (left > 0) cooldowns.add(new ReadsPayload.Cooldown(e.getKey(), left / 20f));
             }
@@ -196,7 +196,7 @@ public final class Reads {
     static List<ReadsPayload.Effect> effects(LivingEntity body) {
         List<ReadsPayload.Effect> out = new ArrayList<>();
         for (MobEffectInstance effect : body.getActiveEffects()) {
-            ResourceLocation id = BuiltInRegistries.MOB_EFFECT.getKey(effect.getEffect().value());
+            Identifier id = BuiltInRegistries.MOB_EFFECT.getKey(effect.getEffect().value());
             if (id != null) out.add(new ReadsPayload.Effect(id, effect.getAmplifier(), effect.isInfiniteDuration() ? -1 : effect.getDuration()));
         }
         out.sort(Comparator.comparing(e -> e.effect().toString()));

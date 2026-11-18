@@ -41,12 +41,12 @@ final class TestHost implements KegareDatabase.Host {
     }
 
     @Override
-    public void claimRefused(net.minecraft.resources.ResourceLocation trait, UUID player) {
+    public void claimRefused(net.minecraft.resources.Identifier trait, UUID player) {
         events.add("refused " + trait + " " + player);
     }
 
     @Override
-    public void networkEvent(String kind, net.minecraft.resources.ResourceLocation trait, UUID player) {
+    public void networkEvent(String kind, net.minecraft.resources.Identifier trait, UUID player) {
         events.add(kind + " " + trait + " " + player);
     }
 

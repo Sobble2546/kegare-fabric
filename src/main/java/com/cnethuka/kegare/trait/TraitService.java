@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.GameProfileCache;
@@ -40,7 +40,7 @@ public final class TraitService {
      */
     public static AddResult add(ServerPlayer player, Trait trait, Trait.AddReason reason) {
         TraitData data = get(player);
-        ResourceLocation id = trait.id();
+        Identifier id = trait.id();
         if (data.has(id)) return AddResult.ALREADY_HAS;
         if (!TraitRules.canHold(trait.requiresMalice(), MaliceService.isSevered(player))) return AddResult.REQUIRES_MALICE;
         if (trait.isUnique()) {
@@ -64,10 +64,10 @@ public final class TraitService {
 
     /** Removes every trait (rebirth). Unique traits are released for others to roll. */
     public static void removeAll(ServerPlayer player, Trait.RemoveReason reason) {
-        for (ResourceLocation id : List.copyOf(get(player).view())) removeId(player, id, reason);
+        for (Identifier id : List.copyOf(get(player).view())) removeId(player, id, reason);
     }
 
-    private static boolean removeId(ServerPlayer player, ResourceLocation id, Trait.RemoveReason reason) {
+    private static boolean removeId(ServerPlayer player, Identifier id, Trait.RemoveReason reason) {
         if (!get(player).remove(id)) return false;
         UniqueTraitSavedData.get(player.server).release(id, player.getUUID());
         Trait trait = KegareRegistries.TRAIT.get(id);
@@ -98,7 +98,7 @@ public final class TraitService {
             if (add(player, trait, Trait.AddReason.BIRTH) == AddResult.ADDED) granted.add(trait);
         }
         if (preRolled) {
-            for (ResourceLocation id : saved.heldBy(player.getUUID())) {
+            for (Identifier id : saved.heldBy(player.getUUID())) {
                 if (!get(player).has(id)) saved.release(id, player.getUUID()); // won it, then rolled Severed
             }
             database.birthFinished(player.getUUID());
@@ -117,7 +117,7 @@ public final class TraitService {
         UUID uuid = player.getUUID();
         String name = player.getGameProfile().getName();
 
-        for (ResourceLocation id : saved.takeRevocations(uuid)) {
+        for (Identifier id : saved.takeRevocations(uuid)) {
             if (data.has(id)) {
                 Kegare.LOGGER.info("Removing revoked trait {} from {}", id, name);
                 removeId(player, id, Trait.RemoveReason.REVOKED);
@@ -126,7 +126,7 @@ public final class TraitService {
             }
         }
 
-        for (ResourceLocation id : List.copyOf(data.view())) {
+        for (Identifier id : List.copyOf(data.view())) {
             Trait trait = KegareRegistries.TRAIT.get(id);
             if (trait == null) {
                 Kegare.LOGGER.warn("Dropping unknown trait {} from {}", id, name);
@@ -138,7 +138,7 @@ public final class TraitService {
                 removeId(player, id, Trait.RemoveReason.CONFLICT);
             }
         }
-        for (ResourceLocation id : saved.heldBy(uuid)) {
+        for (Identifier id : saved.heldBy(uuid)) {
             if (data.has(id)) continue;
             // On a network the record is the truth: they inherited it while on another server. If unborn, it's their first
             // join's pre-roll and birth will grant it.

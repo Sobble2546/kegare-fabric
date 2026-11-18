@@ -28,7 +28,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /** {@code /kegare trait list|get|give|remove|release|status}. */
@@ -72,7 +72,7 @@ final class TraitCommands {
 
     private static int get(CommandSourceStack source, ServerPlayer player) {
         List<Component> names = new ArrayList<>();
-        for (ResourceLocation id : TraitService.get(player).view()) {
+        for (Identifier id : TraitService.get(player).view()) {
             Trait trait = KegareRegistries.TRAIT.get(id);
             names.add(trait != null ? rated(trait) : Component.literal(shortName(id)));
         }

@@ -11,7 +11,7 @@ import java.util.Optional;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * The local player's loadout as last synced: one entry per regular slot, {@code null} for an empty slot. The combat
@@ -25,7 +25,7 @@ public final class ClientLoadout {
         InnateTechnique technique = TechniqueMode.current();
         if (data == null || technique == null) return List.of();
         List<Ability> out = new ArrayList<>(data.loadout().size());
-        for (Optional<ResourceLocation> slot : data.loadout()) out.add(slot.flatMap(id -> AbilityLookup.find(technique, id)).orElse(null));
+        for (Optional<Identifier> slot : data.loadout()) out.add(slot.flatMap(id -> AbilityLookup.find(technique, id)).orElse(null));
         return Collections.unmodifiableList(out);
     }
 

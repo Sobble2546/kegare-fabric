@@ -7,7 +7,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -19,7 +19,7 @@ final class SpecialFixtures {
     static final double TOGGLE_COST = 20, STEP_COST = 10, STEP_SPECIAL_COST = 32, LIFT_COST = 20, LIFT_SPECIAL_COST = 48;
     static final int STEP_COOLDOWN = 60, LIFT_COOLDOWN = 80, LIFT_SPECIAL_CHARGE = 20;
 
-    private static ResourceLocation id(String path) {
+    private static Identifier id(String path) {
         return Kegare.id("fixture_" + path);
     }
 
@@ -72,7 +72,7 @@ final class SpecialFixtures {
         try {
             Field field = SharedAbilities.class.getDeclaredField("ALL");
             field.setAccessible(true);
-            Map<ResourceLocation, Ability> all = (Map<ResourceLocation, Ability>) field.get(null);
+            Map<Identifier, Ability> all = (Map<Identifier, Ability>) field.get(null);
             for (Ability ability : ALL) all.remove(ability.id());
         } catch (ReflectiveOperationException e) {
             throw new AssertionError(e);

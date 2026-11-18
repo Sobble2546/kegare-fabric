@@ -2,7 +2,7 @@ package com.cnethuka.kegare.backgroundtask;
 
 import com.cnethuka.kegare.progression.UnlockRequirements;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -14,13 +14,13 @@ import net.minecraft.server.level.ServerPlayer;
  * registers itself ({@link BackgroundTasks#register}); the system needs no change.
  */
 public abstract class BackgroundTask {
-    private final ResourceLocation id;
+    private final Identifier id;
 
-    protected BackgroundTask(ResourceLocation id) {
+    protected BackgroundTask(Identifier id) {
         this.id = id;
     }
 
-    public final ResourceLocation id() {
+    public final Identifier id() {
         return id;
     }
 
@@ -62,7 +62,7 @@ public abstract class BackgroundTask {
         return Component.translatable(translationKey() + ".unlock");
     }
 
-    public final ResourceLocation icon() {
-        return ResourceLocation.fromNamespaceAndPath(id.getNamespace(), "background/" + id.getPath());
+    public final Identifier icon() {
+        return Identifier.fromNamespaceAndPath(id.getNamespace(), "background/" + id.getPath());
     }
 }

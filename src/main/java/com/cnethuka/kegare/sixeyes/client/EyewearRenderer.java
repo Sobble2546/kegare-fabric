@@ -15,7 +15,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import top.theillusivec4.curios.api.SlotContext;
@@ -30,8 +30,8 @@ public final class EyewearRenderer implements ICurioRenderer {
     private final String piece;
     private final RenderType renderType;
 
-    EyewearRenderer(String name, Function<ResourceLocation, RenderType> renderType) {
-        ResourceLocation texture = Kegare.id("textures/entity/" + name + ".png");
+    EyewearRenderer(String name, Function<Identifier, RenderType> renderType) {
+        Identifier texture = Kegare.id("textures/entity/" + name + ".png");
         this.model = new LanceMesh.Model(Kegare.id("models/fx/" + name + ".obj"), texture, texture);
         this.piece = name;
         this.renderType = renderType.apply(texture);

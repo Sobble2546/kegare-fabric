@@ -8,7 +8,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
@@ -16,16 +16,16 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  * anyone else), what's in each, on or off and paused, every task with whether it's unlocked and its drain, and the last refusal, if any.
  */
 public record BackgroundSyncPayload(int slotCount, List<SlotView> slots, List<TaskView> tasks, String refusal) implements CustomPacketPayload {
-    public record SlotView(Optional<ResourceLocation> task, boolean on, boolean paused) {
+    public record SlotView(Optional<Identifier> task, boolean on, boolean paused) {
         static final StreamCodec<FriendlyByteBuf, SlotView> CODEC = StreamCodec.composite(
-                ResourceLocation.STREAM_CODEC.apply(ByteBufCodecs::optional), SlotView::task,
+                Identifier.STREAM_CODEC.apply(ByteBufCodecs::optional), SlotView::task,
                 ByteBufCodecs.BOOL, SlotView::on,
                 ByteBufCodecs.BOOL, SlotView::paused, SlotView::new);
     }
 
-    public record TaskView(ResourceLocation id, boolean unlocked, double drain) {
+    public record TaskView(Identifier id, boolean unlocked, double drain) {
         static final StreamCodec<FriendlyByteBuf, TaskView> CODEC = StreamCodec.composite(
-                ResourceLocation.STREAM_CODEC, TaskView::id,
+                Identifier.STREAM_CODEC, TaskView::id,
                 ByteBufCodecs.BOOL, TaskView::unlocked,
                 ByteBufCodecs.DOUBLE, TaskView::drain, TaskView::new);
     }

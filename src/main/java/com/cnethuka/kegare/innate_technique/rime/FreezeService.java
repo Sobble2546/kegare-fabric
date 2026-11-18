@@ -7,7 +7,7 @@ import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import com.cnethuka.kegare.network.PlayerSync;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -25,7 +25,7 @@ import net.minecraft.world.level.Level;
  * short while after breaking free.
  */
 public final class FreezeService {
-    private static final ResourceLocation LOCK = Kegare.id("frozen");
+    private static final Identifier LOCK = Kegare.id("frozen");
 
     private FreezeService() {}
 

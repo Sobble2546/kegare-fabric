@@ -25,7 +25,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -35,7 +35,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.neoforged.bus.api.IEventBus;
+import com.cnethuka.kegare.platform.bus.IEventBus;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
@@ -52,7 +52,7 @@ import org.joml.Vector3f;
  * Reduced: fewer threads. Vanilla: small lavender specks in the same places ({@link #SPECK}), never the explosion's puffs.
  */
 public final class PuppetFx {
-    static final ResourceLocation WHITE = ResourceLocation.withDefaultNamespace("textures/misc/white.png");
+    static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
     /** Lavender (#C4B5FD), its white highlight, and a lighter and deeper step (the braid's ramp for Strings). */
     static final int LAVENDER = 0xC4B5FD, PALE = 0xF5F3FF, LIGHT = 0xDDD6FE, DEEP = 0xA78BFA;
     /** The Vanilla-quality stand-in: a small lavender speck (small dust also dies fast, as its life scales with its size). */
@@ -118,7 +118,7 @@ public final class PuppetFx {
     private PuppetFx() {}
 
     static void init(IEventBus modBus) {
-        for (ResourceLocation effect : List.of(PuppetIds.FX_PUPPET_FORM, PuppetIds.FX_PUPPET_DISSOLVE, PuppetIds.FX_POSSESS_LINK,
+        for (Identifier effect : List.of(PuppetIds.FX_PUPPET_FORM, PuppetIds.FX_PUPPET_DISSOLVE, PuppetIds.FX_POSSESS_LINK,
                 PuppetIds.FX_DIRECTIVE_PULSE, PuppetIds.FX_FOCUS_MARK, PuppetIds.FX_CURIO_BURST_EXPLOSION_TAP,
                 PuppetIds.FX_CURIO_BURST_EXPLOSION_HALF, PuppetIds.FX_CURIO_BURST_EXPLOSION_FULL, PuppetIds.FX_STAND_IN_GROW,
                 PuppetIds.FX_UNDERSTUDY_SWAP, PuppetIds.FX_STRINGS_ATTACH, PuppetIds.FX_STRINGS_SNAP, PuppetIds.FX_STRINGS_TENSION)) {
@@ -166,7 +166,7 @@ public final class PuppetFx {
 
     // ---------------------------------------------------------------- what the server says happened
 
-    private static void onEntity(Entity entity, ResourceLocation effect) {
+    private static void onEntity(Entity entity, Identifier effect) {
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null || entity.level() != level) return;
         long now = level.getGameTime();

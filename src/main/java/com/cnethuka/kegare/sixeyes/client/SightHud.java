@@ -8,10 +8,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.IEventBus;
+import com.cnethuka.kegare.platform.bus.IEventBus;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
@@ -20,8 +20,8 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
  * (never over the crosshair itself), and the optional minimap in the top-right corner (a client setting, off by default).
  */
 public final class SightHud {
-    static final ResourceLocation LAYER = Kegare.id("six_eyes_hud");
-    static final ResourceLocation ARROW = Kegare.id("six_eyes/arrow");
+    static final Identifier LAYER = Kegare.id("six_eyes_hud");
+    static final Identifier ARROW = Kegare.id("six_eyes/arrow");
     /** Pin arrows sit this far from the crosshair. */
     static final int ARROW_RADIUS = 38;
     static final int MINIMAP_RADIUS = 46;

@@ -14,7 +14,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * The Malice a puppet was charged with: a slowly drifting shell of threads just outside its body (additive, like a
@@ -24,7 +24,7 @@ import net.minecraft.resources.ResourceLocation;
 public class PuppetGlowLayer extends RenderLayer<PuppetEntity, PuppetModel> {
     public static final ModelLayerLocation WIDE = new ModelLayerLocation(Kegare.id("puppet_glow"), "main");
     public static final ModelLayerLocation SLIM = new ModelLayerLocation(Kegare.id("puppet_glow_slim"), "main");
-    static final ResourceLocation TEXTURE = Kegare.id("textures/entity/puppet_glow.png");
+    static final Identifier TEXTURE = Kegare.id("textures/entity/puppet_glow.png");
     /** Glow strength per tier (tap, half, full). */
     private static final float[] INTENSITY = {0.22f, 0.45f, 0.85f};
 

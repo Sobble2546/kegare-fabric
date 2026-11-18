@@ -7,7 +7,7 @@ import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import com.cnethuka.kegare.innate_technique.puppet_manipulation.Possession;
 import java.util.function.Supplier;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.bus.api.IEventBus;
+import com.cnethuka.kegare.platform.bus.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.registries.DeferredRegister;

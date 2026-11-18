@@ -226,7 +226,7 @@ final class DebugCommands {
     }
 
     private static int rmtOthers(CommandSourceStack source, ServerPlayer player, boolean unlock) {
-        net.minecraft.resources.ResourceLocation id = com.cnethuka.kegare.rmt.RmtIds.ON_ANOTHER_UNLOCK;
+        net.minecraft.resources.Identifier id = com.cnethuka.kegare.rmt.RmtIds.ON_ANOTHER_UNLOCK;
         boolean changed = unlock ? com.cnethuka.kegare.progression.Unlocks.grant(player, id) : com.cnethuka.kegare.progression.Unlocks.revoke(player, id);
         if (!changed) return fail(source, unlock ? "commands.kegare.debug.rmt.others.already" : "commands.kegare.debug.rmt.others.not_known", player.getDisplayName());
         say(source, unlock ? "commands.kegare.debug.rmt.others.unlocked" : "commands.kegare.debug.rmt.others.locked", player.getDisplayName());
@@ -305,7 +305,7 @@ final class DebugCommands {
         return blocks;
     }
 
-    private static int screen(CommandSourceStack source, ServerPlayer player, net.minecraft.resources.ResourceLocation effect, double seconds) {
+    private static int screen(CommandSourceStack source, ServerPlayer player, net.minecraft.resources.Identifier effect, double seconds) {
         int ticks = (int) Math.round(seconds * 20);
         com.cnethuka.kegare.impact.ScreenEffects.play(player, effect, ticks);
         if (ticks <= 0) say(source, "commands.kegare.debug.screen.stopped", effect.toString(), player.getDisplayName());

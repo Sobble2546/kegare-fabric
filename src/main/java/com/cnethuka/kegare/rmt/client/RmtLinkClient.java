@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -31,7 +31,7 @@ import org.joml.Vector3f;
  * White and green, never Malice violet.
  */
 final class RmtLinkClient {
-    private static final ResourceLocation WHITE = ResourceLocation.withDefaultNamespace("textures/misc/white.png");
+    private static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
     /** A link not heard of for this long (its healer resends every second) goes out. */
     private static final int LINK_TIMEOUT = 30;
     private static final int GREEN = 0x5FE38A, CORE = 0xF2FFF6, GLOW = 0x8CF5A9;

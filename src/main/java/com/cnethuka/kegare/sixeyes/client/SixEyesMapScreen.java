@@ -11,7 +11,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.Vec3;
@@ -24,11 +24,11 @@ import net.minecraft.world.phys.Vec3;
  * (the eyes identify people by their energy); click to pin it (a private HUD arrow points to it).
  */
 public final class SixEyesMapScreen extends Screen {
-    static final ResourceLocation DOT = Kegare.id("six_eyes/dot");
-    static final ResourceLocation GLOW = Kegare.id("six_eyes/glow");
-    static final ResourceLocation VOID = Kegare.id("six_eyes/void");
-    static final ResourceLocation PIN = Kegare.id("six_eyes/pin");
-    static final ResourceLocation SELF = Kegare.id("six_eyes/self");
+    static final Identifier DOT = Kegare.id("six_eyes/dot");
+    static final Identifier GLOW = Kegare.id("six_eyes/glow");
+    static final Identifier VOID = Kegare.id("six_eyes/void");
+    static final Identifier PIN = Kegare.id("six_eyes/pin");
+    static final Identifier SELF = Kegare.id("six_eyes/self");
     /** Blocks a pixel: from close up (16 pixels a block) out to the whole dimension. */
     static final double MIN_SCALE = 1 / 16.0;
     private static double scale = 0.25; // 4 pixels a block to start: a fight's players apart, not on top of one another

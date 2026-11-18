@@ -29,13 +29,13 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.effect.MobEffect;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.IEventBus;
+import com.cnethuka.kegare.platform.bus.IEventBus;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
@@ -52,7 +52,7 @@ import org.joml.Vector4f;
  * distance; the panel is boxed, so it reads by day, at night and against the sky, and never sits over the crosshair.
  */
 public final class ReadsClient {
-    static final ResourceLocation LAYER = Kegare.id("six_eyes_reads");
+    static final Identifier LAYER = Kegare.id("six_eyes_reads");
     /** Nothing inside this many pixels of the crosshair: tags move up out of the way, the panel goes to one side. */
     static final int CLEAR_OF_CROSSHAIR = 22;
     /** Fully clear this close, faded to a trace this far. */
@@ -312,7 +312,7 @@ public final class ReadsClient {
         });
         if (!body.toggles().isEmpty()) {
             List<Component> names = new ArrayList<>();
-            for (ResourceLocation id : body.toggles()) names.add(name(technique, id));
+            for (Identifier id : body.toggles()) names.add(name(technique, id));
             out.add(Component.translatable("gui.kegare.six_eyes.read.toggles", join(names)));
         }
         if (!body.cooldowns().isEmpty()) {
@@ -369,7 +369,7 @@ public final class ReadsClient {
     }
 
     @Nullable
-    private static Holder<MobEffect> effect(ResourceLocation id) {
+    private static Holder<MobEffect> effect(Identifier id) {
         return BuiltInRegistries.MOB_EFFECT.getHolder(id).map(h -> (Holder<MobEffect>) h).orElse(null);
     }
 
@@ -394,7 +394,7 @@ public final class ReadsClient {
         return parts.isEmpty() ? null : join(parts, " · ");
     }
 
-    private static Component name(@Nullable InnateTechnique technique, ResourceLocation id) {
+    private static Component name(@Nullable InnateTechnique technique, Identifier id) {
         Optional<Ability> ability = AbilityLookup.find(technique, id);
         if (ability.isEmpty() && technique != null) {
             for (Ability a : technique.abilities()) {

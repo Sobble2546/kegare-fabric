@@ -6,7 +6,7 @@ import com.cnethuka.kegare.malice.MaliceService;
 import com.cnethuka.kegare.progression.Grade;
 import com.cnethuka.kegare.progression.UnlockRequirements;
 import com.cnethuka.kegare.reinforcement.Reinforcement;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -16,7 +16,7 @@ import net.minecraft.server.level.ServerPlayer;
  * ability's, much calmer and fainter: a thin flow with a light outline, still shown to everyone.
  */
 public final class BackgroundReinforcement extends BackgroundTask {
-    public static final ResourceLocation ID = Kegare.id("background_reinforcement");
+    public static final Identifier ID = Kegare.id("background_reinforcement");
     public static BackgroundReinforcement TASK;
 
     private BackgroundReinforcement() {

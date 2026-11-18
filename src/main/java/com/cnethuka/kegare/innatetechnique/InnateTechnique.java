@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
@@ -33,11 +33,11 @@ public class InnateTechnique {
     private final boolean ultimateLocked;
     private final int maliceColor;
     @Nullable
-    private final ResourceLocation signatureAnimation;
+    private final Identifier signatureAnimation;
     private final boolean defaultUnlockLevels;
-    private final Map<ResourceLocation, Integer> unlockLevelOverrides;
+    private final Map<Identifier, Integer> unlockLevelOverrides;
     @Nullable
-    private Map<ResourceLocation, Integer> unlockLevels;
+    private Map<Identifier, Integer> unlockLevels;
 
     protected InnateTechnique(Builder builder) {
         if (builder.abilities.isEmpty()) throw new IllegalArgumentException("An innate technique needs at least one ability");
@@ -83,7 +83,7 @@ public class InnateTechnique {
     }
 
     /** The player animation the roll reveal shows on the player model, if this technique has one. Client display only. */
-    public final Optional<ResourceLocation> signatureAnimation() {
+    public final Optional<Identifier> signatureAnimation() {
         return Optional.ofNullable(signatureAnimation);
     }
 
@@ -101,7 +101,7 @@ public class InnateTechnique {
     }
 
     /** Finds an ability (slots, ultimate or any of their specials) by ID. */
-    public final Optional<Ability> findAbility(ResourceLocation abilityId) {
+    public final Optional<Ability> findAbility(Identifier abilityId) {
         for (Ability a : everyAbility()) if (a.id().equals(abilityId)) return Optional.of(a);
         return Optional.empty();
     }
@@ -131,7 +131,7 @@ public class InnateTechnique {
      */
     public final int unlockLevel(Ability ability) {
         if (unlockLevels == null) {
-            Map<ResourceLocation, Integer> levels = new HashMap<>();
+            Map<Identifier, Integer> levels = new HashMap<>();
             for (int i = 0; i < abilities.size(); i++) {
                 levels.put(abilities.get(i).id(), UnlockTable.ability(i));
                 int index = i;
@@ -152,7 +152,7 @@ public class InnateTechnique {
         return tabIcon;
     }
 
-    public final ResourceLocation id() {
+    public final Identifier id() {
         return KegareRegistries.INNATE_TECHNIQUE.getKey(this);
     }
 
@@ -189,9 +189,9 @@ public class InnateTechnique {
         private boolean ultimateLocked;
         private int maliceColor = DEFAULT_MALICE_COLOR;
         @Nullable
-        private ResourceLocation signatureAnimation;
+        private Identifier signatureAnimation;
         private boolean defaultUnlockLevels;
-        private final Map<ResourceLocation, Integer> unlockLevelOverrides = new HashMap<>();
+        private final Map<Identifier, Integer> unlockLevelOverrides = new HashMap<>();
 
         private Builder(InnateTechniqueRarity rarity) {
             this.rarity = rarity;
@@ -226,7 +226,7 @@ public class InnateTechnique {
         }
 
         /** The player animation (an ID in {@code player_animations/}) the roll reveal plays on the player model. Default: none, a still model. */
-        public Builder signatureAnimation(ResourceLocation animation) {
+        public Builder signatureAnimation(Identifier animation) {
             this.signatureAnimation = animation;
             return this;
         }

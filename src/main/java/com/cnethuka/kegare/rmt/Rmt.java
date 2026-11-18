@@ -1,7 +1,7 @@
 package com.cnethuka.kegare.rmt;
 
 import com.cnethuka.kegare.innatetechnique.visual.VisualHooks;
-import net.neoforged.bus.api.IEventBus;
+import com.cnethuka.kegare.platform.bus.IEventBus;
 import com.cnethuka.kegare.loadout.SharedAbilities;
 
 /**

@@ -6,7 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 /**
@@ -14,9 +14,9 @@ import net.minecraft.util.Mth;
  * cursed iron normally, gold-lit when hovered or focused, dull when inactive.
  */
 public final class InkButton extends Button {
-    private static final ResourceLocation NORMAL = Kegare.id("button");
-    private static final ResourceLocation HIGHLIGHTED = Kegare.id("button_highlighted");
-    private static final ResourceLocation DISABLED = Kegare.id("button_disabled");
+    private static final Identifier NORMAL = Kegare.id("button");
+    private static final Identifier HIGHLIGHTED = Kegare.id("button_highlighted");
+    private static final Identifier DISABLED = Kegare.id("button_disabled");
 
     private static final int TEXT = 0xE6DDF0;
     private static final int TEXT_HIGHLIGHTED = 0xFFE9A8;

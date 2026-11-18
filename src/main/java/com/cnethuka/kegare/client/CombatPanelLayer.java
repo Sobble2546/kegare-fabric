@@ -22,7 +22,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 /**
@@ -43,18 +43,18 @@ import net.minecraft.util.Mth;
  * Display only: reads {@link ClientData}.
  */
 public final class CombatPanelLayer implements LayeredDraw.Layer {
-    public static final ResourceLocation ID = Kegare.id("combat_panel");
+    public static final Identifier ID = Kegare.id("combat_panel");
 
     public static final int W = 250;
     public static final int H = 50;
-    private static final ResourceLocation PANEL = Kegare.id("textures/gui/combat/panel.png");
-    private static final ResourceLocation ACCENT = Kegare.id("textures/gui/combat/panel_accent.png");
-    private static final ResourceLocation CELLS = Kegare.id("textures/gui/combat/meter_cells.png");
-    private static final ResourceLocation SLOT = Kegare.id("textures/gui/combat/slot.png");
-    private static final ResourceLocation SLOT_SELECTED = Kegare.id("textures/gui/combat/slot_selected.png");
-    private static final ResourceLocation SLOT_ULTIMATE = Kegare.id("textures/gui/combat/slot_ultimate.png");
-    private static final ResourceLocation ENV_COLD = Kegare.id("env_cold_mini");
-    private static final ResourceLocation ENV_HOT = Kegare.id("env_hot_mini");
+    private static final Identifier PANEL = Kegare.id("textures/gui/combat/panel.png");
+    private static final Identifier ACCENT = Kegare.id("textures/gui/combat/panel_accent.png");
+    private static final Identifier CELLS = Kegare.id("textures/gui/combat/meter_cells.png");
+    private static final Identifier SLOT = Kegare.id("textures/gui/combat/slot.png");
+    private static final Identifier SLOT_SELECTED = Kegare.id("textures/gui/combat/slot_selected.png");
+    private static final Identifier SLOT_ULTIMATE = Kegare.id("textures/gui/combat/slot_ultimate.png");
+    private static final Identifier ENV_COLD = Kegare.id("env_cold_mini");
+    private static final Identifier ENV_HOT = Kegare.id("env_hot_mini");
 
     private static final int CELL_W = 11;
     private static final int CELL_H = 8;
@@ -77,8 +77,8 @@ public final class CombatPanelLayer implements LayeredDraw.Layer {
     private static final long GHOST_HOLD_MS = 450;
     private static final float GHOST_DRAIN_PER_SECOND = 0.5f;
 
-    private static final Map<ResourceLocation, Long> READY_AT = new HashMap<>();
-    private static final Map<ResourceLocation, Boolean> WAS_COOLING = new HashMap<>();
+    private static final Map<Identifier, Long> READY_AT = new HashMap<>();
+    private static final Map<Identifier, Boolean> WAS_COOLING = new HashMap<>();
     private static float ghost = -1f;
     private static float lastFraction = -1f;
     private static long ghostHoldUntil;
@@ -271,7 +271,7 @@ public final class CombatPanelLayer implements LayeredDraw.Layer {
         int gap = SLOT_GAP, ultGap = ULT_GAP;
         int width = n * SLOT_SIZE + Math.max(0, n - 1) * gap + (hasUlt ? ultGap + ULT_SIZE : 0);
         int sx = x0 + (W - width) / 2;
-        ResourceLocation castingId = data.casting().map(SyncPayload.CastingEntry::ability).orElse(null);
+        Identifier castingId = data.casting().map(SyncPayload.CastingEntry::ability).orElse(null);
         for (int i = 0; i < n; i++) {
             int x = sx + i * (SLOT_SIZE + gap);
             int y = y0 + SLOT_Y;
@@ -299,7 +299,7 @@ public final class CombatPanelLayer implements LayeredDraw.Layer {
     }
 
     private static void drawSlot(GuiGraphics g, Font font, SyncPayload data, @Nullable Ability ability, int x, int y, boolean selected,
-                                 Component key, @Nullable ResourceLocation castingId, long now) {
+                                 Component key, @Nullable Identifier castingId, long now) {
         RenderSystem.enableBlend();
         g.blit(selected ? SLOT_SELECTED : SLOT, x, y, 0f, 0f, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
         if (ability == null) { // empty loadout slot

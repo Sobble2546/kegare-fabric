@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -135,7 +135,7 @@ public final class Landings {
     }
 
     private static boolean isTechniqueAbility(ServerPlayer player, Ability ability) {
-        ResourceLocation id = ability.id();
+        Identifier id = ability.id();
         if (SharedAbilities.find(id).isPresent()) return false;
         Optional<InnateTechnique> technique = InnateTechniqueService.current(player);
         return technique.isPresent() && technique.get().findAbility(id).isPresent();

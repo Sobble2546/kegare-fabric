@@ -5,7 +5,7 @@ import com.cnethuka.kegare.advancement.KegareAdvancements;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -14,15 +14,15 @@ import net.minecraft.server.level.ServerPlayer;
  * (task: The World Stood Still, Overclock) need no target; the mastery ones (goal and challenge) count players only (DESIGN §4).
  */
 public final class TimeAdvancements {
-    public static final ResourceLocation ROOT = KegareAdvancements.innateTechniqueRoot(Kegare.id("time_manipulation"));
-    public static final ResourceLocation THE_WORLD_STOOD_STILL = id("the_world_stood_still");
-    public static final ResourceLocation OVERCLOCK = id("overclock");
-    public static final ResourceLocation SECOND_CHANCE = id("second_chance");
-    public static final ResourceLocation SLOW_MOTION = id("slow_motion");
-    public static final ResourceLocation NOT_SO_FAST = id("not_so_fast");
-    public static final ResourceLocation FROZEN_IN_FLIGHT = id("frozen_in_flight");
-    public static final ResourceLocation SAME_CLOCK = id("same_clock");
-    public static final ResourceLocation PRE_PLANNED = id("pre_planned");
+    public static final Identifier ROOT = KegareAdvancements.innateTechniqueRoot(Kegare.id("time_manipulation"));
+    public static final Identifier THE_WORLD_STOOD_STILL = id("the_world_stood_still");
+    public static final Identifier OVERCLOCK = id("overclock");
+    public static final Identifier SECOND_CHANCE = id("second_chance");
+    public static final Identifier SLOW_MOTION = id("slow_motion");
+    public static final Identifier NOT_SO_FAST = id("not_so_fast");
+    public static final Identifier FROZEN_IN_FLIGHT = id("frozen_in_flight");
+    public static final Identifier SAME_CLOCK = id("same_clock");
+    public static final Identifier PRE_PLANNED = id("pre_planned");
 
     /** Overclock: Accelerate on for 30 seconds straight. */
     public static final long OVERCLOCK_TICKS = 30 * 20;
@@ -44,12 +44,12 @@ public final class TimeAdvancements {
 
     private TimeAdvancements() {}
 
-    private static ResourceLocation id(String name) {
+    private static Identifier id(String name) {
         return Kegare.id("innate_technique/time_manipulation/" + name);
     }
 
     /** Only a player who currently holds Time Manipulation earns these (so the tab never opens for anyone else). */
-    public static void award(ServerPlayer player, ResourceLocation id) {
+    public static void award(ServerPlayer player, Identifier id) {
         if (TimeManipulation.holds(player)) KegareAdvancements.award(player, id);
     }
 

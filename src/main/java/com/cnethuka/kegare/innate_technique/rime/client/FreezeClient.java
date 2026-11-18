@@ -32,7 +32,7 @@ import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.PlayerSkin;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -56,9 +56,9 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
  * arms there ({@link PlayerAnimations#firstPersonPass}); you have the stacks on the HUD.
  */
 public final class FreezeClient {
-    private static final ResourceLocation[] ART = {Kegare.id("textures/entity/freeze_frost.png"),
+    private static final Identifier[] ART = {Kegare.id("textures/entity/freeze_frost.png"),
             Kegare.id("textures/entity/freeze_frost_slim.png")};
-    private static final ResourceLocation[] ORDER = {Kegare.id("textures/entity/freeze_frost_order.png"),
+    private static final Identifier[] ORDER = {Kegare.id("textures/entity/freeze_frost_order.png"),
             Kegare.id("textures/entity/freeze_frost_slim_order.png")};
     /** How finely the creep is drawn: a texture at each step of it. */
     static final int STEPS = 24;
@@ -86,7 +86,7 @@ public final class FreezeClient {
     record Art(int[] argb, int[] order) {}
 
     private static final Map<Integer, Float> COVER = new HashMap<>();
-    private static final Map<String, ResourceLocation> TEXTURES = new HashMap<>();
+    private static final Map<String, Identifier> TEXTURES = new HashMap<>();
     private static final Art[] LOADED = new Art[2];
     /** The outer layer's boxes out past armour, by layout, inflation and part: at rest, posed by the body's own parts. */
     private static final Map<String, ModelPart> OVER = new HashMap<>();
@@ -184,9 +184,9 @@ public final class FreezeClient {
         return out;
     }
 
-    private static @Nullable ResourceLocation texture(boolean slim, int step, boolean frozen) {
+    private static @Nullable Identifier texture(boolean slim, int step, boolean frozen) {
         String key = (slim ? "slim_" : "wide_") + step + (frozen ? "_frozen" : "");
-        ResourceLocation id = TEXTURES.get(key);
+        Identifier id = TEXTURES.get(key);
         if (id != null) return id;
         Art art = art(slim ? 1 : 0);
         if (art == null) return null;
@@ -281,7 +281,7 @@ public final class FreezeClient {
             if (cover == null || cover <= 0f || player.isInvisible()) return;
             if (PlayerAnimations.firstPersonPass()) return; // your own arms in first person: the hat's frost would be round the camera
             boolean slim = player.getSkin().model() == PlayerSkin.Model.SLIM;
-            ResourceLocation texture = texture(slim, quantize(cover), frozen(player));
+            Identifier texture = texture(slim, quantize(cover), frozen(player));
             if (texture == null) return;
             PlayerModel<AbstractClientPlayer> model = getParentModel();
             VertexConsumer out = buffers.getBuffer(RenderType.entityTranslucent(texture));

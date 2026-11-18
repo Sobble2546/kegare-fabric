@@ -9,7 +9,7 @@ import com.cnethuka.kegare.innatetechnique.visual.VisualHooks;
 import com.cnethuka.kegare.registry.KegareRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Items;
-import net.neoforged.bus.api.IEventBus;
+import com.cnethuka.kegare.platform.bus.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 

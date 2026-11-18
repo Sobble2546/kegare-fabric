@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
  * or an animation the code plays gone missing.
  */
 class StringsArtTest {
-    private static final List<ResourceLocation> PLAYED = List.of(PuppetIds.ANIM_STRINGS_FIRE, PuppetIds.ANIM_STRINGS_REEL,
+    private static final List<Identifier> PLAYED = List.of(PuppetIds.ANIM_STRINGS_FIRE, PuppetIds.ANIM_STRINGS_REEL,
             PuppetIds.ANIM_STRINGS_ZIP, PuppetIds.ANIM_STRINGS_TIE, PuppetIds.ANIM_STRINGS_LEASH);
     /** The ones with a tell of their own at stage 2: no two may look alike. */
     private static final List<String> VARIATIONS = List.of("strings_reel", "strings_zip", "strings_tie", "strings_leash");
@@ -85,14 +85,14 @@ class StringsArtTest {
         JsonArray animations = json("art/blockbench/string_animations.bbmodel").getAsJsonArray("animations");
         List<String> names = new ArrayList<>();
         for (JsonElement a : animations) names.add(a.getAsJsonObject().get("name").getAsString());
-        for (ResourceLocation id : PLAYED) assertTrue(names.contains(id.getPath()), id + " is in the source");
+        for (Identifier id : PLAYED) assertTrue(names.contains(id.getPath()), id + " is in the source");
     }
 
     @Test
     void palLoadsEveryAnimationTheCodePlays() throws IOException {
         JsonObject file = json("src/main/resources/assets/kegare/player_animations/puppet_strings.json");
         Map<String, Animation> loaded = UniversalAnimLoader.loadAnimations(file);
-        for (ResourceLocation id : PLAYED) {
+        for (Identifier id : PLAYED) {
             Animation animation = loaded.get(id.getPath());
             assertNotNull(animation, id + " is in the file");
             assertTrue(animation.length() > 0f, id + " has a length");
@@ -104,7 +104,7 @@ class StringsArtTest {
     @Test
     void everyAnimationStartsAndEndsAtRest() throws IOException {
         JsonObject animations = json("src/main/resources/assets/kegare/player_animations/puppet_strings.json").getAsJsonObject("animations");
-        for (ResourceLocation id : PLAYED) {
+        for (Identifier id : PLAYED) {
             JsonObject animation = animations.getAsJsonObject(id.getPath());
             double length = animation.get("animation_length").getAsDouble();
             for (Map.Entry<String, JsonElement> bone : animation.getAsJsonObject("bones").entrySet()) {

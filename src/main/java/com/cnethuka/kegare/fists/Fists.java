@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.bus.api.IEventBus;
+import com.cnethuka.kegare.platform.bus.IEventBus;
 
 /** Reinforced Fists (DESIGN §3.28): a shared ability every Malice user has. Registered at mod construction. */
 public final class Fists {

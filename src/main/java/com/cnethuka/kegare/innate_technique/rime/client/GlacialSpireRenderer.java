@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -80,7 +80,7 @@ public class GlacialSpireRenderer extends EntityRenderer<GlacialSpireEntity> {
     }
 
     @Override
-    public ResourceLocation getTextureLocation(GlacialSpireEntity spire) {
+    public Identifier getTextureLocation(GlacialSpireEntity spire) {
         return LanceMesh.SPIRE.texture;
     }
 }

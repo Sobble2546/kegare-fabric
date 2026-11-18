@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.PlayerSkin;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 
 /**
@@ -21,7 +21,7 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
  * blob, and a bar carried on down the chest as a tongue. The drops ({@link NosebleedClient}) take it from the chin.
  */
 final class NosebleedLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
-    private static final ResourceLocation WHITE = ResourceLocation.withDefaultNamespace("textures/misc/white.png");
+    private static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
     /** On the head, in skin pixels from its pivot: out past the hat (4.5), so any skin shows it. */
     private static final float FACE_OUT = 4.55f;
     /** The nostrils' row on the head, counted down from its top (8 pixels tall, its pivot at the bottom). */

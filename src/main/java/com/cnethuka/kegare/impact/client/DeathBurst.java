@@ -17,7 +17,7 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -33,7 +33,7 @@ import org.joml.Matrix4f;
  * {@code DeathPoofMixin}.
  */
 public final class DeathBurst {
-    private static final ResourceLocation WHITE = ResourceLocation.withDefaultNamespace("textures/misc/white.png");
+    private static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
     private static final RenderType TYPE = RenderType.entityTranslucentEmissive(WHITE);
     /** How long after a hit its victim's death still counts as the hit's (vanilla's smoke comes 20 ticks after death). */
     private static final int REMEMBER_TICKS = 60;

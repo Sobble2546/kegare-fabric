@@ -6,7 +6,7 @@ import com.cnethuka.kegare.progression.Landings;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -16,7 +16,7 @@ import net.minecraft.server.level.ServerPlayer;
  * change in between (Shatter Shell costs less with the shell up, and the shell is gone by the time it hits). Runtime only.
  */
 public final class CastMalice {
-    private static final Map<UUID, Map<ResourceLocation, Double>> PAID = new HashMap<>();
+    private static final Map<UUID, Map<Identifier, Double>> PAID = new HashMap<>();
 
     private CastMalice() {}
 
@@ -28,7 +28,7 @@ public final class CastMalice {
 
     /** The base Malice behind {@code player}'s last cast of {@code ability}: what it would cost now, if they never paid for one. */
     public static double behind(ServerPlayer player, Ability ability) {
-        Map<ResourceLocation, Double> own = PAID.get(player.getUUID());
+        Map<Identifier, Double> own = PAID.get(player.getUUID());
         Double paid = own == null ? null : own.get(ability.id());
         if (paid != null) return paid;
         double multiplier = InnateTechniqueService.current(player).map(t -> (double) t.environment(player).multiplier()).orElse(1.0);

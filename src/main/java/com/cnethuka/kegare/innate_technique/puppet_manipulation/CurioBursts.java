@@ -12,7 +12,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -47,7 +47,7 @@ public final class CurioBursts {
     }
 
     /** The explosion effect, one size per tier. */
-    public static ResourceLocation effect(PuppetTier tier) {
+    public static Identifier effect(PuppetTier tier) {
         return switch (tier) {
             case TAP -> PuppetIds.FX_CURIO_BURST_EXPLOSION_TAP;
             case HALF -> PuppetIds.FX_CURIO_BURST_EXPLOSION_HALF;

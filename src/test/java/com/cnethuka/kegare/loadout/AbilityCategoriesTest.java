@@ -11,7 +11,7 @@ import com.cnethuka.kegare.rmt.RmtIds;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.testframework.junit.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
@@ -42,8 +42,8 @@ class AbilityCategoriesTest {
 
     @Test
     void theRightAbilitiesUnderEachTab(MinecraftServer server) {
-        Set<ResourceLocation> malice = AbilityCategory.MALICE.abilities(null).stream().map(Ability::id).collect(Collectors.toSet());
-        Set<ResourceLocation> melee = AbilityCategory.MELEE.abilities(null).stream().map(Ability::id).collect(Collectors.toSet());
+        Set<Identifier> malice = AbilityCategory.MALICE.abilities(null).stream().map(Ability::id).collect(Collectors.toSet());
+        Set<Identifier> melee = AbilityCategory.MELEE.abilities(null).stream().map(Ability::id).collect(Collectors.toSet());
         assertTrue(malice.contains(RmtIds.ABILITY), "Reverse Malice Technique is Malice");
         assertTrue(melee.contains(FistsIds.ABILITY), "Reinforced Fists is Melee");
         assertTrue(java.util.Collections.disjoint(malice, melee));

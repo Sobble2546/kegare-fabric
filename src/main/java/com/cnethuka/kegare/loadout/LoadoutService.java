@@ -16,7 +16,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
@@ -42,7 +42,7 @@ public final class LoadoutService {
         return player.getData(KegareAttachments.LOADOUT);
     }
 
-    public static List<Optional<ResourceLocation>> slots(Player player) {
+    public static List<Optional<Identifier>> slots(Player player) {
         return get(player).slots();
     }
 
@@ -59,13 +59,13 @@ public final class LoadoutService {
     }
 
     /** True if the loadout holds this ability (or the ability whose special this is). */
-    public static boolean holds(Player player, ResourceLocation abilityId) {
-        for (Optional<ResourceLocation> slot : get(player).slots) if (slot.isPresent() && slot.get().equals(abilityId)) return true;
+    public static boolean holds(Player player, Identifier abilityId) {
+        for (Optional<Identifier> slot : get(player).slots) if (slot.isPresent() && slot.get().equals(abilityId)) return true;
         return false;
     }
 
     @Nullable
-    private static Ability resolve(Player player, ResourceLocation id) {
+    private static Ability resolve(Player player, Identifier id) {
         Optional<InnateTechnique> technique = InnateTechniqueService.current(player);
         if (technique.isPresent()) {
             for (Ability a : technique.get().abilities()) {
@@ -85,7 +85,7 @@ public final class LoadoutService {
      */
     public static void reset(ServerPlayer player) {
         LoadoutData data = get(player);
-        List<Optional<ResourceLocation>> before = List.copyOf(data.slots);
+        List<Optional<Identifier>> before = List.copyOf(data.slots);
         data.slots.clear();
         Optional<InnateTechnique> technique = InnateTechniqueService.current(player);
         technique.ifPresent(t -> {
@@ -113,7 +113,7 @@ public final class LoadoutService {
     public static void validate(ServerPlayer player) {
         LoadoutData data = get(player);
         Optional<InnateTechnique> technique = InnateTechniqueService.current(player);
-        ResourceLocation techniqueId = technique.map(InnateTechnique::id).orElse(null);
+        Identifier techniqueId = technique.map(InnateTechnique::id).orElse(null);
         if (!Objects.equals(data.builtFor, techniqueId)) {
             reset(player);
             return;
@@ -126,9 +126,9 @@ public final class LoadoutService {
             InnateTechniqueService.clampSelection(player);
             changed = true;
         }
-        Set<ResourceLocation> seen = new HashSet<>();
+        Set<Identifier> seen = new HashSet<>();
         for (int i = 0; i < data.slots.size(); i++) {
-            Optional<ResourceLocation> id = data.slots.get(i);
+            Optional<Identifier> id = data.slots.get(i);
             if (id.isPresent() && (resolve(player, id.get()) == null || !seen.add(id.get()))) {
                 data.slots.set(i, Optional.empty());
                 changed = true;
@@ -138,13 +138,13 @@ public final class LoadoutService {
         if (technique.isPresent()) {
             List<Ability> abilities = technique.get().abilities();
             for (int i = 0; i < abilities.size(); i++) {
-                ResourceLocation id = abilities.get(i).id();
+                Identifier id = abilities.get(i).id();
                 if (!TechniqueUnlocks.isUnlocked(player, abilities.get(i))) {
                     data.known.remove(id);
                     continue;
                 }
                 if (!data.known.add(id) || data.slots.contains(Optional.of(id))) continue;
-                int slot = i < data.slots.size() && data.slots.get(i).isEmpty() ? i : data.slots.indexOf(Optional.<ResourceLocation>empty());
+                int slot = i < data.slots.size() && data.slots.get(i).isEmpty() ? i : data.slots.indexOf(Optional.<Identifier>empty());
                 if (slot < 0) continue;
                 data.slots.set(slot, Optional.of(id));
                 changed = true;
@@ -157,7 +157,7 @@ public final class LoadoutService {
      * One edit request from the client. {@code slot}/{@code other} index the regular slots; the index right after
      * the last one is where the ultimate sits on screen, and is always refused.
      */
-    public static LoadoutResult edit(ServerPlayer player, Action action, int slot, int other, Optional<ResourceLocation> abilityId) {
+    public static LoadoutResult edit(ServerPlayer player, Action action, int slot, int other, Optional<Identifier> abilityId) {
         if (!MaliceService.get(player).isBorn() || MaliceService.isSevered(player)) return LoadoutResult.SEVERED;
         if (InnateTechniqueService.current(player).isEmpty()) return LoadoutResult.NO_INNATE_TECHNIQUE;
         LoadoutData data = get(player);
@@ -169,7 +169,7 @@ public final class LoadoutService {
         if (CombatHelper.isInCombat(player)) return LoadoutResult.IN_COMBAT;
         if (CastManager.state(player).casting() != null) return LoadoutResult.CASTING;
 
-        List<Optional<ResourceLocation>> before = List.copyOf(data.slots);
+        List<Optional<Identifier>> before = List.copyOf(data.slots);
         switch (action) {
             case RESET -> {
                 reset(player);
@@ -177,13 +177,13 @@ public final class LoadoutService {
             }
             case CLEAR -> data.slots.set(slot, Optional.empty());
             case SWAP -> {
-                Optional<ResourceLocation> a = data.slots.get(slot);
+                Optional<Identifier> a = data.slots.get(slot);
                 data.slots.set(slot, data.slots.get(other));
                 data.slots.set(other, a);
             }
             case SET -> {
                 if (abilityId.isEmpty()) return LoadoutResult.UNAVAILABLE;
-                ResourceLocation id = abilityId.get();
+                Identifier id = abilityId.get();
                 Optional<Ability> ofTechnique = InnateTechniqueService.current(player).get().abilities().stream().filter(a -> a.id().equals(id)).findFirst();
                 if (ofTechnique.isPresent()) {
                     if (!TechniqueUnlocks.isUnlocked(player, ofTechnique.get())) return LoadoutResult.LOCKED;
@@ -209,7 +209,7 @@ public final class LoadoutService {
         LoadoutData data = get(player);
         data.known.add(ability.id());
         if (data.slots.contains(Optional.of(ability.id()))) return;
-        int slot = data.slots.indexOf(Optional.<ResourceLocation>empty());
+        int slot = data.slots.indexOf(Optional.<Identifier>empty());
         if (slot < 0) return;
         data.slots.set(slot, Optional.of(ability.id()));
         PlayerSync.markDirty(player);
@@ -234,7 +234,7 @@ public final class LoadoutService {
     }
 
     /** Takes an ability off every slot (e.g. a shared ability being locked again). */
-    public static void removeEverywhere(ServerPlayer player, ResourceLocation id) {
+    public static void removeEverywhere(ServerPlayer player, Identifier id) {
         LoadoutData data = get(player);
         for (int i = 0; i < data.slots.size(); i++) {
             if (data.slots.get(i).map(id::equals).orElse(false)) data.slots.set(i, Optional.empty());
@@ -243,8 +243,8 @@ public final class LoadoutService {
     }
 
     /** A toggle (or toggle special) that left the bar switches off: what's not on the bar can't keep running. */
-    private static void switchOffRemoved(ServerPlayer player, List<Optional<ResourceLocation>> before) {
-        for (Optional<ResourceLocation> old : before) {
+    private static void switchOffRemoved(ServerPlayer player, List<Optional<Identifier>> before) {
+        for (Optional<Identifier> old : before) {
             if (old.isEmpty() || holds(player, old.get())) continue;
             Ability ability = lookup(player, old.get());
             if (ability == null) continue;
@@ -255,7 +255,7 @@ public final class LoadoutService {
 
     /** Any ability by ID: the current technique's (with specials) or a shared one (locked or not). */
     @Nullable
-    private static Ability lookup(Player player, ResourceLocation id) {
+    private static Ability lookup(Player player, Identifier id) {
         Optional<Ability> fromTechnique = InnateTechniqueService.current(player).flatMap(t -> t.findAbility(id));
         return fromTechnique.orElseGet(() -> SharedAbilities.find(id).orElse(null));
     }

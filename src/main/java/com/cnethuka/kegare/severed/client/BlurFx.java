@@ -22,7 +22,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,7 +36,7 @@ import net.minecraft.world.phys.Vec3;
  * they blur past or through).
  */
 final class BlurFx {
-    static final ResourceLocation WHITE = ResourceLocation.withDefaultNamespace("textures/misc/white.png");
+    static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
     /** Dust-grey: the afterimage's one colour. */
     private static final int GHOST_RGB = 0xA59E94;
     /** How many ticks back each afterimage is, at Full and at Reduced. */

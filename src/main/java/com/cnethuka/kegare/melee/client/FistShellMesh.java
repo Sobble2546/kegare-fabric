@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Where a ready fist's fire goes on a player's arm, in the arm's own space (the model's arm cube, hanging down, hand at its end): the

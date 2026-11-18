@@ -29,7 +29,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -50,8 +50,8 @@ import org.joml.Vector3f;
  * person, where the aiming ring is enough).
  */
 public final class SpireClient {
-    static final ResourceLocation CRACK = Kegare.id("spire_crack");
-    static final ResourceLocation BURST = Kegare.id("spire_burst");
+    static final Identifier CRACK = Kegare.id("spire_crack");
+    static final Identifier BURST = Kegare.id("spire_burst");
     static final String CHARGE = VisualService.key(Rime.GLACIAL_SPIRE, VisualPhase.CHARGE_LOOP);
     /** Ticks the crack and the shattered ground take to melt from the edge in, after the spike is gone. */
     static final int MELT_TICKS = 30;
@@ -152,7 +152,7 @@ public final class SpireClient {
         gather(level);
     }
 
-    private static void stamp(ClientLevel level, ResourceLocation name, Vec3 at, BlockMarks.Timing timing) {
+    private static void stamp(ClientLevel level, Identifier name, Vec3 at, BlockMarks.Timing timing) {
         BlockMarks.Pattern p = BlockMarks.pattern(name);
         if (p != null) BlockMarks.stamp(level, p, at, Direction.UP, RANDOM.nextInt(8), timing);
     }

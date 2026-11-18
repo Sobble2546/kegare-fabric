@@ -10,11 +10,11 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /** The small private toast for a promotion or an unlock. A toast like any other, so {@link RevealQueue} holds it during a reveal. */
 final class ProgressionToast implements Toast {
-    private static final ResourceLocation FRAME = Kegare.id("menu_well");
+    private static final Identifier FRAME = Kegare.id("menu_well");
     private static final long SHOWN_MS = 4000;
     private static final int W = 150;
     private static final int H = 28;
@@ -22,9 +22,9 @@ final class ProgressionToast implements Toast {
     private final Component title;
     private final Component name;
     @Nullable
-    private final ResourceLocation ability;
+    private final Identifier ability;
 
-    private ProgressionToast(String titleKey, Component name, @Nullable ResourceLocation ability) {
+    private ProgressionToast(String titleKey, Component name, @Nullable Identifier ability) {
         this.title = Component.translatable(titleKey);
         this.name = name;
         this.ability = ability;
@@ -35,9 +35,9 @@ final class ProgressionToast implements Toast {
             case PROMOTION -> new ProgressionToast("toast.kegare.promotion",
                     Component.translatable(Grade.byId(payload.id()).map(Grade::translationKey).orElse(payload.id())), null);
             case UNLOCK -> new ProgressionToast("toast.kegare.unlocked",
-                    Component.translatable(Util.makeDescriptionId("unlock", ResourceLocation.parse(payload.id()))), null);
+                    Component.translatable(Util.makeDescriptionId("unlock", Identifier.parse(payload.id()))), null);
             case ABILITY, SPECIAL, ULTIMATE -> {
-                ResourceLocation id = ResourceLocation.parse(payload.id());
+                Identifier id = Identifier.parse(payload.id());
                 String title = switch (payload.kind()) {
                     case SPECIAL -> "toast.kegare.unlocked.special";
                     case ULTIMATE -> "toast.kegare.unlocked.ultimate";

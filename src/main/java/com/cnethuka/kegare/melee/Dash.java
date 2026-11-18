@@ -4,7 +4,7 @@ import com.cnethuka.kegare.innatetechnique.visual.Visual;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import com.cnethuka.kegare.malice.MaliceService;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
@@ -80,7 +80,7 @@ public final class Dash {
         MeleeLayer.syncHud(player);
     }
 
-    static ResourceLocation animation(int forward, int left) {
+    static Identifier animation(int forward, int left) {
         if (forward < 0) return MeleeIds.ANIM_DASH_BACK;
         if (forward > 0 || left == 0) return MeleeIds.ANIM_DASH_FORWARD;
         return left > 0 ? MeleeIds.ANIM_DASH_LEFT : MeleeIds.ANIM_DASH_RIGHT;

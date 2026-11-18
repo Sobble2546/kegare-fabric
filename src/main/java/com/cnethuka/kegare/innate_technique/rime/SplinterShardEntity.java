@@ -3,7 +3,7 @@ package com.cnethuka.kegare.innate_technique.rime;
 import com.cnethuka.kegare.innatetechnique.Ability;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -45,7 +45,7 @@ public class SplinterShardEntity extends RimeProjectile {
     }
 
     @Override
-    protected ResourceLocation trailEffect() {
+    protected Identifier trailEffect() {
         return RimeIds.FX_SPLINTER_TRAIL;
     }
 

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Predicate;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -23,11 +23,11 @@ public final class CooldownRates {
      * @param touches which cooldowns (by cooldown key) it speeds or slows
      * @param until   game time it ends at, or {@link Long#MAX_VALUE} until removed
      */
-    public record Rate(String key, double multiplier, Predicate<ResourceLocation> touches, long until) {}
+    public record Rate(String key, double multiplier, Predicate<Identifier> touches, long until) {}
 
     private static final Map<UUID, List<Rate>> RATES = new HashMap<>();
     /** Fractions of a tick carried over, per player and cooldown. */
-    private static final Map<UUID, Map<ResourceLocation, Double>> CARRY = new HashMap<>();
+    private static final Map<UUID, Map<Identifier, Double>> CARRY = new HashMap<>();
     /** Resend the sync this often while cooldowns are being moved (the HUD shows whole seconds). */
     private static final int SYNC_EVERY = 5;
 
@@ -48,7 +48,7 @@ public final class CooldownRates {
     }
 
     /** The product of the rates touching {@code cooldownKey} right now. */
-    public static double multiplier(ServerPlayer player, ResourceLocation cooldownKey) {
+    public static double multiplier(ServerPlayer player, Identifier cooldownKey) {
         List<Rate> rates = RATES.get(player.getUUID());
         if (rates == null) return 1.0;
         long now = player.level().getGameTime();
@@ -68,9 +68,9 @@ public final class CooldownRates {
             return;
         }
         InnateTechniqueData data = InnateTechniqueService.get(player);
-        Map<ResourceLocation, Double> carry = CARRY.computeIfAbsent(player.getUUID(), k -> new HashMap<>());
+        Map<Identifier, Double> carry = CARRY.computeIfAbsent(player.getUUID(), k -> new HashMap<>());
         boolean moved = false;
-        for (Map.Entry<ResourceLocation, InnateTechniqueData.Cooldown> e : new ArrayList<>(data.cooldowns().entrySet())) {
+        for (Map.Entry<Identifier, InnateTechniqueData.Cooldown> e : new ArrayList<>(data.cooldowns().entrySet())) {
             if (e.getValue().endTick() <= now) continue;
             double m = multiplier(player, e.getKey());
             if (m == 1.0) continue;
@@ -83,7 +83,7 @@ public final class CooldownRates {
                 moved = true;
             }
         }
-        for (Iterator<ResourceLocation> it = carry.keySet().iterator(); it.hasNext(); ) {
+        for (Iterator<Identifier> it = carry.keySet().iterator(); it.hasNext(); ) {
             InnateTechniqueData.Cooldown c = data.cooldowns().get(it.next());
             if (c == null || c.endTick() <= now) it.remove();
         }

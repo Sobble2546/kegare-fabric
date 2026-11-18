@@ -2,7 +2,7 @@ package com.cnethuka.kegare.innate_technique.rime;
 
 import com.cnethuka.kegare.innatetechnique.Ability;
 import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -39,7 +39,7 @@ public class FrostShardEntity extends RimeProjectile {
     }
 
     @Override
-    protected ResourceLocation trailEffect() {
+    protected Identifier trailEffect() {
         return RimeIds.FX_FROST_SHARD_TRAIL;
     }
 

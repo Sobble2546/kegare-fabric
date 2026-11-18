@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
@@ -23,24 +23,24 @@ public final class Unlocks {
     /** Told when a player gains an unlock. */
     @FunctionalInterface
     public interface Listener {
-        void onUnlocked(ServerPlayer player, ResourceLocation id);
+        void onUnlocked(ServerPlayer player, Identifier id);
     }
 
-    private static final Map<ResourceLocation, UnlockRequirements> ENTRIES = new LinkedHashMap<>();
+    private static final Map<Identifier, UnlockRequirements> ENTRIES = new LinkedHashMap<>();
     private static final List<Listener> LISTENERS = new CopyOnWriteArrayList<>();
 
     private Unlocks() {}
 
-    public static void register(ResourceLocation id, UnlockRequirements requirements) {
+    public static void register(Identifier id, UnlockRequirements requirements) {
         if (ENTRIES.putIfAbsent(id, requirements) != null) throw new IllegalArgumentException("Unlock registered twice: " + id);
     }
 
     /** For tests, whose entries mustn't outlive them. */
-    public static void unregister(ResourceLocation id) {
+    public static void unregister(Identifier id) {
         ENTRIES.remove(id);
     }
 
-    public static Collection<ResourceLocation> registered() {
+    public static Collection<Identifier> registered() {
         return Collections.unmodifiableSet(ENTRIES.keySet());
     }
 
@@ -52,7 +52,7 @@ public final class Unlocks {
         return player.getData(KegareAttachments.UNLOCKS);
     }
 
-    public static boolean has(Player player, ResourceLocation id) {
+    public static boolean has(Player player, Identifier id) {
         return data(player).unlocked.contains(id);
     }
 
@@ -69,7 +69,7 @@ public final class Unlocks {
     /** Grade, Refinement or Insight changed, or they just logged in. */
     public static void evaluate(ServerPlayer player) {
         UnlockData data = data(player);
-        for (Map.Entry<ResourceLocation, UnlockRequirements> entry : ENTRIES.entrySet()) {
+        for (Map.Entry<Identifier, UnlockRequirements> entry : ENTRIES.entrySet()) {
             boolean had = data.unlocked.contains(entry.getKey());
             if (had) {
                 if (entry.getValue().tiedToTechnique() && !met(player, entry.getValue())) data.unlocked.remove(entry.getKey());
@@ -83,14 +83,14 @@ public final class Unlocks {
     /** The technique changed: what was tied to the old one goes. Runs after Refinement has been reset. */
     static void onTechniqueChanged(ServerPlayer player) {
         UnlockData data = data(player);
-        for (Map.Entry<ResourceLocation, UnlockRequirements> entry : ENTRIES.entrySet()) {
+        for (Map.Entry<Identifier, UnlockRequirements> entry : ENTRIES.entrySet()) {
             if (entry.getValue().tiedToTechnique()) data.unlocked.remove(entry.getKey());
         }
         evaluate(player);
     }
 
     /** Whether they meet an entry's requirements now (for a {@code grantedOnly} entry: whether they can be taught it). */
-    public static boolean eligible(ServerPlayer player, ResourceLocation id) {
+    public static boolean eligible(ServerPlayer player, Identifier id) {
         UnlockRequirements requirements = ENTRIES.get(id);
         return requirements != null && met(player, requirements);
     }
@@ -99,14 +99,14 @@ public final class Unlocks {
      * Gives them an entry, for the system that teaches a {@code grantedOnly} one (or an admin), whether or not they meet it. Returns whether
      * it's new; listeners hear of it.
      */
-    public static boolean grant(ServerPlayer player, ResourceLocation id) {
+    public static boolean grant(ServerPlayer player, Identifier id) {
         if (!ENTRIES.containsKey(id) || !data(player).unlocked.add(id)) return false;
         for (Listener listener : LISTENERS) listener.onUnlocked(player, id);
         return true;
     }
 
     /** Admin: takes one away. Returns whether they had it. */
-    public static boolean revoke(ServerPlayer player, ResourceLocation id) {
+    public static boolean revoke(ServerPlayer player, Identifier id) {
         return data(player).unlocked.remove(id);
     }
 

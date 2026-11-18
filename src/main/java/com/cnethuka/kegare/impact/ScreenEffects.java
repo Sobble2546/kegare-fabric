@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -18,18 +18,18 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  * plays any of them.
  */
 public final class ScreenEffects {
-    public static final ResourceLocation GRAYSCALE = Kegare.id("grayscale");
+    public static final Identifier GRAYSCALE = Kegare.id("grayscale");
     /** Every effect that ships, for the debug command's suggestions. */
-    public static final List<ResourceLocation> ALL = List.of(GRAYSCALE, Kegare.id("impact_frame"), Kegare.id("invert"));
+    public static final List<Identifier> ALL = List.of(GRAYSCALE, Kegare.id("impact_frame"), Kegare.id("invert"));
 
     private ScreenEffects() {}
 
     /** Plays {@code effect} on the player's screen for {@code ticks}; 0 stops it. */
-    public static void play(ServerPlayer player, ResourceLocation effect, int ticks) {
+    public static void play(ServerPlayer player, Identifier effect, int ticks) {
         PacketDistributor.sendToPlayer(player, new Payload(effect, Math.max(0, ticks)));
     }
 
-    public record Payload(ResourceLocation effect, int ticks) implements CustomPacketPayload {
+    public record Payload(Identifier effect, int ticks) implements CustomPacketPayload {
         public static final Type<Payload> TYPE = new Type<>(Kegare.id("screen_effect"));
         public static final StreamCodec<FriendlyByteBuf, Payload> STREAM_CODEC = StreamCodec.ofMember(
                 (p, buf) -> {

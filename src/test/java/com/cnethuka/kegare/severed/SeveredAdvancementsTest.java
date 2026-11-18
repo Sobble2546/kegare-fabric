@@ -30,7 +30,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 class SeveredAdvancementsTest {
     private static final double Y = 120;
 
-    private static boolean has(MinecraftServer server, ServerPlayer p, net.minecraft.resources.ResourceLocation id) {
+    private static boolean has(MinecraftServer server, ServerPlayer p, net.minecraft.resources.Identifier id) {
         return TestServer.hasAdvancement(server, p, id);
     }
 

@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -40,8 +40,8 @@ import net.minecraft.world.phys.Vec3;
  * technique (they return first). Returning puts back real health, size, inventory and the body's position.
  */
 public final class Possession {
-    static final ResourceLocation SCALE_MODIFIER = Kegare.id("possession_scale");
-    static final ResourceLocation HEALTH_MODIFIER = Kegare.id("possession_health");
+    static final Identifier SCALE_MODIFIER = Kegare.id("possession_scale");
+    static final Identifier HEALTH_MODIFIER = Kegare.id("possession_health");
 
     /** Why a possession ended. */
     public enum Return {

@@ -11,7 +11,7 @@ import java.util.Optional;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -27,14 +27,14 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  */
 public record RevealPayload(
         RollReason reason,
-        Optional<ResourceLocation> innateTechnique,
+        Optional<Identifier> innateTechnique,
         int rollNumber,
         boolean byHardPity,
         boolean birth,
         int capacity,
         int tier,
         boolean severed,
-        List<ResourceLocation> traits
+        List<Identifier> traits
 ) implements CustomPacketPayload {
     public static final Type<RevealPayload> TYPE = new Type<>(Kegare.id("reveal"));
     public static final StreamCodec<FriendlyByteBuf, RevealPayload> STREAM_CODEC = StreamCodec.ofMember(RevealPayload::write, RevealPayload::read);

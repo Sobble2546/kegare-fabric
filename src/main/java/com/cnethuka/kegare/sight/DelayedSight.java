@@ -22,7 +22,7 @@ import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
-import net.neoforged.bus.api.EventPriority;
+import com.cnethuka.kegare.platform.bus.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;

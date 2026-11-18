@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${mod_version}",
+  "name": "${mod_name}",
+  "description": "Kegare: a cursed-energy combat framework for PvP with friends.",
+  "authors": ["cnethuka"],
+  "license": "${mod_license}",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.cnethuka.kegare.Kegare"]
+  },
+  "mixins": ["${mod_id}.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.20.1",
+    "minecraft": "${minecraft_version}",
+    "java": ">=${java_release}",
+    "fabric-api": "*",
+    "player_animation_library": "*"
+  },
+  "suggests": { "trinkets": "*" }
+}

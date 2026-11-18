@@ -9,14 +9,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * The selected ability's name, shown for 2 s after picking it, above hearts/food/armour (drawn after them, so it
  * clears whatever they used). Only while the combat panel is up.
  */
 public final class CombatNameLayer implements LayeredDraw.Layer {
-    public static final ResourceLocation ID = Kegare.id("combat_name");
+    public static final Identifier ID = Kegare.id("combat_name");
     private static final int NAME_TICKS = 40;
 
     private static int lastSelected = -1;

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -32,7 +32,7 @@ import net.minecraft.server.level.ServerPlayer;
  * Costs and cooldowns take the caster so future traits can scale them.
  */
 public interface Ability {
-    ResourceLocation id();
+    Identifier id();
 
     CastType castType();
 
@@ -135,7 +135,7 @@ public interface Ability {
      * The cooldown this ability starts and checks. A special uses its base ability's, so casting either one puts both
      * on cooldown.
      */
-    default ResourceLocation cooldownKey() {
+    default Identifier cooldownKey() {
         return base().map(Ability::cooldownKey).orElse(id());
     }
 

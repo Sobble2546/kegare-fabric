@@ -6,9 +6,9 @@ import com.cnethuka.kegare.innate_technique.swap.SwapIds;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.neoforged.bus.api.IEventBus;
+import com.cnethuka.kegare.platform.bus.IEventBus;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
@@ -19,7 +19,7 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
  * the moment it ends.
  */
 final class SwapHud {
-    private static final ResourceLocation LAYER = Kegare.id("swap_disguised");
+    private static final Identifier LAYER = Kegare.id("swap_disguised");
     private static final int COLOR = 0x2EF2DA;
     /** Ticks the brackets take to come in from the corners. */
     private static final float SETTLE = 5f;

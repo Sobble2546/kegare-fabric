@@ -20,7 +20,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Kegare's player animation layer (Player Animation Library by ZigyTheBird). Animations live in
@@ -32,20 +32,20 @@ import net.minecraft.resources.ResourceLocation;
  * turns them off. A channel an animation doesn't key keeps the vanilla pose either way.
  */
 public final class PlayerAnimations {
-    public static final ResourceLocation LAYER = Kegare.id("abilities");
+    public static final Identifier LAYER = Kegare.id("abilities");
     /** PAL priorities: 1500+ is for important gameplay animations. */
     private static final int PRIORITY = 1600;
     /** How long each blend takes. Short: a cast has to read the moment it goes off (the tell, DESIGN §3.15). */
     private static final int FADE_TICKS = 3;
     private static final EasingType FADE_EASING = EasingType.EASE_IN_OUT_SINE;
 
-    private static final Set<ResourceLocation> WARNED = ConcurrentHashMap.newKeySet();
+    private static final Set<Identifier> WARNED = ConcurrentHashMap.newKeySet();
     /** What this layer last started per player, so stopping one loop never cuts a newer animation. */
-    private static final Map<UUID, ResourceLocation> CURRENT = new ConcurrentHashMap<>();
+    private static final Map<UUID, Identifier> CURRENT = new ConcurrentHashMap<>();
     /** What this layer last started per player, staying after it's stopped: a stopped animation still has its fade out to play. */
-    private static final Map<UUID, ResourceLocation> LATEST = new ConcurrentHashMap<>();
-    private static final Set<ResourceLocation> VANILLA_HANDS = ConcurrentHashMap.newKeySet();
-    private static final Set<ResourceLocation> WHILE_LEVEL = ConcurrentHashMap.newKeySet();
+    private static final Map<UUID, Identifier> LATEST = new ConcurrentHashMap<>();
+    private static final Set<Identifier> VANILLA_HANDS = ConcurrentHashMap.newKeySet();
+    private static final Set<Identifier> WHILE_LEVEL = ConcurrentHashMap.newKeySet();
     /** How far down (degrees) you can look and still see a {@link #handsWhileLevel} animation's hands in your own first person. */
     private static final float LEVEL_PITCH = 15f;
 
@@ -68,7 +68,7 @@ public final class PlayerAnimations {
      * whatever's held at its real size right by the camera, usually edge on: fine for an empty hand, but a sword or an axe swung into
      * a guard fills the view with its dark outline and hides the opponent.
      */
-    public static void keepVanillaHands(Iterable<ResourceLocation> animations) {
+    public static void keepVanillaHands(Iterable<Identifier> animations) {
         animations.forEach(VANILLA_HANDS::add);
     }
 
@@ -77,12 +77,12 @@ public final class PlayerAnimations {
      * body, which doesn't tip with the view: hands held in front of the chest sit at the bottom corners of a level view, but looking
      * down brings them up into its middle. Looking further down than that, the hands are vanilla's until you look up again.
      */
-    public static void handsWhileLevel(Iterable<ResourceLocation> animations) {
+    public static void handsWhileLevel(Iterable<Identifier> animations) {
         animations.forEach(WHILE_LEVEL::add);
     }
 
     private static boolean keepsVanillaHands(AbstractClientPlayer player) {
-        ResourceLocation latest = LATEST.get(player.getUUID());
+        Identifier latest = LATEST.get(player.getUUID());
         return latest != null && (VANILLA_HANDS.contains(latest) || holdsSomething(player)
                 || WHILE_LEVEL.contains(latest) && player.getXRot() > LEVEL_PITCH);
     }
@@ -106,11 +106,11 @@ public final class PlayerAnimations {
     }
 
     /** Whether this layer last started {@code animation} on the player, and it hasn't been stopped. A play-once counts until something replaces it. */
-    public static boolean isCurrent(AbstractClientPlayer player, ResourceLocation animation) {
+    public static boolean isCurrent(AbstractClientPlayer player, Identifier animation) {
         return animation.equals(CURRENT.get(player.getUUID()));
     }
 
-    public static void play(AbstractClientPlayer player, ResourceLocation animation, boolean loop) {
+    public static void play(AbstractClientPlayer player, Identifier animation, boolean loop) {
         try {
             PlayerAnimationController controller = controller(player);
             if (controller == null) return;
@@ -141,7 +141,7 @@ public final class PlayerAnimations {
      * How a looping phase repeats: from the loop point the animation's file declares ({@code loopTick}: an intro that
      * plays once, then the loop), else from its start.
      */
-    private static Animation.LoopType loopType(ResourceLocation animation) {
+    private static Animation.LoopType loopType(Identifier animation) {
         Animation.LoopType own = PlayerAnimResources.getAnimation(animation).loopType();
         boolean hasLoopPoint = own != Animation.LoopType.DEFAULT && own != Animation.LoopType.PLAY_ONCE
                 && own != Animation.LoopType.HOLD_ON_LAST_FRAME && own != Animation.LoopType.LOOP;
@@ -149,7 +149,7 @@ public final class PlayerAnimations {
     }
 
     /** Stops {@code animation} if it is what this layer is playing on the player. */
-    public static void stop(AbstractClientPlayer player, ResourceLocation animation) {
+    public static void stop(AbstractClientPlayer player, Identifier animation) {
         if (animation.equals(CURRENT.get(player.getUUID()))) stopAll(player);
     }
 
@@ -181,7 +181,7 @@ public final class PlayerAnimations {
         return PlayerAnimationAccess.getPlayerAnimationLayer(player, LAYER) instanceof PlayerAnimationController c ? c : null;
     }
 
-    private static void warnOnce(ResourceLocation animation, String why) {
+    private static void warnOnce(Identifier animation, String why) {
         if (WARNED.add(animation)) Kegare.LOGGER.warn("Player animation {} can't play ({}); skipping it", animation, why);
     }
 }

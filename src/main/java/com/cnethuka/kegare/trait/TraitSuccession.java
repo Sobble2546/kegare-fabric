@@ -12,7 +12,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.common.util.FakePlayer;
@@ -39,7 +39,7 @@ public final class TraitSuccession {
 
     /** The bearer was killed by {@code killer}: strip lostOnPvpDeath traits and start their succession. */
     public static void onPlayerKilled(ServerPlayer victim, ServerPlayer killer) {
-        for (ResourceLocation id : List.copyOf(TraitService.get(victim).view())) {
+        for (Identifier id : List.copyOf(TraitService.get(victim).view())) {
             Trait trait = KegareRegistries.TRAIT.get(id);
             if (trait == null || !trait.isLostOnPvpDeath()) continue;
             TraitService.remove(victim, trait, Trait.RemoveReason.LOST_IN_PVP);
@@ -56,7 +56,7 @@ public final class TraitSuccession {
      * Called by {@code MaliceService} whenever a player becomes Severed, and on login as a safety net.
      */
     public static void stripMaliceTraits(ServerPlayer player) {
-        for (ResourceLocation id : List.copyOf(TraitService.get(player).view())) {
+        for (Identifier id : List.copyOf(TraitService.get(player).view())) {
             Trait trait = KegareRegistries.TRAIT.get(id);
             if (trait == null) continue;
             TraitRules.SeveredAction action = TraitRules.whenSevered(trait.requiresMalice(), trait.isUnique(), trait.isInheritable());
@@ -102,7 +102,7 @@ public final class TraitSuccession {
         UniqueTraitSavedData saved = UniqueTraitSavedData.get(server);
         if (saved.pendingView().isEmpty() || saved.isNetworked()) return; // a network's succession runs in NetworkTraits
         long now = now(server);
-        for (Map.Entry<ResourceLocation, UniqueTraitSavedData.Pending> entry : List.copyOf(saved.pendingView().entrySet())) {
+        for (Map.Entry<Identifier, UniqueTraitSavedData.Pending> entry : List.copyOf(saved.pendingView().entrySet())) {
             UniqueTraitSavedData.Pending pending = entry.getValue();
             Trait trait = KegareRegistries.TRAIT.get(entry.getKey());
             if (trait == null || pending.dueTick() > now) continue;
@@ -122,7 +122,7 @@ public final class TraitSuccession {
         UniqueTraitSavedData saved = UniqueTraitSavedData.get(player.server);
         if (saved.isNetworked()) return; // the next network pass sees them online
         long now = now(player.server);
-        for (Map.Entry<ResourceLocation, UniqueTraitSavedData.Pending> entry : List.copyOf(saved.pendingView().entrySet())) {
+        for (Map.Entry<Identifier, UniqueTraitSavedData.Pending> entry : List.copyOf(saved.pendingView().entrySet())) {
             Trait trait = KegareRegistries.TRAIT.get(entry.getKey());
             if (trait == null || entry.getValue().dueTick() > now) continue;
             if (TransferRules.isEligibleHeir(candidate(player, trait), entry.getValue().previousBearer())) {
@@ -158,7 +158,7 @@ public final class TraitSuccession {
     // ------------------------------------------------------------------ across a network (DESIGN §3.33)
 
     /** A network event: this server applies a grant if the player is here, or relays the broadcast. */
-    public static void networkEvent(MinecraftServer server, String kind, ResourceLocation id, @Nullable UUID player) {
+    public static void networkEvent(MinecraftServer server, String kind, Identifier id, @Nullable UUID player) {
         Trait trait = KegareRegistries.TRAIT.get(id);
         if (trait == null) return;
         if (kind.equals("broadcast")) {
@@ -170,7 +170,7 @@ public final class TraitSuccession {
     }
 
     /** The database refused a claim: someone else on the network has it. Silently undone, naming nothing (DESIGN §1). */
-    public static void claimRefused(MinecraftServer server, ResourceLocation id, UUID player) {
+    public static void claimRefused(MinecraftServer server, Identifier id, UUID player) {
         Trait trait = KegareRegistries.TRAIT.get(id);
         ServerPlayer here = server.getPlayerList().getPlayer(player);
         if (trait != null && here != null && TraitService.has(here, trait)) TraitService.remove(here, trait, Trait.RemoveReason.CONFLICT);
@@ -197,7 +197,7 @@ public final class TraitSuccession {
         if (days <= 0) return;
         UniqueTraitSavedData saved = UniqueTraitSavedData.get(server);
         long now = System.currentTimeMillis();
-        for (Map.Entry<ResourceLocation, UUID> entry : List.copyOf(saved.bearers().entrySet())) {
+        for (Map.Entry<Identifier, UUID> entry : List.copyOf(saved.bearers().entrySet())) {
             UUID holder = entry.getValue();
             if (server.getPlayerList().getPlayer(holder) != null || saved.onlineOnNetwork(holder)) continue;
             Optional<Long> seen = saved.lastSeen(holder);

@@ -5,7 +5,7 @@ import com.cnethuka.kegare.innatetechnique.InnateTechnique;
 import com.cnethuka.kegare.trait.Trait;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.neoforged.bus.api.IEventBus;
+import com.cnethuka.kegare.platform.bus.IEventBus;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 

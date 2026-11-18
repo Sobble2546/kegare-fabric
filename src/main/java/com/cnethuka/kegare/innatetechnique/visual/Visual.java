@@ -2,7 +2,7 @@ package com.cnethuka.kegare.innatetechnique.visual;
 
 import java.util.Optional;
 import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * One cosmetic: a player animation ({@code assets/<ns>/player_animations}, Player Animation Library) and/or a VFX
@@ -12,14 +12,14 @@ import net.minecraft.resources.ResourceLocation;
  * @param linger loops only: fade out instead of vanishing when stopped (see {@link #lingering})
  * @param tint   ARGB multiplied over the effect's emitters whose names start with {@code tint}, or 0 for the effect as it was authored
  */
-public record Visual(Optional<ResourceLocation> animation, Optional<ResourceLocation> effect, Anchor anchor, boolean linger, int tint) {
+public record Visual(Optional<Identifier> animation, Optional<Identifier> effect, Anchor anchor, boolean linger, int tint) {
     public static final Visual NONE = new Visual(Optional.empty(), Optional.empty(), Anchor.EYES);
 
-    public Visual(Optional<ResourceLocation> animation, Optional<ResourceLocation> effect, Anchor anchor) {
+    public Visual(Optional<Identifier> animation, Optional<Identifier> effect, Anchor anchor) {
         this(animation, effect, anchor, false, 0);
     }
 
-    public Visual(Optional<ResourceLocation> animation, Optional<ResourceLocation> effect, Anchor anchor, boolean linger) {
+    public Visual(Optional<Identifier> animation, Optional<Identifier> effect, Anchor anchor, boolean linger) {
         this(animation, effect, anchor, linger, 0);
     }
 
@@ -40,15 +40,15 @@ public record Visual(Optional<ResourceLocation> animation, Optional<ResourceLoca
         MOTION
     }
 
-    public static Visual of(@Nullable ResourceLocation animation, @Nullable ResourceLocation effect, Anchor anchor) {
+    public static Visual of(@Nullable Identifier animation, @Nullable Identifier effect, Anchor anchor) {
         return new Visual(Optional.ofNullable(animation), Optional.ofNullable(effect), anchor);
     }
 
-    public static Visual animation(ResourceLocation animation) {
+    public static Visual animation(Identifier animation) {
         return of(animation, null, Anchor.EYES);
     }
 
-    public static Visual effect(ResourceLocation effect, Anchor anchor) {
+    public static Visual effect(Identifier effect, Anchor anchor) {
         return of(null, effect, anchor);
     }
 
@@ -57,7 +57,7 @@ public record Visual(Optional<ResourceLocation> animation, Optional<ResourceLoca
      * away, it stops emitting and what is already there fades out over its own lifetime, instead of vanishing at once
      * like state loops (shells, cones, charges) must.
      */
-    public static Visual lingering(ResourceLocation effect, Anchor anchor) {
+    public static Visual lingering(Identifier effect, Anchor anchor) {
         return new Visual(Optional.empty(), Optional.of(effect), anchor, true);
     }
 

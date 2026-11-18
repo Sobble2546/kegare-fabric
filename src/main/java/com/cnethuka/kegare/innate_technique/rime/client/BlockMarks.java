@@ -21,7 +21,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
@@ -41,7 +41,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class BlockMarks {
     static final int TEXELS = 16;
-    private static final ResourceLocation WHITE = Kegare.id("textures/marks/white.png");
+    private static final Identifier WHITE = Kegare.id("textures/marks/white.png");
     /** How far off the face the marks are drawn, so they never flicker into it. */
     private static final double LIFT = 0.008;
     /** A texel's last few ticks: thinner, then gone. */
@@ -154,7 +154,7 @@ public final class BlockMarks {
     record Key(BlockPos solid, Direction face) {}
 
     private static final Map<Key, Face> FACES = new LinkedHashMap<>();
-    private static final Map<ResourceLocation, Optional<Pattern>> PATTERNS = new HashMap<>();
+    private static final Map<Identifier, Optional<Pattern>> PATTERNS = new HashMap<>();
     private static int clock;
     private static ClientLevel lastLevel;
 
@@ -163,7 +163,7 @@ public final class BlockMarks {
     // ---------------------------------------------------------------------------------------------- patterns
 
     /** The pattern {@code textures/marks/<name>.png} with its {@code _order.png}, or null if it can't be read. */
-    public static @Nullable Pattern pattern(ResourceLocation name) {
+    public static @Nullable Pattern pattern(Identifier name) {
         return PATTERNS.computeIfAbsent(name, BlockMarks::load).orElse(null);
     }
 
@@ -171,11 +171,11 @@ public final class BlockMarks {
         PATTERNS.clear();
     }
 
-    private static Optional<Pattern> load(ResourceLocation name) {
+    private static Optional<Pattern> load(Identifier name) {
         var manager = Minecraft.getInstance().getResourceManager();
-        ResourceLocation art = name.withPath(p -> "textures/marks/" + p + ".png");
-        ResourceLocation order = name.withPath(p -> "textures/marks/" + p + "_order.png");
-        ResourceLocation glow = name.withPath(p -> "textures/marks/" + p + "_glow.png");
+        Identifier art = name.withPath(p -> "textures/marks/" + p + ".png");
+        Identifier order = name.withPath(p -> "textures/marks/" + p + "_order.png");
+        Identifier glow = name.withPath(p -> "textures/marks/" + p + "_glow.png");
         try (InputStream a = manager.getResourceOrThrow(art).open(); InputStream o = manager.getResourceOrThrow(order).open();
                 NativeImage ai = NativeImage.read(a); NativeImage oi = NativeImage.read(o)) {
             int w = ai.getWidth(), h = ai.getHeight();

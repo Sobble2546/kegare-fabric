@@ -7,9 +7,9 @@ import com.cnethuka.kegare.impact.ImpactPayload;
 import com.cnethuka.kegare.impact.ScreenEffects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
-import net.neoforged.bus.api.IEventBus;
+import com.cnethuka.kegare.platform.bus.IEventBus;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
@@ -24,7 +24,7 @@ import net.neoforged.neoforge.common.NeoForge;
  * looks is this player's client config ({@code impact}), so it can be tuned while the game runs.
  */
 public final class ImpactClient {
-    public static final ResourceLocation IMPACT_FRAME = Kegare.id("impact_frame");
+    public static final Identifier IMPACT_FRAME = Kegare.id("impact_frame");
 
     private enum Role { ATTACKER, VICTIM, WITNESS }
 

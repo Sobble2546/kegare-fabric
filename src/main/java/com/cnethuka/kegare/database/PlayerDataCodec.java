@@ -24,7 +24,7 @@ import net.minecraft.nbt.LongTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.attachment.AttachmentHolder;
 import net.neoforged.neoforge.attachment.AttachmentType;
@@ -48,10 +48,10 @@ public final class PlayerDataCodec {
     private PlayerDataCodec() {}
 
     /** Every attachment that's stored: Kegare's own, with a serializer. */
-    public static List<ResourceLocation> savedAttachments() {
-        List<ResourceLocation> out = new ArrayList<>();
+    public static List<Identifier> savedAttachments() {
+        List<Identifier> out = new ArrayList<>();
         for (Map.Entry<net.minecraft.resources.ResourceKey<AttachmentType<?>>, AttachmentType<?>> entry : NeoForgeRegistries.ATTACHMENT_TYPES.entrySet()) {
-            ResourceLocation id = entry.getKey().location();
+            Identifier id = entry.getKey().location();
             if (ours(id.toString()) && serializer(entry.getValue()) != null) out.add(id);
         }
         return out;
@@ -93,7 +93,7 @@ public final class PlayerDataCodec {
     public static void apply(ServerPlayer player, Map<String, String> rows, HolderLookup.Provider registries) throws DecodeException {
         Map<AttachmentType<?>, Object> decoded = new HashMap<>();
         for (Map.Entry<String, String> row : rows.entrySet()) {
-            ResourceLocation id = ResourceLocation.tryParse(row.getKey());
+            Identifier id = Identifier.tryParse(row.getKey());
             AttachmentType<?> type = id == null ? null : NeoForgeRegistries.ATTACHMENT_TYPES.get(id);
             if (type == null || serializer(type) == null) {
                 Kegare.LOGGER.warn("Kegare's database has data for {}, which this version doesn't know. Leaving it there.", row.getKey());
@@ -106,7 +106,7 @@ public final class PlayerDataCodec {
                 throw new DecodeException(row.getKey(), e);
             }
         }
-        for (ResourceLocation id : savedAttachments()) {
+        for (Identifier id : savedAttachments()) {
             AttachmentType<Object> type = (AttachmentType<Object>) NeoForgeRegistries.ATTACHMENT_TYPES.get(id);
             if (player.hasData(type)) player.removeData(type);
         }

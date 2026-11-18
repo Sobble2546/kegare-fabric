@@ -21,7 +21,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -48,7 +48,7 @@ import org.joml.Vector3f;
  */
 public final class LanceAftermath {
     /** The frost a lance leaves where it comes down: pixel art on the blocks (BlockMarks, {@code marks/lance_frost}). */
-    public static final ResourceLocation FROST_MARK = Kegare.id("lance_frost");
+    public static final Identifier FROST_MARK = Kegare.id("lance_frost");
     /** How long a lance stays stuck before it shatters. */
     static final int STUCK_TICKS = 20;
     /** How deep a stuck lance's tip goes in. */

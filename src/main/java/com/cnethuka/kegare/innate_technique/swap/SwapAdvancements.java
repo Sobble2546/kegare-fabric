@@ -2,7 +2,7 @@ package com.cnethuka.kegare.innate_technique.swap;
 
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.advancement.KegareAdvancements;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -12,16 +12,16 @@ import net.minecraft.server.level.ServerPlayer;
  * count player targets only (DESIGN §4).
  */
 public final class SwapAdvancements {
-    public static final ResourceLocation ROOT = KegareAdvancements.innateTechniqueRoot(Kegare.id("swap"));
-    public static final ResourceLocation SWITCHEROO = id("switcheroo");
-    public static final ResourceLocation WRONG_TARGET = id("wrong_target");
-    public static final ResourceLocation FALL_GUY = id("fall_guy");
-    public static final ResourceLocation IDENTITY_CRISIS = id("identity_crisis");
-    public static final ResourceLocation NOT_ALLOWED = id("not_allowed");
-    public static final ResourceLocation ROUND_TRIP = id("round_trip");
-    public static final ResourceLocation TWO_OF_YOU = id("two_of_you");
-    public static final ResourceLocation RETURN_TO_SENDER = id("special_delivery_swap");
-    public static final ResourceLocation NEWTONS_THIRD = id("newtons_third");
+    public static final Identifier ROOT = KegareAdvancements.innateTechniqueRoot(Kegare.id("swap"));
+    public static final Identifier SWITCHEROO = id("switcheroo");
+    public static final Identifier WRONG_TARGET = id("wrong_target");
+    public static final Identifier FALL_GUY = id("fall_guy");
+    public static final Identifier IDENTITY_CRISIS = id("identity_crisis");
+    public static final Identifier NOT_ALLOWED = id("not_allowed");
+    public static final Identifier ROUND_TRIP = id("round_trip");
+    public static final Identifier TWO_OF_YOU = id("two_of_you");
+    public static final Identifier RETURN_TO_SENDER = id("special_delivery_swap");
+    public static final Identifier NEWTONS_THIRD = id("newtons_third");
 
     /** Fall Guy: the swapped player's fall death must come within this many ticks of the swap (5 s). */
     public static final long FALL_GUY_WINDOW_TICKS = 5 * 20;
@@ -34,12 +34,12 @@ public final class SwapAdvancements {
 
     private SwapAdvancements() {}
 
-    private static ResourceLocation id(String name) {
+    private static Identifier id(String name) {
         return Kegare.id("innate_technique/swap/" + name);
     }
 
     /** Only a player who currently holds Swap earns these (so the tab never opens for anyone else). */
-    public static void award(ServerPlayer player, ResourceLocation id) {
+    public static void award(ServerPlayer player, Identifier id) {
         if (Swap.holds(player)) KegareAdvancements.award(player, id);
     }
 }

@@ -21,7 +21,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.attachment.AttachmentHolder;
@@ -34,8 +34,8 @@ import org.junit.jupiter.api.io.TempDir;
 /** {@code /kegare db migrate} and {@code export} (DESIGN §3.33), against a real database. Skipped without {@code KEGARE_TEST_DB_URL}. */
 @ExtendWith(EphemeralTestServerProvider.class)
 class WorldMigrationIT {
-    private static final ResourceLocation EYES = ResourceLocation.parse("kegare:six_eyes");
-    private static final ResourceLocation OTHER = ResourceLocation.parse("kegare:other_trait");
+    private static final Identifier EYES = Identifier.parse("kegare:six_eyes");
+    private static final Identifier OTHER = Identifier.parse("kegare:other_trait");
     private static final long GAME_TIME = 1000;
     /** An attachment that play will have deleted by the second run. */
     private static final String GONE_LATER = "kegare:gone_later";

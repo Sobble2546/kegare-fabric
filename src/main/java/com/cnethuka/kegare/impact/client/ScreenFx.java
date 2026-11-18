@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.PostChain;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
@@ -38,9 +38,9 @@ public final class ScreenFx {
     private static long holdMillis;
     private static long holdUntil;
 
-    private static final Map<ResourceLocation, PostChain> CHAINS = new HashMap<>();
-    private static final Set<ResourceLocation> BROKEN = new HashSet<>();
-    private static final Map<ResourceLocation, Playing> PLAYING = new LinkedHashMap<>();
+    private static final Map<Identifier, PostChain> CHAINS = new HashMap<>();
+    private static final Set<Identifier> BROKEN = new HashSet<>();
+    private static final Map<Identifier, Playing> PLAYING = new LinkedHashMap<>();
     private static int chainWidth, chainHeight;
 
     /** {@code start} and {@code end} are -1 until it's first drawn: its time counts from there, so it's always seen at least once. */
@@ -74,7 +74,7 @@ public final class ScreenFx {
     }
 
     /** Plays a screen effect for {@code millis}, fading in and out over {@code fadeMillis}. Replayed while showing: {@code millis} from now. */
-    public static void play(ResourceLocation effect, long millis, long fadeMillis) {
+    public static void play(Identifier effect, long millis, long fadeMillis) {
         if (millis <= 0) {
             PLAYING.remove(effect);
             return;
@@ -89,7 +89,7 @@ public final class ScreenFx {
         }
     }
 
-    public static boolean playing(ResourceLocation effect) {
+    public static boolean playing(Identifier effect) {
         Playing p = PLAYING.get(effect);
         return p != null && (p.start < 0 || p.end > System.nanoTime());
     }
@@ -112,8 +112,8 @@ public final class ScreenFx {
         RenderSystem.disableBlend();
         RenderSystem.disableDepthTest();
         RenderSystem.resetTextureMatrix();
-        for (Iterator<Map.Entry<ResourceLocation, Playing>> it = PLAYING.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry<ResourceLocation, Playing> e = it.next();
+        for (Iterator<Map.Entry<Identifier, Playing>> it = PLAYING.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry<Identifier, Playing> e = it.next();
             Playing p = e.getValue().started(now);
             e.setValue(p);
             if (now > p.end && p.start != now) {
@@ -142,7 +142,7 @@ public final class ScreenFx {
         Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
     }
 
-    private static @Nullable PostChain chain(Minecraft mc, RenderTarget main, ResourceLocation effect) {
+    private static @Nullable PostChain chain(Minecraft mc, RenderTarget main, Identifier effect) {
         if (BROKEN.contains(effect)) return null;
         if (chainWidth != main.width || chainHeight != main.height) {
             chainWidth = main.width;
@@ -151,7 +151,7 @@ public final class ScreenFx {
         }
         PostChain chain = CHAINS.get(effect);
         if (chain != null) return chain;
-        ResourceLocation file = ResourceLocation.fromNamespaceAndPath(effect.getNamespace(), "shaders/post/" + effect.getPath() + ".json");
+        Identifier file = Identifier.fromNamespaceAndPath(effect.getNamespace(), "shaders/post/" + effect.getPath() + ".json");
         try {
             chain = new PostChain(mc.getTextureManager(), mc.getResourceManager(), main, file);
             chain.resize(main.width, main.height);

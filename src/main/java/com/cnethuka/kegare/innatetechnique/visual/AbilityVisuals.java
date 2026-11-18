@@ -6,7 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * What an ability looks like, per {@link VisualPhase}. Purely cosmetic: the server sends these to clients and never
@@ -26,8 +26,8 @@ public final class AbilityVisuals {
     }
 
     /** Every effect ID used, for preloading on the client. */
-    public Set<ResourceLocation> effects() {
-        Set<ResourceLocation> out = new LinkedHashSet<>();
+    public Set<Identifier> effects() {
+        Set<Identifier> out = new LinkedHashSet<>();
         phases.values().forEach(v -> v.effect().ifPresent(out::add));
         return out;
     }
@@ -39,44 +39,44 @@ public final class AbilityVisuals {
     public static final class Builder {
         private final Map<VisualPhase, Visual> phases = new EnumMap<>(VisualPhase.class);
 
-        private Builder put(VisualPhase phase, @Nullable ResourceLocation animation, @Nullable ResourceLocation effect, Visual.Anchor anchor) {
+        private Builder put(VisualPhase phase, @Nullable Identifier animation, @Nullable Identifier effect, Visual.Anchor anchor) {
             phases.put(phase, Visual.of(animation, effect, anchor));
             return this;
         }
 
-        public Builder cast(@Nullable ResourceLocation animation, @Nullable ResourceLocation effect) {
+        public Builder cast(@Nullable Identifier animation, @Nullable Identifier effect) {
             return put(VisualPhase.CAST, animation, effect, Visual.Anchor.EYES);
         }
 
-        public Builder chargeLoop(@Nullable ResourceLocation animation, @Nullable ResourceLocation effect) {
+        public Builder chargeLoop(@Nullable Identifier animation, @Nullable Identifier effect) {
             return put(VisualPhase.CHARGE_LOOP, animation, effect, Visual.Anchor.EYES);
         }
 
-        public Builder release(@Nullable ResourceLocation animation, @Nullable ResourceLocation effect) {
+        public Builder release(@Nullable Identifier animation, @Nullable Identifier effect) {
             return put(VisualPhase.RELEASE, animation, effect, Visual.Anchor.EYES);
         }
 
-        public Builder channelLoop(@Nullable ResourceLocation animation, @Nullable ResourceLocation effect) {
+        public Builder channelLoop(@Nullable Identifier animation, @Nullable Identifier effect) {
             return put(VisualPhase.CHANNEL_LOOP, animation, effect, Visual.Anchor.EYES);
         }
 
-        public Builder toggleOn(@Nullable ResourceLocation animation, @Nullable ResourceLocation effect) {
+        public Builder toggleOn(@Nullable Identifier animation, @Nullable Identifier effect) {
             return put(VisualPhase.TOGGLE_ON, animation, effect, Visual.Anchor.BODY);
         }
 
-        public Builder toggleLoop(@Nullable ResourceLocation animation, @Nullable ResourceLocation effect) {
+        public Builder toggleLoop(@Nullable Identifier animation, @Nullable Identifier effect) {
             return put(VisualPhase.TOGGLE_LOOP, animation, effect, Visual.Anchor.BODY);
         }
 
-        public Builder toggleOff(@Nullable ResourceLocation animation, @Nullable ResourceLocation effect) {
+        public Builder toggleOff(@Nullable Identifier animation, @Nullable Identifier effect) {
             return put(VisualPhase.TOGGLE_OFF, animation, effect, Visual.Anchor.BODY);
         }
 
-        public Builder projectileTrail(ResourceLocation effect) {
+        public Builder projectileTrail(Identifier effect) {
             return put(VisualPhase.PROJECTILE_TRAIL, null, effect, Visual.Anchor.MOTION);
         }
 
-        public Builder impact(ResourceLocation effect) {
+        public Builder impact(Identifier effect) {
             return put(VisualPhase.IMPACT, null, effect, Visual.Anchor.BODY);
         }
 

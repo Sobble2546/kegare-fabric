@@ -30,7 +30,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
@@ -53,15 +53,15 @@ import org.lwjgl.glfw.GLFW;
  * </ul>
  */
 public final class RevealScreen extends Screen {
-    private static final ResourceLocation TALISMAN = Kegare.id("reveal/talisman");
-    private static final ResourceLocation GLOW = Kegare.id("reveal/glow");
-    private static final ResourceLocation RING = Kegare.id("reveal/ring");
-    private static final ResourceLocation RAY = Kegare.id("reveal/ray");
-    private static final ResourceLocation STAR = Kegare.id("reveal/star");
-    private static final ResourceLocation STAR_SMALL = Kegare.id("reveal/star_small");
-    private static final ResourceLocation ASH = Kegare.id("reveal/ash");
-    private static final ResourceLocation[] FLAMES = new ResourceLocation[8];
-    private static final ResourceLocation[] EYE = new ResourceLocation[6];
+    private static final Identifier TALISMAN = Kegare.id("reveal/talisman");
+    private static final Identifier GLOW = Kegare.id("reveal/glow");
+    private static final Identifier RING = Kegare.id("reveal/ring");
+    private static final Identifier RAY = Kegare.id("reveal/ray");
+    private static final Identifier STAR = Kegare.id("reveal/star");
+    private static final Identifier STAR_SMALL = Kegare.id("reveal/star_small");
+    private static final Identifier ASH = Kegare.id("reveal/ash");
+    private static final Identifier[] FLAMES = new Identifier[8];
+    private static final Identifier[] EYE = new Identifier[6];
 
     static {
         for (int i = 0; i < FLAMES.length; i++) FLAMES[i] = Kegare.id("reveal/flame_" + i);
@@ -124,7 +124,7 @@ public final class RevealScreen extends Screen {
     private long resultStartMillis = -1;
     private long nextSignatureMillis;
     @Nullable
-    private ResourceLocation playingSignature;
+    private Identifier playingSignature;
 
     // One-shot screen effects.
     private long flashStartMillis;
@@ -158,7 +158,7 @@ public final class RevealScreen extends Screen {
         this.result = reveal.severed() ? null : reveal.innateTechnique().map(KegareRegistries.INNATE_TECHNIQUE::get).orElse(null);
         this.rarity = result == null ? null : result.rarity();
         this.sixEyes = reveal.traits().contains(KegareTraits.SIX_EYES.getId());
-        for (ResourceLocation id : reveal.traits()) {
+        for (Identifier id : reveal.traits()) {
             Trait trait = KegareRegistries.TRAIT.get(id);
             if (trait != null && !id.equals(KegareTraits.SIX_EYES.getId())) listedTraits.add(trait); // Six Eyes has its own lines
         }
@@ -1226,11 +1226,11 @@ public final class RevealScreen extends Screen {
         additive(false);
     }
 
-    private static void sprite(GuiGraphics g, ResourceLocation sprite, int x, int y, int w, int h) {
+    private static void sprite(GuiGraphics g, Identifier sprite, int x, int y, int w, int h) {
         GuiDraw.sprite(g, sprite, x, y, w, h);
     }
 
-    private static void tinted(GuiGraphics g, ResourceLocation sprite, int x, int y, int w, int h, int rgb, float alpha) {
+    private static void tinted(GuiGraphics g, Identifier sprite, int x, int y, int w, int h, int rgb, float alpha) {
         GuiDraw.tinted(g, sprite, x, y, w, h, rgb, alpha);
     }
 

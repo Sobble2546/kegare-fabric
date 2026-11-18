@@ -23,12 +23,12 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.IEventBus;
+import com.cnethuka.kegare.platform.bus.IEventBus;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
@@ -55,14 +55,14 @@ import org.joml.Vector3f;
  * The color is what the server sends this viewer ({@code AuraTell}): under a disguise, the face's.
  */
 public final class AuraClient {
-    static final ResourceLocation SHEET = Kegare.id("textures/entity/aura.png");
-    static final ResourceLocation SHEET_SIMPLE = Kegare.id("textures/entity/aura_simple.png");
-    static final ResourceLocation WISP = Kegare.id("textures/entity/aura_wisp.png");
-    static final ResourceLocation EDGE = Kegare.id("textures/entity/aura_edge.png");
-    static final ResourceLocation SHIMMER = Kegare.id("textures/entity/aura_shimmer.png");
+    static final Identifier SHEET = Kegare.id("textures/entity/aura.png");
+    static final Identifier SHEET_SIMPLE = Kegare.id("textures/entity/aura_simple.png");
+    static final Identifier WISP = Kegare.id("textures/entity/aura_wisp.png");
+    static final Identifier EDGE = Kegare.id("textures/entity/aura_edge.png");
+    static final Identifier SHIMMER = Kegare.id("textures/entity/aura_shimmer.png");
     /** Background RMT's shimmer, as a Six Eyes bearer sees it: RMT's green. */
     static final int SHIMMER_RGB = 0x4ED873;
-    static final ResourceLocation LAYER = Kegare.id("aura_edges");
+    static final Identifier LAYER = Kegare.id("aura_edges");
     /** The sheet: frames, size in blocks, and the feet's height above its bottom edge, for a body 1.8 tall. */
     static final int FRAMES = 16;
     static final float SHEET_W = 1.6f, SHEET_H = 3.2f, FEET = 0.30f, BODY = 1.8f;

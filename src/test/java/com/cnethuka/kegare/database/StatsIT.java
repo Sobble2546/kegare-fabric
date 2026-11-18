@@ -165,7 +165,7 @@ class StatsIT {
                                 "kegare:insight", "{\"output\":99}", "kegare:traits", "{\"traits\":[\"kegare:six_eyes\"]}", "kegare:unlocks", "{\"unlocked\":[\"x\"]}"));
                         return null;
                     });
-                    database.traitRecord().forceClaim(net.minecraft.resources.ResourceLocation.parse("kegare:six_eyes"), player.getUUID());
+                    database.traitRecord().forceClaim(net.minecraft.resources.Identifier.parse("kegare:six_eyes"), player.getUUID());
                     awaitStats(database);
                     SavingIT.await("the bearer's row", () -> !database.traits.hasOps());
 

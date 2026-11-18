@@ -8,7 +8,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
@@ -72,7 +72,7 @@ public final class PossessionData {
             d.bodyPos = new Vec3(tag.getDouble("X"), tag.getDouble("Y"), tag.getDouble("Z"));
             d.bodyYaw = tag.getFloat("Yaw");
             d.bodyPitch = tag.getFloat("Pitch");
-            ResourceLocation dim = ResourceLocation.tryParse(tag.getString("Dimension"));
+            Identifier dim = Identifier.tryParse(tag.getString("Dimension"));
             d.dimension = dim == null ? null : ResourceKey.create(Registries.DIMENSION, dim);
             d.inventory = tag.getList("Inventory", Tag.TAG_COMPOUND);
             d.selectedSlot = tag.getInt("Selected");

@@ -13,7 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 /**
@@ -22,7 +22,7 @@ import net.minecraft.util.Mth;
  * held after Technique Mode ended. Innate techniques can add lines that show in Technique Mode too ({@link #addExtra}).
  */
 public final class StatusLayer implements LayeredDraw.Layer {
-    public static final ResourceLocation ID = Kegare.id("status");
+    public static final Identifier ID = Kegare.id("status");
 
     /**
      * A line an innate technique adds under the crosshair, drawn in AND out of Technique Mode (e.g. possessing a

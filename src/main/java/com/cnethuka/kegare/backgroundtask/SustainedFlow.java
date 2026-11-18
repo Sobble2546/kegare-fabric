@@ -5,7 +5,7 @@ import com.cnethuka.kegare.config.ConfigText;
 import com.cnethuka.kegare.innatetechnique.CastManager;
 import com.cnethuka.kegare.malice.MaliceService;
 import com.cnethuka.kegare.progression.UnlockRequirements;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -15,7 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
  * Unlocked at Refinement 5, kept once earned, even after a reroll. Nothing visible.
  */
 public final class SustainedFlow extends BackgroundTask {
-    public static final ResourceLocation ID = Kegare.id("sustained_flow");
+    public static final Identifier ID = Kegare.id("sustained_flow");
     public static SustainedFlow TASK;
 
     private SustainedFlow() {

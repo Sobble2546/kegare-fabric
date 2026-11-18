@@ -6,12 +6,12 @@ import java.util.Optional;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /** Server to client: open the Purification Talisman confirmation (nothing has been consumed or rolled). */
-public record TalismanPromptPayload(InteractionHand hand, Optional<ResourceLocation> current, int rollsSinceLegendary, int hardPity)
+public record TalismanPromptPayload(InteractionHand hand, Optional<Identifier> current, int rollsSinceLegendary, int hardPity)
         implements CustomPacketPayload {
     public static final Type<TalismanPromptPayload> TYPE = new Type<>(Kegare.id("talisman_prompt"));
     public static final StreamCodec<FriendlyByteBuf, TalismanPromptPayload> STREAM_CODEC = StreamCodec.of(

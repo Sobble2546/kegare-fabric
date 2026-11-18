@@ -7,7 +7,7 @@ import com.cnethuka.kegare.innatetechnique.visual.VisualPhase;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -42,7 +42,7 @@ public abstract class RimeProjectile extends ThrowableItemProjectile {
 
     protected abstract Ability ability();
 
-    protected abstract ResourceLocation trailEffect();
+    protected abstract Identifier trailEffect();
 
     /** How big its trail is drawn. */
     protected float trailScale() {

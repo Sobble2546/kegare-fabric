@@ -14,7 +14,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 
@@ -35,13 +35,13 @@ public final class UniqueTraitSavedData extends SavedData {
      * every change to the backend, which is the real authority. Nothing is saved in the world then.
      */
     public interface Backend {
-        void claimed(ResourceLocation trait, UUID player, boolean force);
+        void claimed(Identifier trait, UUID player, boolean force);
 
-        void released(ResourceLocation trait, UUID player);
+        void released(Identifier trait, UUID player);
 
-        void succession(ResourceLocation trait, Pending pending);
+        void succession(Identifier trait, Pending pending);
 
-        void revoked(UUID player, ResourceLocation trait);
+        void revoked(UUID player, Identifier trait);
 
         void revocationsTaken(UUID player);
 
@@ -60,9 +60,9 @@ public final class UniqueTraitSavedData extends SavedData {
     private static final SavedData.Factory<UniqueTraitSavedData> FACTORY =
             new SavedData.Factory<>(UniqueTraitSavedData::new, UniqueTraitSavedData::load);
 
-    private final Map<ResourceLocation, UUID> bearers = new HashMap<>();
-    private final Map<ResourceLocation, Pending> pending = new LinkedHashMap<>();
-    private final Map<UUID, Set<ResourceLocation>> revoked = new HashMap<>();
+    private final Map<Identifier, UUID> bearers = new HashMap<>();
+    private final Map<Identifier, Pending> pending = new LinkedHashMap<>();
+    private final Map<UUID, Set<Identifier>> revoked = new HashMap<>();
     private final Map<UUID, Long> lastSeen = new HashMap<>();
     @Nullable
     private final Backend backend;
@@ -98,7 +98,7 @@ public final class UniqueTraitSavedData extends SavedData {
     }
 
     /** Replaces the contents with the network record's current state (lastSeen is merged, not cleared). */
-    public void replaceAll(Map<ResourceLocation, UUID> bearers, Map<ResourceLocation, Pending> pending, Map<UUID, Set<ResourceLocation>> revoked, Map<UUID, Long> lastSeen, Set<UUID> online) {
+    public void replaceAll(Map<Identifier, UUID> bearers, Map<Identifier, Pending> pending, Map<UUID, Set<Identifier>> revoked, Map<UUID, Long> lastSeen, Set<UUID> online) {
         this.bearers.clear();
         this.bearers.putAll(bearers);
         this.pending.clear();
@@ -116,7 +116,7 @@ public final class UniqueTraitSavedData extends SavedData {
     }
 
     /** Read views for import and export. */
-    public Map<UUID, Set<ResourceLocation>> revokedView() {
+    public Map<UUID, Set<Identifier>> revokedView() {
         return Collections.unmodifiableMap(revoked);
     }
 
@@ -126,16 +126,16 @@ public final class UniqueTraitSavedData extends SavedData {
 
     // ------------------------------------------------------------------ bearers
 
-    public Optional<UUID> bearer(ResourceLocation trait) {
+    public Optional<UUID> bearer(Identifier trait) {
         return Optional.ofNullable(bearers.get(trait));
     }
 
-    public Map<ResourceLocation, UUID> bearers() {
+    public Map<Identifier, UUID> bearers() {
         return Collections.unmodifiableMap(bearers);
     }
 
     /** Normal claim (birth roll, login restore). Fails if someone else holds it or it is pending succession. */
-    public boolean tryClaim(ResourceLocation trait, UUID player) {
+    public boolean tryClaim(Identifier trait, UUID player) {
         UUID current = bearers.get(trait);
         if (current != null) return current.equals(player);
         if (pending.containsKey(trait)) return false;
@@ -146,7 +146,7 @@ public final class UniqueTraitSavedData extends SavedData {
     }
 
     /** Admin grant or succession: overrides a pending succession, but never steals from a current bearer. */
-    public boolean forceClaim(ResourceLocation trait, UUID player) {
+    public boolean forceClaim(Identifier trait, UUID player) {
         UUID current = bearers.get(trait);
         if (current != null && !current.equals(player)) return false;
         pending.remove(trait);
@@ -157,7 +157,7 @@ public final class UniqueTraitSavedData extends SavedData {
     }
 
     /** Releases the trait if {@code player} holds it. */
-    public void release(ResourceLocation trait, UUID player) {
+    public void release(Identifier trait, UUID player) {
         if (player.equals(bearers.get(trait))) {
             bearers.remove(trait);
             if (backend != null) backend.released(trait, player);
@@ -165,8 +165,8 @@ public final class UniqueTraitSavedData extends SavedData {
         }
     }
 
-    public Set<ResourceLocation> heldBy(UUID player) {
-        Set<ResourceLocation> out = new HashSet<>();
+    public Set<Identifier> heldBy(UUID player) {
+        Set<Identifier> out = new HashSet<>();
         bearers.forEach((trait, uuid) -> {
             if (uuid.equals(player)) out.add(trait);
         });
@@ -175,15 +175,15 @@ public final class UniqueTraitSavedData extends SavedData {
 
     // ------------------------------------------------------------------ succession
 
-    public Optional<Pending> pending(ResourceLocation trait) {
+    public Optional<Pending> pending(Identifier trait) {
         return Optional.ofNullable(pending.get(trait));
     }
 
-    public Map<ResourceLocation, Pending> pendingView() {
+    public Map<Identifier, Pending> pendingView() {
         return Collections.unmodifiableMap(pending);
     }
 
-    public void startSuccession(ResourceLocation trait, Pending entry) {
+    public void startSuccession(Identifier trait, Pending entry) {
         pending.put(trait, entry);
         if (backend != null) backend.succession(trait, entry);
         else setDirty();
@@ -191,15 +191,15 @@ public final class UniqueTraitSavedData extends SavedData {
 
     // ------------------------------------------------------------------ offline revocation
 
-    public void revoke(UUID player, ResourceLocation trait) {
+    public void revoke(UUID player, Identifier trait) {
         revoked.computeIfAbsent(player, u -> new HashSet<>()).add(trait);
         if (backend != null) backend.revoked(player, trait);
         else setDirty();
     }
 
     /** Returns and clears the traits revoked from {@code player} while they were offline. */
-    public Set<ResourceLocation> takeRevocations(UUID player) {
-        Set<ResourceLocation> out = revoked.remove(player);
+    public Set<Identifier> takeRevocations(UUID player) {
+        Set<Identifier> out = revoked.remove(player);
         if (out == null) return Set.of();
         if (backend != null) backend.revocationsTaken(player);
         else setDirty();
@@ -265,17 +265,17 @@ public final class UniqueTraitSavedData extends SavedData {
     private static UniqueTraitSavedData load(CompoundTag tag, HolderLookup.Provider registries) {
         UniqueTraitSavedData data = new UniqueTraitSavedData();
         for (CompoundTag e : compounds(tag, "bearers")) {
-            ResourceLocation trait = ResourceLocation.tryParse(e.getString("trait"));
+            Identifier trait = Identifier.tryParse(e.getString("trait"));
             if (trait != null && e.hasUUID("bearer")) data.bearers.put(trait, e.getUUID("bearer"));
         }
         for (CompoundTag e : compounds(tag, "pending")) {
-            ResourceLocation trait = ResourceLocation.tryParse(e.getString("trait"));
+            Identifier trait = Identifier.tryParse(e.getString("trait"));
             if (trait == null || !e.hasUUID("previous")) continue;
             Optional<UUID> killer = e.hasUUID("killer") ? Optional.of(e.getUUID("killer")) : Optional.empty();
             data.pending.put(trait, new Pending(e.getUUID("previous"), killer, e.getLong("due")));
         }
         for (CompoundTag e : compounds(tag, "revoked")) {
-            ResourceLocation trait = ResourceLocation.tryParse(e.getString("trait"));
+            Identifier trait = Identifier.tryParse(e.getString("trait"));
             if (trait != null && e.hasUUID("player")) data.revoked.computeIfAbsent(e.getUUID("player"), u -> new HashSet<>()).add(trait);
         }
         for (CompoundTag e : compounds(tag, "last_seen")) {

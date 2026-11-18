@@ -6,7 +6,7 @@ import com.cnethuka.kegare.innatetechnique.CastType;
 import com.cnethuka.kegare.innatetechnique.EndReason;
 import com.cnethuka.kegare.innatetechnique.visual.AbilityVisuals;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -25,7 +25,7 @@ public final class IcePathAbility extends RimeSpecial {
             .channelLoop(RimeIds.ANIM_ICE_PATH_SLIDE, null)
             .build();
     /** Lets the slide ride up one-block steps instead of stopping dead. */
-    private static final ResourceLocation STEP_BOOST = Kegare.id("ice_path_step");
+    private static final Identifier STEP_BOOST = Kegare.id("ice_path_step");
 
     IcePathAbility() {
         super("ice_path", CastType.CHANNELED, () -> Rime.FROST_FIELD);

@@ -6,7 +6,7 @@ import com.cnethuka.kegare.innatetechnique.EndReason;
 import com.cnethuka.kegare.malice.MaliceService;
 import com.cnethuka.kegare.network.PlayerSync;
 import com.cnethuka.kegare.registry.KegareAttachments;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
@@ -18,14 +18,14 @@ public final class SharedAbilityService {
         return player.getData(KegareAttachments.SHARED_ABILITIES);
     }
 
-    public static boolean isUnlocked(Player player, ResourceLocation id) {
+    public static boolean isUnlocked(Player player, Identifier id) {
         if (SharedAbilities.forEveryone(id)) return MaliceService.get(player).isBorn() && !MaliceService.isSevered(player);
         return get(player).isUnlocked(id);
     }
 
     /** Everything they have: what they unlocked, and what every Malice user has. */
-    public static java.util.List<ResourceLocation> unlockedIds(Player player) {
-        java.util.List<ResourceLocation> out = new java.util.ArrayList<>();
+    public static java.util.List<Identifier> unlockedIds(Player player) {
+        java.util.List<Identifier> out = new java.util.ArrayList<>();
         for (Ability a : SharedAbilities.all()) if (isUnlocked(player, a.id())) out.add(a.id());
         return out;
     }

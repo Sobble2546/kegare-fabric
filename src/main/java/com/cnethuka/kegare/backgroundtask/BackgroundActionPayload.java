@@ -6,18 +6,18 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /** Client to server: a request from the Background view (DESIGN §3.31). The server checks everything ({@link BackgroundTaskService}). */
-public record BackgroundActionPayload(int action, int slot, Optional<ResourceLocation> task) implements CustomPacketPayload {
+public record BackgroundActionPayload(int action, int slot, Optional<Identifier> task) implements CustomPacketPayload {
     public static final int SET = 0, CLEAR = 1, ON = 2, OFF = 3;
     public static final Type<BackgroundActionPayload> TYPE = new Type<>(Kegare.id("background_action"));
     public static final StreamCodec<FriendlyByteBuf, BackgroundActionPayload> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT, BackgroundActionPayload::action,
             ByteBufCodecs.VAR_INT, BackgroundActionPayload::slot,
-            ResourceLocation.STREAM_CODEC.apply(ByteBufCodecs::optional), BackgroundActionPayload::task, BackgroundActionPayload::new);
+            Identifier.STREAM_CODEC.apply(ByteBufCodecs::optional), BackgroundActionPayload::task, BackgroundActionPayload::new);
 
     @Override
     public Type<? extends CustomPacketPayload> type() {

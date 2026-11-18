@@ -6,7 +6,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import org.joml.Vector3f;
 
@@ -20,7 +20,7 @@ import org.joml.Vector3f;
  * leave the fist showing.
  */
 final class FistFlames {
-    static final ResourceLocation TEXTURE = Kegare.id("textures/entity/fist_flame.png");
+    static final Identifier TEXTURE = Kegare.id("textures/entity/fist_flame.png");
 
     private static final int SHEET_WIDTH = 112;
     private static final int SHEET_HEIGHT = 49;

@@ -3,7 +3,7 @@ package com.cnethuka.kegare.innatetechnique;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -18,7 +18,7 @@ public abstract class SpecialAbility extends BaseAbility {
     private final Supplier<? extends Ability> base;
     private final List<Requirement> requirements;
 
-    protected SpecialAbility(ResourceLocation id, CastType castType, Supplier<? extends Ability> base, Requirement... requirements) {
+    protected SpecialAbility(Identifier id, CastType castType, Supplier<? extends Ability> base, Requirement... requirements) {
         super(id, castType);
         this.base = base;
         this.requirements = List.of(requirements);

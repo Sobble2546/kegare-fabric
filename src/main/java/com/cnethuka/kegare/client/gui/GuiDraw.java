@@ -11,7 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
@@ -26,26 +26,26 @@ import net.minecraft.world.item.ItemStack;
  * Emblems and icons are optional: content without art falls back to its advancement tab item or a slot number.
  */
 public final class GuiDraw {
-    public static final ResourceLocation PANEL = Kegare.id("panel");
-    public static final ResourceLocation TAB = Kegare.id("tab");
-    public static final ResourceLocation TAB_SELECTED = Kegare.id("tab_selected");
-    public static final ResourceLocation SPARKLE = Kegare.id("sparkle");
-    public static final ResourceLocation SEVERED_EMBLEM = Kegare.id("severed_emblem");
-    public static final ResourceLocation DIVIDER = Kegare.id("divider");
-    public static final ResourceLocation ENV_COLD = Kegare.id("env_cold");
-    public static final ResourceLocation ENV_HOT = Kegare.id("env_hot");
-    public static final ResourceLocation LOCK = Kegare.id("lock");
-    public static final ResourceLocation FREEZE_PIP = Kegare.id("freeze_pip");
-    public static final ResourceLocation FREEZE_PIP_EMPTY = Kegare.id("freeze_pip_empty");
+    public static final Identifier PANEL = Kegare.id("panel");
+    public static final Identifier TAB = Kegare.id("tab");
+    public static final Identifier TAB_SELECTED = Kegare.id("tab_selected");
+    public static final Identifier SPARKLE = Kegare.id("sparkle");
+    public static final Identifier SEVERED_EMBLEM = Kegare.id("severed_emblem");
+    public static final Identifier DIVIDER = Kegare.id("divider");
+    public static final Identifier ENV_COLD = Kegare.id("env_cold");
+    public static final Identifier ENV_HOT = Kegare.id("env_hot");
+    public static final Identifier LOCK = Kegare.id("lock");
+    public static final Identifier FREEZE_PIP = Kegare.id("freeze_pip");
+    public static final Identifier FREEZE_PIP_EMPTY = Kegare.id("freeze_pip_empty");
 
-    private static final ResourceLocation INK_BACKGROUND = Kegare.id("textures/gui/reveal_bg.png");
+    private static final Identifier INK_BACKGROUND = Kegare.id("textures/gui/reveal_bg.png");
     private static final int INK_BACKGROUND_SIZE = 128;
 
     /**
      * Malice bar texture: 32x30. Rows 0-9 the empty bar, 10-19 the fill's shading in greyscale (tinted with the
      * innate technique's Malice color), 20-29 a white shine drawn untinted on top. 5px caps, a 22px middle that tiles.
      */
-    private static final ResourceLocation MALICE_BAR = Kegare.id("textures/gui/malice_bar.png");
+    private static final Identifier MALICE_BAR = Kegare.id("textures/gui/malice_bar.png");
     public static final int BAR_HEIGHT = 10;
     private static final int BAR_TEXTURE_W = 32;
     private static final int BAR_TEXTURE_H = 30;
@@ -53,9 +53,9 @@ public final class GuiDraw {
     private static final int BAR_MIDDLE = BAR_TEXTURE_W - 2 * BAR_CAP;
 
     /** The ability categories' 16x16 tab icons on the Sorcerer screen (DESIGN §3.16), by {@code AbilityCategory} order. */
-    public static final ResourceLocation[] CATEGORY_ICONS = {Kegare.id("category_innate"), Kegare.id("category_malice"), Kegare.id("category_melee")};
-    public static final ResourceLocation BADGE_SPECIAL = Kegare.id("badge_special");
-    public static final ResourceLocation BADGE_SPECIAL_NONE = Kegare.id("badge_special_none");
+    public static final Identifier[] CATEGORY_ICONS = {Kegare.id("category_innate"), Kegare.id("category_malice"), Kegare.id("category_melee")};
+    public static final Identifier BADGE_SPECIAL = Kegare.id("badge_special");
+    public static final Identifier BADGE_SPECIAL_NONE = Kegare.id("badge_special_none");
 
     private static final int EMBLEM_TEXTURE_SIZE = 48;
     private static final int DIVIDER_HEIGHT = 7;
@@ -75,15 +75,15 @@ public final class GuiDraw {
     public static final int COOLDOWN_SWEEP = 0x559D4EDD;
 
     /** Whether optional art exists, by texture location. Cleared on resource reload (see KegareClient). */
-    private static final Map<ResourceLocation, Boolean> ART_EXISTS = new ConcurrentHashMap<>();
+    private static final Map<Identifier, Boolean> ART_EXISTS = new ConcurrentHashMap<>();
 
     private GuiDraw() {}
 
     // ---------------------------------------------------------------- optional art lookup
 
     @Nullable
-    private static ResourceLocation art(String folder, ResourceLocation id) {
-        ResourceLocation texture = id.withPath(path -> "textures/gui/" + folder + "/" + path + ".png");
+    private static Identifier art(String folder, Identifier id) {
+        Identifier texture = id.withPath(path -> "textures/gui/" + folder + "/" + path + ".png");
         boolean exists = ART_EXISTS.computeIfAbsent(texture,
                 t -> Minecraft.getInstance().getResourceManager().getResource(t).isPresent());
         return exists ? texture : null;
@@ -95,13 +95,13 @@ public final class GuiDraw {
 
     // ---------------------------------------------------------------- primitives
 
-    public static void sprite(GuiGraphics g, ResourceLocation sprite, int x, int y, int w, int h) {
+    public static void sprite(GuiGraphics g, Identifier sprite, int x, int y, int w, int h) {
         RenderSystem.enableBlend();
         g.blitSprite(sprite, x, y, w, h);
     }
 
     /** Sprite multiplied by an RGB color (the sparkle is white so it can take any color). */
-    public static void tinted(GuiGraphics g, ResourceLocation sprite, int x, int y, int w, int h, int rgb, float alpha) {
+    public static void tinted(GuiGraphics g, Identifier sprite, int x, int y, int w, int h, int rgb, float alpha) {
         RenderSystem.enableBlend();
         g.setColor(((rgb >> 16) & 0xFF) / 255f, ((rgb >> 8) & 0xFF) / 255f, (rgb & 0xFF) / 255f, alpha);
         g.blitSprite(sprite, x, y, w, h);
@@ -232,8 +232,8 @@ public final class GuiDraw {
         return drawn;
     }
 
-    public static boolean abilityIcon(GuiGraphics g, ResourceLocation ability, int x, int y) {
-        ResourceLocation texture = art("ability", ability);
+    public static boolean abilityIcon(GuiGraphics g, Identifier ability, int x, int y) {
+        Identifier texture = art("ability", ability);
         if (texture == null) return false;
         RenderSystem.enableBlend();
         g.blit(texture, x, y, 0f, 0f, 16, 16, 16, 16);
@@ -254,7 +254,7 @@ public final class GuiDraw {
      */
     public static void emblem(GuiGraphics g, InnateTechnique innateTechnique, int x, int y, int size) {
         g.fill(x - 1, y - 1, x + size + 1, y + size + 1, INK);
-        ResourceLocation texture = art("emblem", innateTechnique.id());
+        Identifier texture = art("emblem", innateTechnique.id());
         if (texture != null) {
             RenderSystem.enableBlend();
             g.blit(texture, x, y, size, size, 0f, 0f, EMBLEM_TEXTURE_SIZE, EMBLEM_TEXTURE_SIZE, EMBLEM_TEXTURE_SIZE, EMBLEM_TEXTURE_SIZE);

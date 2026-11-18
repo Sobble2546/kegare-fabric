@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -28,7 +28,7 @@ public final class SwapLink {
     }
 
     /** Something travelling from {@code from} to {@code to} over {@code travelTicks}. */
-    public static void travel(ServerLevel level, ResourceLocation effect, Vec3 from, Vec3 to, int travelTicks) {
+    public static void travel(ServerLevel level, Identifier effect, Vec3 from, Vec3 to, int travelTicks) {
         send(level, new Payload(effect, from, to, Math.max(1, travelTicks)));
     }
 
@@ -39,7 +39,7 @@ public final class SwapLink {
     }
 
     /** Server to nearby clients: draw {@code effect} along the line. */
-    public record Payload(ResourceLocation effect, Vec3 from, Vec3 to, int travelTicks) implements CustomPacketPayload {
+    public record Payload(Identifier effect, Vec3 from, Vec3 to, int travelTicks) implements CustomPacketPayload {
         public static final Type<Payload> TYPE = new Type<>(Kegare.id("swap_link"));
         public static final StreamCodec<FriendlyByteBuf, Payload> STREAM_CODEC = StreamCodec.ofMember(Payload::write, Payload::read);
 

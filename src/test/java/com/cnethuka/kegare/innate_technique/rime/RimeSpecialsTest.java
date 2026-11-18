@@ -184,7 +184,7 @@ class RimeSpecialsTest {
         };
     }
 
-    private static boolean hasAdvancement(MinecraftServer server, ServerPlayer p, net.minecraft.resources.ResourceLocation id) {
+    private static boolean hasAdvancement(MinecraftServer server, ServerPlayer p, net.minecraft.resources.Identifier id) {
         var holder = server.getAdvancements().get(id);
         assertNotNull(holder, "advancement " + id + " is loaded");
         return p.getAdvancements().getOrStartProgress(holder).isDone();

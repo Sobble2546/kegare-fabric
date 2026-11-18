@@ -14,7 +14,7 @@ import com.cnethuka.kegare.player.BirthService;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.Set;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.testframework.junit.EphemeralTestServerProvider;
@@ -25,7 +25,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 /** The five progression advancements: silent, hidden, and earned when they should be. The rule tables are what datagen enforces. */
 @ExtendWith(EphemeralTestServerProvider.class)
 class ProgressionAdvancementsTest {
-    private static final List<ResourceLocation> ALL = List.of(KegareAdvancements.MOVING_UP, KegareAdvancements.PROVEN,
+    private static final List<Identifier> ALL = List.of(KegareAdvancements.MOVING_UP, KegareAdvancements.PROVEN,
             KegareAdvancements.RECOGNIZED, KegareAdvancements.OUTSIDE_THE_LADDER, KegareAdvancements.FULL_KIT);
 
     @AfterEach
@@ -42,7 +42,7 @@ class ProgressionAdvancementsTest {
         return p;
     }
 
-    private static boolean earned(ServerPlayer p, ResourceLocation id) {
+    private static boolean earned(ServerPlayer p, Identifier id) {
         return p.getAdvancements().getOrStartProgress(p.server.getAdvancements().get(id)).isDone();
     }
 
@@ -56,7 +56,7 @@ class ProgressionAdvancementsTest {
     @Test
     void theGeneratedOnesAnnounceNothingAndAreHidden(MinecraftServer server) throws Exception {
         TestServer.onServerThread(server, () -> {
-            for (ResourceLocation id : ALL) {
+            for (Identifier id : ALL) {
                 var holder = server.getAdvancements().get(id);
                 assertTrue(holder != null, id + " wasn't generated");
                 var display = holder.value().display().orElseThrow();

@@ -5,7 +5,7 @@ import com.cnethuka.kegare.malice.MaliceService;
 import java.util.function.Supplier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.bus.api.IEventBus;
+import com.cnethuka.kegare.platform.bus.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
@@ -29,7 +29,7 @@ public final class Severed {
     public static void init(IEventBus modBus) {
         ATTACHMENTS.register(modBus);
         NeoForge.EVENT_BUS.addListener(SeveredBody::onIncoming);
-        NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOW, ClosingLine::onIncoming); // after Strength
+        NeoForge.EVENT_BUS.addListener(com.cnethuka.kegare.platform.bus.EventPriority.LOW, ClosingLine::onIncoming); // after Strength
         com.cnethuka.kegare.innatetechnique.CastManager.addInterceptor(ClosingLine::intercept); // R while Blurring
         SeveredAdvancements.init();
         NeoForge.EVENT_BUS.addListener(SeveredBody::onDamage);

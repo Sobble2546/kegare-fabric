@@ -12,7 +12,7 @@ import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -35,7 +35,7 @@ import net.neoforged.neoforge.event.tick.EntityTickEvent;
  */
 public final class TimeStopClient {
     /** Standstill's inverted frame. */
-    public static final ResourceLocation INVERT = Kegare.id("invert");
+    public static final Identifier INVERT = Kegare.id("invert");
     private static TimeNet.Stop stop = TimeNet.Stop.none();
     private static final Set<Integer> FREE = new HashSet<>();
     /** Projectiles the caster or someone immune threw into it, and the ticks they still fly. */
@@ -147,7 +147,7 @@ public final class TimeStopClient {
     /** Frozen, you hear nothing but Standstill itself. */
     private static void onSound(PlaySoundEvent event) {
         if (event.getSound() == null || !selfFrozen()) return;
-        ResourceLocation id = event.getSound().getLocation();
+        Identifier id = event.getSound().getLocation();
         if (id.equals(KegareSounds.TIME_STOP.getId()) || id.equals(KegareSounds.TIME_STOP_TICK.getId()) || id.equals(KegareSounds.TIME_RESUME.getId())) {
             return;
         }

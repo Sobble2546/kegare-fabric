@@ -1,11 +1,11 @@
 package com.cnethuka.kegare.client;
 
 import com.cnethuka.kegare.Kegare;
-import net.minecraft.resources.ResourceLocation;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
+import net.minecraft.resources.Identifier;
+import com.cnethuka.kegare.platform.Dist;
+import com.cnethuka.kegare.platform.bus.EventPriority;
+import com.cnethuka.kegare.platform.bus.SubscribeEvent;
+import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
@@ -23,7 +23,7 @@ public final class HudClearance {
     @SubscribeEvent(priority = EventPriority.HIGH)
     static void hide(RenderGuiLayerEvent.Pre event) {
         if (!CombatPanelLayer.shown()) return;
-        ResourceLocation layer = event.getName();
+        Identifier layer = event.getName();
         if (layer.equals(VanillaGuiLayers.HOTBAR) || layer.equals(VanillaGuiLayers.EXPERIENCE_BAR)
                 || layer.equals(VanillaGuiLayers.EXPERIENCE_LEVEL) || layer.equals(VanillaGuiLayers.JUMP_METER)) {
             event.setCanceled(true);
@@ -47,7 +47,7 @@ public final class HudClearance {
         }
     }
 
-    private static boolean moves(ResourceLocation layer) {
+    private static boolean moves(Identifier layer) {
         return layer.equals(VanillaGuiLayers.OVERLAY_MESSAGE) || layer.equals(VanillaGuiLayers.SELECTED_ITEM_NAME)
                 || layer.equals(VanillaGuiLayers.CHAT);
     }

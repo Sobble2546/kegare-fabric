@@ -33,7 +33,7 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -122,7 +122,7 @@ final class CommandArgs {
         return StringArgumentType.getString(c, argument).trim();
     }
 
-    static String shortName(ResourceLocation id) {
+    static String shortName(Identifier id) {
         return id.getPath();
     }
 
@@ -131,7 +131,7 @@ final class CommandArgs {
         String wanted = name.toLowerCase(Locale.ROOT);
         return registry.keySet().stream()
                 .filter(id -> id.getPath().equals(wanted))
-                .sorted(Comparator.<ResourceLocation, Boolean>comparing(id -> !id.getNamespace().equals(Kegare.MODID)).thenComparing(ResourceLocation::toString))
+                .sorted(Comparator.<Identifier, Boolean>comparing(id -> !id.getNamespace().equals(Kegare.MODID)).thenComparing(Identifier::toString))
                 .findFirst()
                 .map(registry::get);
     }

@@ -2,9 +2,9 @@ package com.cnethuka.kegare.database;
 
 import com.cnethuka.kegare.Kegare;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
+import com.cnethuka.kegare.platform.bus.EventPriority;
+import com.cnethuka.kegare.platform.bus.SubscribeEvent;
+import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;

@@ -8,9 +8,9 @@ import java.util.Deque;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.Toast;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
+import com.cnethuka.kegare.platform.Dist;
+import com.cnethuka.kegare.platform.bus.SubscribeEvent;
+import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ToastAddEvent;
 
 /**

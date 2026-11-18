@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -49,7 +49,7 @@ public final class Strings {
 
     public static final ResourceKey<DamageType> TIE_COLLISION = ResourceKey.create(Registries.DAMAGE_TYPE, Kegare.id("strings_tie"));
 
-    private static final ResourceLocation LEASH_SLOW = Kegare.id("strings_leash_slow");
+    private static final Identifier LEASH_SLOW = Kegare.id("strings_leash_slow");
     /** A little lift for anything dragged along the ground, so it rides over bumps and steps instead of stopping at them. */
     private static final double HOP = 0.12;
     /** A pull's last stretch: each tick covers this fraction of what's left, but at least {@link #EASE_MIN} blocks. */

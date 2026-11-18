@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -31,7 +31,7 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public record ProgressionSnapshot(int grade, float gradeXp, float gradeXpNeeded, Optional<Assessment> assessment,
                                   int refinement, float refinementXp, float refinementXpNeeded, int peakRefinement, int maxRefinement,
-                                  int dominion, int ward, int output, Map<ResourceLocation, Integer> locked, int brain, Optional<Eyes> eyes) {
+                                  int dominion, int ward, int output, Map<Identifier, Integer> locked, int brain, Optional<Eyes> eyes) {
     /**
      * @param costFactor multiplier on every Malice cost
      * @param rmtFactor multiplier on RMT's output
@@ -48,7 +48,7 @@ public record ProgressionSnapshot(int grade, float gradeXp, float gradeXpNeeded,
                 (float) s.technique(), (float) s.requirement().technique(), s.fights(), s.requirement().fights(), s.opponents(), s.requirement().opponents(), s.peakRefinement(), s.requirement().peakRefinement(), s.severed()));
         RefinementData refinement = RefinementService.get(player);
         int max = RefinementService.maxLevel();
-        Map<ResourceLocation, Integer> locked = new HashMap<>();
+        Map<Identifier, Integer> locked = new HashMap<>();
         for (Map.Entry<Ability, Integer> entry : TechniqueUnlocks.locked(player).entrySet()) locked.put(entry.getKey().id(), entry.getValue());
         return new ProgressionSnapshot(grade.ordinal(), (float) GradeService.get(player).xp(), grade.next().map(GradeService::xpCost).orElse(0.0).floatValue(), assessment,
                 refinement.level(), (float) refinement.xp(), refinement.level() >= max ? 0f : (float) RefinementService.xpForLevel(refinement.level() + 1),
@@ -60,7 +60,7 @@ public record ProgressionSnapshot(int grade, float gradeXp, float gradeXpNeeded,
     }
 
     /** The Refinement level this needs, or -1 if it isn't locked. */
-    public int lockedLevel(ResourceLocation ability) {
+    public int lockedLevel(Identifier ability) {
         return locked.getOrDefault(ability, -1);
     }
 

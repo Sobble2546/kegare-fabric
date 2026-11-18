@@ -5,8 +5,8 @@ import com.cnethuka.kegare.melee.MeleeHits;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
+import com.cnethuka.kegare.platform.bus.SubscribeEvent;
+import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
@@ -36,7 +36,7 @@ public final class FistsEvents {
     }
 
     /** Black Spark's try, after the Fists bonus (DESIGN §3.28). */
-    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOW)
+    @SubscribeEvent(priority = com.cnethuka.kegare.platform.bus.EventPriority.LOW)
     static void onIncomingSpark(LivingIncomingDamageEvent event) {
         BlackSpark.onIncoming(event);
     }
@@ -47,7 +47,7 @@ public final class FistsEvents {
     }
 
     /** Ahead of the Impact System's own end of the tick, so it counts the push. */
-    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.HIGH)
+    @SubscribeEvent(priority = com.cnethuka.kegare.platform.bus.EventPriority.HIGH)
     static void onServerTickEnd(ServerTickEvent.Post event) {
         BlackSpark.knockBack();
     }
@@ -58,7 +58,7 @@ public final class FistsEvents {
     }
 
     /** The zone's 120%, on every kind of damage they deal, after everything else that adds to a hit. */
-    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOWEST)
+    @SubscribeEvent(priority = com.cnethuka.kegare.platform.bus.EventPriority.LOWEST)
     static void onIncomingZone(LivingIncomingDamageEvent event) {
         Zone.onIncoming(event);
     }

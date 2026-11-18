@@ -9,7 +9,7 @@ import com.cnethuka.kegare.registry.KegareItems;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 /** Eyewear's items (DESIGN §3.32): the rename from Tinted Glasses, and Curios' Eyes tag. */
 @ExtendWith(EphemeralTestServerProvider.class)
 class EyewearItemsTest {
-    private static final TagKey<Item> EYES = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("curios", "eyes"));
+    private static final TagKey<Item> EYES = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("curios", "eyes"));
 
     @Test
     void theOldNameStillFindsTheSunglasses() {

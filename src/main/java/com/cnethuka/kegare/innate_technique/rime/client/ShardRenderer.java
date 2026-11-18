@@ -15,7 +15,7 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -35,7 +35,7 @@ public class ShardRenderer<T extends RimeProjectile> extends EntityRenderer<T> {
     /** Your own isn't drawn this close to your first-person camera. */
     static final double OWN_HIDDEN_WITHIN = 3.0;
     /** The line's texture: even along its length, soft across it (the lance's Photon trail uses it too). */
-    static final ResourceLocation LINE = Kegare.id("textures/fx/glacial_lance_trail.png");
+    static final Identifier LINE = Kegare.id("textures/fx/glacial_lance_trail.png");
     /** The line's own colour, pale frost; it fades out toward its far end. */
     private static final int LINE_RGB = 0xD6EEFF;
     private static final int SEGMENTS = 6;
@@ -155,7 +155,7 @@ public class ShardRenderer<T extends RimeProjectile> extends EntityRenderer<T> {
     }
 
     @Override
-    public ResourceLocation getTextureLocation(T shard) {
+    public Identifier getTextureLocation(T shard) {
         return LanceMesh.SHARD.texture;
     }
 }

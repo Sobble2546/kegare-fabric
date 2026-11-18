@@ -8,7 +8,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
@@ -30,9 +30,9 @@ public record ReadsPayload(List<Glance> glances, List<MobGlance> mobs, Optional<
     }
 
     /** What the eyes see of a player at a glance: their technique, their current Malice, and how they are. */
-    public record Energy(Optional<ResourceLocation> technique, int malice, float health, float maxHealth) {
+    public record Energy(Optional<Identifier> technique, int malice, float health, float maxHealth) {
         static final StreamCodec<FriendlyByteBuf, Energy> CODEC = StreamCodec.composite(
-                ResourceLocation.STREAM_CODEC.apply(ByteBufCodecs::optional), Energy::technique,
+                Identifier.STREAM_CODEC.apply(ByteBufCodecs::optional), Energy::technique,
                 ByteBufCodecs.VAR_INT, Energy::malice,
                 ByteBufCodecs.FLOAT, Energy::health,
                 ByteBufCodecs.FLOAT, Energy::maxHealth, Energy::new);
@@ -45,14 +45,14 @@ public record ReadsPayload(List<Glance> glances, List<MobGlance> mobs, Optional<
     }
 
     /** What they're charging or channelling, and how far along (0 to 1; a channel with no end counts up in seconds, as -seconds). */
-    public record Cast(ResourceLocation ability, int castType, float progress) {
+    public record Cast(Identifier ability, int castType, float progress) {
         static final StreamCodec<FriendlyByteBuf, Cast> CODEC = StreamCodec.composite(
-                ResourceLocation.STREAM_CODEC, Cast::ability, ByteBufCodecs.VAR_INT, Cast::castType, ByteBufCodecs.FLOAT, Cast::progress, Cast::new);
+                Identifier.STREAM_CODEC, Cast::ability, ByteBufCodecs.VAR_INT, Cast::castType, ByteBufCodecs.FLOAT, Cast::progress, Cast::new);
     }
 
-    public record Cooldown(ResourceLocation ability, float seconds) {
+    public record Cooldown(Identifier ability, float seconds) {
         static final StreamCodec<FriendlyByteBuf, Cooldown> CODEC = StreamCodec.composite(
-                ResourceLocation.STREAM_CODEC, Cooldown::ability, ByteBufCodecs.FLOAT, Cooldown::seconds, Cooldown::new);
+                Identifier.STREAM_CODEC, Cooldown::ability, ByteBufCodecs.FLOAT, Cooldown::seconds, Cooldown::new);
     }
 
     /**
@@ -74,9 +74,9 @@ public record ReadsPayload(List<Glance> glances, List<MobGlance> mobs, Optional<
     }
 
     /** An active effect: its level (0 is I) and the ticks it has left, -1 if it never runs out. */
-    public record Effect(ResourceLocation effect, int amplifier, int ticks) {
+    public record Effect(Identifier effect, int amplifier, int ticks) {
         static final StreamCodec<FriendlyByteBuf, Effect> CODEC = StreamCodec.composite(
-                ResourceLocation.STREAM_CODEC, Effect::effect, ByteBufCodecs.VAR_INT, Effect::amplifier, ByteBufCodecs.VAR_INT.map(t -> t - 1, t -> t + 1), Effect::ticks,
+                Identifier.STREAM_CODEC, Effect::effect, ByteBufCodecs.VAR_INT, Effect::amplifier, ByteBufCodecs.VAR_INT.map(t -> t - 1, t -> t + 1), Effect::ticks,
                 Effect::new);
     }
 
@@ -88,11 +88,11 @@ public record ReadsPayload(List<Glance> glances, List<MobGlance> mobs, Optional<
     }
 
     /** Everything about one body. A mob does nothing to cast, cool down or switch on. */
-    public record Body(Optional<Cast> cast, List<Cooldown> cooldowns, List<ResourceLocation> toggles, Vitals vitals, List<Effect> effects, Status status) {
+    public record Body(Optional<Cast> cast, List<Cooldown> cooldowns, List<Identifier> toggles, Vitals vitals, List<Effect> effects, Status status) {
         static final StreamCodec<FriendlyByteBuf, Body> CODEC = StreamCodec.composite(
                 Cast.CODEC.apply(ByteBufCodecs::optional), Body::cast,
                 Cooldown.CODEC.apply(ByteBufCodecs.list()), Body::cooldowns,
-                ResourceLocation.STREAM_CODEC.apply(ByteBufCodecs.list()), Body::toggles,
+                Identifier.STREAM_CODEC.apply(ByteBufCodecs.list()), Body::toggles,
                 Vitals.CODEC, Body::vitals,
                 Effect.CODEC.apply(ByteBufCodecs.list()), Body::effects,
                 Status.CODEC, Body::status, Body::new);

@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.UUID;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.testframework.junit.EphemeralTestServerProvider;
@@ -39,7 +39,7 @@ import org.junit.jupiter.api.io.TempDir;
 /** Two servers sharing one real database (DESIGN §3.33). Skipped without {@code KEGARE_TEST_DB_URL}. */
 @ExtendWith(EphemeralTestServerProvider.class)
 class SeveralServersIT {
-    private static final ResourceLocation EYES = ResourceLocation.parse("kegare:six_eyes");
+    private static final Identifier EYES = Identifier.parse("kegare:six_eyes");
 
     @TempDir
     Path dirA;

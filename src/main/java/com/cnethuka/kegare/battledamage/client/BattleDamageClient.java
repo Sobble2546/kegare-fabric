@@ -25,7 +25,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -52,7 +52,7 @@ import org.joml.Vector3f;
  * after half a minute. Reduced: fewer chunks and cracks. Vanilla: vanilla's block particles, no cracks.
  */
 public final class BattleDamageClient {
-    private static final ResourceLocation CRACK = Kegare.id("battle_crack");
+    private static final Identifier CRACK = Kegare.id("battle_crack");
     private static final RenderType TYPE = RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS);
     /** Ticks cracks wait, so the broken blocks are gone from this client first. */
     private static final int CRACK_DELAY = 3;

@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.function.Function;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /** What the eyes draw in the world: seen through walls (no depth test), see-through, unlit, smooth. A subclass only for the shards. */
 final class SightRenderTypes extends RenderType {
@@ -13,7 +13,7 @@ final class SightRenderTypes extends RenderType {
         super(name, format, mode, size, crumbling, sort, setup, clear);
     }
 
-    static final Function<ResourceLocation, RenderType> THROUGH_WALLS = Util.memoize(texture -> create("kegare_sight", DefaultVertexFormat.NEW_ENTITY,
+    static final Function<Identifier, RenderType> THROUGH_WALLS = Util.memoize(texture -> create("kegare_sight", DefaultVertexFormat.NEW_ENTITY,
             VertexFormat.Mode.QUADS, 1536, false, true, CompositeState.builder()
                     .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
                     .setTextureState(new TextureStateShard(texture, true, false))
@@ -27,7 +27,7 @@ final class SightRenderTypes extends RenderType {
     /** Drawn only where something stands in front of it: what's behind a wall, never over what's in plain view. */
     private static final DepthTestStateShard BEHIND = new DepthTestStateShard(">", 516); // GL_GREATER
 
-    static final Function<ResourceLocation, RenderType> BEHIND_WALLS = Util.memoize(texture -> create("kegare_sight_behind", DefaultVertexFormat.NEW_ENTITY,
+    static final Function<Identifier, RenderType> BEHIND_WALLS = Util.memoize(texture -> create("kegare_sight_behind", DefaultVertexFormat.NEW_ENTITY,
             VertexFormat.Mode.QUADS, 1536, false, true, CompositeState.builder()
                     .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
                     .setTextureState(new TextureStateShard(texture, true, false))
@@ -39,7 +39,7 @@ final class SightRenderTypes extends RenderType {
                     .createCompositeState(false)));
 
     /** Ordinary depth: in the open, round the body, under nothing. */
-    static final Function<ResourceLocation, RenderType> IN_THE_OPEN = Util.memoize(texture -> create("kegare_sight_open", DefaultVertexFormat.NEW_ENTITY,
+    static final Function<Identifier, RenderType> IN_THE_OPEN = Util.memoize(texture -> create("kegare_sight_open", DefaultVertexFormat.NEW_ENTITY,
             VertexFormat.Mode.QUADS, 1536, false, true, CompositeState.builder()
                     .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
                     .setTextureState(new TextureStateShard(texture, true, false))

@@ -14,7 +14,7 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -30,7 +30,7 @@ class SeveredAnimationsTest {
             file = JsonParser.parseReader(reader).getAsJsonObject();
         }
         Map<String, Animation> loaded = UniversalAnimLoader.loadAnimations(file);
-        for (ResourceLocation id : SeveredIds.ANIMATIONS) {
+        for (Identifier id : SeveredIds.ANIMATIONS) {
             Animation animation = loaded.get(id.getPath());
             assertNotNull(animation, id + " is in the file");
             assertTrue(animation.length() > 0f, id + " has a length");

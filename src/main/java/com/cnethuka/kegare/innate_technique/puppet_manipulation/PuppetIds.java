@@ -3,7 +3,7 @@ package com.cnethuka.kegare.innate_technique.puppet_manipulation;
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.innatetechnique.visual.Visual;
 import java.util.List;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Puppet Manipulation's IDs: player animations ({@code assets/kegare/player_animations/puppet_manipulation.json}) and
@@ -11,64 +11,64 @@ import net.minecraft.resources.ResourceLocation;
  */
 public final class PuppetIds {
     // Player Animation Library animations (on the caster)
-    public static final ResourceLocation ANIM_CREATE_CHARGE = Kegare.id("puppet_create_charge");
-    public static final ResourceLocation ANIM_CREATE_RELEASE = Kegare.id("puppet_create_release");
-    public static final ResourceLocation ANIM_POSSESS_CAST = Kegare.id("possess_cast");
-    public static final ResourceLocation ANIM_POSSESS_RETURN = Kegare.id("possess_return");
-    public static final ResourceLocation ANIM_DIRECTIVE_CAST = Kegare.id("directive_cast");
-    public static final ResourceLocation ANIM_FOCUS_POINT = Kegare.id("focus_point");
-    public static final ResourceLocation ANIM_CURIO_BURST_CAST = Kegare.id("curio_burst_cast");
+    public static final Identifier ANIM_CREATE_CHARGE = Kegare.id("puppet_create_charge");
+    public static final Identifier ANIM_CREATE_RELEASE = Kegare.id("puppet_create_release");
+    public static final Identifier ANIM_POSSESS_CAST = Kegare.id("possess_cast");
+    public static final Identifier ANIM_POSSESS_RETURN = Kegare.id("possess_return");
+    public static final Identifier ANIM_DIRECTIVE_CAST = Kegare.id("directive_cast");
+    public static final Identifier ANIM_FOCUS_POINT = Kegare.id("focus_point");
+    public static final Identifier ANIM_CURIO_BURST_CAST = Kegare.id("curio_burst_cast");
     /** Chain Burst's own cast (a special needs its own tell): both hands thrown open, fingers spread. */
-    public static final ResourceLocation ANIM_CHAIN_BURST_CAST = Kegare.id("chain_burst_cast");
-    public static final ResourceLocation ANIM_UNDERSTUDY_CAST = Kegare.id("understudy_cast");
-    public static final ResourceLocation ANIM_STAND_IN_CAST = Kegare.id("stand_in_cast");
+    public static final Identifier ANIM_CHAIN_BURST_CAST = Kegare.id("chain_burst_cast");
+    public static final Identifier ANIM_UNDERSTUDY_CAST = Kegare.id("understudy_cast");
+    public static final Identifier ANIM_STAND_IN_CAST = Kegare.id("stand_in_cast");
     // Strings' five (art/blockbench/string_animations.bbmodel -> player_animations/puppet_strings.json): each its own tell.
-    public static final ResourceLocation ANIM_STRINGS_FIRE = Kegare.id("strings_fire");
-    public static final ResourceLocation ANIM_STRINGS_REEL = Kegare.id("strings_reel");
-    public static final ResourceLocation ANIM_STRINGS_ZIP = Kegare.id("strings_zip");
-    public static final ResourceLocation ANIM_STRINGS_TIE = Kegare.id("strings_tie");
-    public static final ResourceLocation ANIM_STRINGS_LEASH = Kegare.id("strings_leash");
+    public static final Identifier ANIM_STRINGS_FIRE = Kegare.id("strings_fire");
+    public static final Identifier ANIM_STRINGS_REEL = Kegare.id("strings_reel");
+    public static final Identifier ANIM_STRINGS_ZIP = Kegare.id("strings_zip");
+    public static final Identifier ANIM_STRINGS_TIE = Kegare.id("strings_tie");
+    public static final Identifier ANIM_STRINGS_LEASH = Kegare.id("strings_leash");
     /** On the puppet itself: PAL animates players only, so {@code PuppetPoses} samples this one for the puppet model. */
-    public static final ResourceLocation ANIM_PUPPET_IDLE_SPIN = Kegare.id("puppet_idle_spin");
+    public static final Identifier ANIM_PUPPET_IDLE_SPIN = Kegare.id("puppet_idle_spin");
     /**
      * In your own first person these leave the hands to vanilla ({@code PlayerAnimations.keepVanillaHands}): the way back flings
      * the arms across the view, and Zip's string arm reaches into its middle.
      */
-    public static final List<ResourceLocation> FIRST_PERSON_VANILLA = List.of(ANIM_POSSESS_RETURN, ANIM_STRINGS_ZIP);
+    public static final List<Identifier> FIRST_PERSON_VANILLA = List.of(ANIM_POSSESS_RETURN, ANIM_STRINGS_ZIP);
     /**
      * The rest keep their hands to the bottom corners of a level view, so they show them only while you look about level
      * ({@code PlayerAnimations.handsWhileLevel}): looking down brings them up into its middle.
      */
-    public static final List<ResourceLocation> FIRST_PERSON_WHILE_LEVEL = List.of(ANIM_CREATE_CHARGE, ANIM_CREATE_RELEASE,
+    public static final List<Identifier> FIRST_PERSON_WHILE_LEVEL = List.of(ANIM_CREATE_CHARGE, ANIM_CREATE_RELEASE,
             ANIM_POSSESS_CAST, ANIM_DIRECTIVE_CAST, ANIM_FOCUS_POINT, ANIM_CURIO_BURST_CAST, ANIM_CHAIN_BURST_CAST,
             ANIM_UNDERSTUDY_CAST, ANIM_STAND_IN_CAST, ANIM_STRINGS_FIRE, ANIM_STRINGS_REEL, ANIM_STRINGS_TIE, ANIM_STRINGS_LEASH);
 
     // Effects (drawn by PuppetFx)
-    public static final ResourceLocation FX_PUPPET_FORM = fx("puppet_form");
-    public static final ResourceLocation FX_PUPPET_DISSOLVE = fx("puppet_dissolve");
-    public static final ResourceLocation FX_POSSESS_LINK = fx("possess_link");
-    public static final ResourceLocation FX_DIRECTIVE_PULSE = fx("directive_pulse");
-    public static final ResourceLocation FX_FOCUS_MARK = fx("focus_mark");
+    public static final Identifier FX_PUPPET_FORM = fx("puppet_form");
+    public static final Identifier FX_PUPPET_DISSOLVE = fx("puppet_dissolve");
+    public static final Identifier FX_POSSESS_LINK = fx("possess_link");
+    public static final Identifier FX_DIRECTIVE_PULSE = fx("directive_pulse");
+    public static final Identifier FX_FOCUS_MARK = fx("focus_mark");
     /** curio_burst_explosion, in one size per charge tier. */
-    public static final ResourceLocation FX_CURIO_BURST_EXPLOSION_TAP = fx("curio_burst_explosion_tap");
-    public static final ResourceLocation FX_CURIO_BURST_EXPLOSION_HALF = fx("curio_burst_explosion_half");
-    public static final ResourceLocation FX_CURIO_BURST_EXPLOSION_FULL = fx("curio_burst_explosion_full");
-    public static final ResourceLocation FX_STAND_IN_GROW = fx("stand_in_grow");
-    public static final ResourceLocation FX_UNDERSTUDY_SWAP = fx("understudy_swap");
+    public static final Identifier FX_CURIO_BURST_EXPLOSION_TAP = fx("curio_burst_explosion_tap");
+    public static final Identifier FX_CURIO_BURST_EXPLOSION_HALF = fx("curio_burst_explosion_half");
+    public static final Identifier FX_CURIO_BURST_EXPLOSION_FULL = fx("curio_burst_explosion_full");
+    public static final Identifier FX_STAND_IN_GROW = fx("stand_in_grow");
+    public static final Identifier FX_UNDERSTUDY_SWAP = fx("understudy_swap");
     /** Where a knot grips: a small burst of fibers. */
-    public static final ResourceLocation FX_STRINGS_ATTACH = fx("strings_attach");
+    public static final Identifier FX_STRINGS_ATTACH = fx("strings_attach");
     /** A string snapping or running out: fibers flying. */
-    public static final ResourceLocation FX_STRINGS_SNAP = fx("strings_snap");
+    public static final Identifier FX_STRINGS_SNAP = fx("strings_snap");
     /** Sparks along a string under tension (spawned on each client, see StringsClient). */
-    public static final ResourceLocation FX_STRINGS_TENSION = fx("strings_tension");
+    public static final Identifier FX_STRINGS_TENSION = fx("strings_tension");
 
     private PuppetIds() {}
 
-    private static ResourceLocation fx(String name) {
+    private static Identifier fx(String name) {
         return Kegare.id("puppet_manipulation/" + name);
     }
 
-    public static Visual body(ResourceLocation effect) {
+    public static Visual body(Identifier effect) {
         return Visual.effect(effect, Visual.Anchor.BODY);
     }
 }

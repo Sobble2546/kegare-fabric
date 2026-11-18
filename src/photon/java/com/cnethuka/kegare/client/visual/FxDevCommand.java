@@ -14,7 +14,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -82,7 +82,7 @@ public final class FxDevCommand {
     private static int play(CommandSourceStack source, String name, String where) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return 0;
-        ResourceLocation id = FxCatalog.effects().keySet().stream().filter(e -> shortName(e).equals(name)).findFirst().orElse(null);
+        Identifier id = FxCatalog.effects().keySet().stream().filter(e -> shortName(e).equals(name)).findFirst().orElse(null);
         if (id == null) {
             source.sendFailure(Component.literal("Unknown effect: " + name + ". Press Tab for the names."));
             return 0;
@@ -98,7 +98,7 @@ public final class FxDevCommand {
         return 1;
     }
 
-    private static String shortName(ResourceLocation id) {
+    private static String shortName(Identifier id) {
         return id.getPath().substring(id.getPath().lastIndexOf('/') + 1);
     }
 }

@@ -42,10 +42,10 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
+import com.cnethuka.kegare.platform.bus.SubscribeEvent;
+import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 /**
@@ -122,7 +122,7 @@ public final class KegareCommand {
         }
 
         List<Component> shared = new ArrayList<>();
-        for (ResourceLocation id : SharedAbilityService.unlockedIds(player)) SharedAbilities.get(id).ifPresent(a -> shared.add(a.displayName()));
+        for (Identifier id : SharedAbilityService.unlockedIds(player)) SharedAbilities.get(id).ifPresent(a -> shared.add(a.displayName()));
         lines.add(Component.translatable("commands.kegare.info.shared", join(shared)));
         if (SharedAbilityService.isUnlocked(player, com.cnethuka.kegare.rmt.RmtIds.ABILITY)) {
             int injuries = (int) Math.round(com.cnethuka.kegare.rmt.RmtFatigue.of(player) * 100);
@@ -152,7 +152,7 @@ public final class KegareCommand {
         lines.add(Component.translatable("commands.kegare.info.active", join(active)));
 
         List<Component> traits = new ArrayList<>();
-        for (ResourceLocation id : TraitService.get(player).view()) {
+        for (Identifier id : TraitService.get(player).view()) {
             Trait trait = KegareRegistries.TRAIT.get(id);
             traits.add(trait != null ? trait.displayName() : Component.literal(shortName(id)));
         }

@@ -13,7 +13,7 @@ import java.util.OptionalInt;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.DisplayInfo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,7 +27,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 /** Reinforced Fists' and Black Spark's advancements (DESIGN §3.28): hidden, announced, Challenge, players only. */
 @ExtendWith(EphemeralTestServerProvider.class)
 class FistsAdvancementsTest {
-    static final List<ResourceLocation> ALL = List.of(FistsAdvancements.LOCKED_IN, FistsAdvancements.ONE_TWENTY_PERCENT,
+    static final List<Identifier> ALL = List.of(FistsAdvancements.LOCKED_IN, FistsAdvancements.ONE_TWENTY_PERCENT,
             FistsAdvancements.NOTHING_TO_CELEBRATE, FistsAdvancements.BLESSED_BY_THE_SPARKS, FistsAdvancements.LIGHTS_OUT);
 
     static ServerPlayer player(MinecraftServer server, String name, int capacity) {
@@ -43,7 +43,7 @@ class FistsAdvancementsTest {
         return p;
     }
 
-    private static boolean has(MinecraftServer server, ServerPlayer p, ResourceLocation id) {
+    private static boolean has(MinecraftServer server, ServerPlayer p, Identifier id) {
         return TestServer.hasAdvancement(server, p, id);
     }
 
@@ -71,7 +71,7 @@ class FistsAdvancementsTest {
     @Test
     void everyOneIsHiddenAnnouncedAndAChallenge(MinecraftServer server) throws Exception {
         TestServer.onServerThread(server, () -> {
-            for (ResourceLocation id : ALL) {
+            for (Identifier id : ALL) {
                 AdvancementHolder holder = server.getAdvancements().get(id);
                 assertNotNull(holder, id + " loads");
                 DisplayInfo display = holder.value().display().orElseThrow();
@@ -138,7 +138,7 @@ class FistsAdvancementsTest {
                 ServerPlayer m = player(server, "chain_m", 1000);
                 for (int i = 0; i < 8; i++) spark(server, m, golem);
                 assertEquals(8, Zone.chain(m), "setup: a chain of 8 on a mob");
-                for (ResourceLocation id : ALL) assertFalse(has(server, m, id), id + ": mobs never count");
+                for (Identifier id : ALL) assertFalse(has(server, m, id), id + ": mobs never count");
 
                 // A chain resets when the zone ends.
                 ServerPlayer r = player(server, "chain_r", 1000);

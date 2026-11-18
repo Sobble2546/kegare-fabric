@@ -63,7 +63,7 @@ public final class FistBurn {
     }
 
     private static final net.minecraft.client.renderer.RenderType FLICKER = net.minecraft.client.renderer.RenderType.entityTranslucentEmissive(
-            net.minecraft.resources.ResourceLocation.withDefaultNamespace("textures/misc/white.png"));
+            net.minecraft.resources.Identifier.withDefaultNamespace("textures/misc/white.png"));
     private static final int BLACK = 0x050307;
     /** How many chips can be round a fist at once, and how often one shows (per tick, each). */
     private static final int FLICKER_CHIPS = 4;

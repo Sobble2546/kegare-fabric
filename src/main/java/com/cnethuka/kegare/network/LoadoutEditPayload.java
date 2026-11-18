@@ -8,7 +8,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -18,7 +18,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  * or reset to the default). A request only: {@link LoadoutService#edit} checks everything, and a refusal comes back
  * as a {@link LoadoutResultPayload} plus an action-bar message.
  */
-public record LoadoutEditPayload(LoadoutService.Action action, int slot, int other, Optional<ResourceLocation> ability)
+public record LoadoutEditPayload(LoadoutService.Action action, int slot, int other, Optional<Identifier> ability)
         implements CustomPacketPayload {
     public static final Type<LoadoutEditPayload> TYPE = new Type<>(Kegare.id("loadout_edit"));
     public static final StreamCodec<FriendlyByteBuf, LoadoutEditPayload> STREAM_CODEC = StreamCodec.ofMember(LoadoutEditPayload::write, LoadoutEditPayload::read);

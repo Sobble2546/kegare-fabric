@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Per player, saved and kept on death (attachment {@code kegare:loadout}): what each regular ability slot holds, in
@@ -19,37 +19,37 @@ import net.minecraft.resources.ResourceLocation;
 public final class LoadoutData {
     public static final Codec<LoadoutData> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.STRING.listOf().optionalFieldOf("slots", List.of()).forGetter(d -> d.slots.stream()
-                    .map(s -> s.map(ResourceLocation::toString).orElse("")).toList()),
-            ResourceLocation.CODEC.optionalFieldOf("built_for").forGetter(d -> Optional.ofNullable(d.builtFor)),
-            ResourceLocation.CODEC.listOf().optionalFieldOf("known", List.of()).forGetter(d -> List.copyOf(d.known))
+                    .map(s -> s.map(Identifier::toString).orElse("")).toList()),
+            Identifier.CODEC.optionalFieldOf("built_for").forGetter(d -> Optional.ofNullable(d.builtFor)),
+            Identifier.CODEC.listOf().optionalFieldOf("known", List.of()).forGetter(d -> List.copyOf(d.known))
     ).apply(i, (slots, builtFor, known) -> new LoadoutData(slots.stream()
-            .map(s -> s.isEmpty() ? Optional.<ResourceLocation>empty() : Optional.ofNullable(ResourceLocation.tryParse(s))).toList(),
+            .map(s -> s.isEmpty() ? Optional.<Identifier>empty() : Optional.ofNullable(Identifier.tryParse(s))).toList(),
             builtFor.orElse(null), known)));
 
-    final List<Optional<ResourceLocation>> slots;
+    final List<Optional<Identifier>> slots;
     @Nullable
-    ResourceLocation builtFor;
+    Identifier builtFor;
     /**
      * The innate technique's abilities this bar has already been offered. One not in here was added to the technique after the
      * bar was built: it gets a slot, once. If the player later clears it, it stays cleared.
      */
-    final Set<ResourceLocation> known;
+    final Set<Identifier> known;
 
     public LoadoutData() {
         this(List.of(), null, List.of());
     }
 
-    private LoadoutData(List<Optional<ResourceLocation>> slots, @Nullable ResourceLocation builtFor, List<ResourceLocation> known) {
+    private LoadoutData(List<Optional<Identifier>> slots, @Nullable Identifier builtFor, List<Identifier> known) {
         this.slots = new ArrayList<>(slots);
         this.builtFor = builtFor;
         this.known = new LinkedHashSet<>(known);
     }
 
-    public List<Optional<ResourceLocation>> slots() {
+    public List<Optional<Identifier>> slots() {
         return Collections.unmodifiableList(slots);
     }
 
-    public Optional<ResourceLocation> builtFor() {
+    public Optional<Identifier> builtFor() {
         return Optional.ofNullable(builtFor);
     }
 }

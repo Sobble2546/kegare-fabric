@@ -39,7 +39,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -80,24 +80,24 @@ public final class SorcererScreen extends Screen {
         }
     }
 
-    private static final ResourceLocation FRAME = Kegare.id("menu_frame");
-    private static final ResourceLocation WELL = Kegare.id("menu_well");
-    private static final ResourceLocation TAB = Kegare.id("menu_tab");
-    private static final ResourceLocation TAB_SELECTED = Kegare.id("menu_tab_selected");
-    static final ResourceLocation ICON_PROGRESS = Kegare.id("view_progress");
-    private static final ResourceLocation ICON_TRAITS = Kegare.id("view_traits");
-    private static final ResourceLocation ICON_PITY = Kegare.id("view_pity");
-    private static final ResourceLocation ICON_SETTINGS = Kegare.id("view_settings");
+    private static final Identifier FRAME = Kegare.id("menu_frame");
+    private static final Identifier WELL = Kegare.id("menu_well");
+    private static final Identifier TAB = Kegare.id("menu_tab");
+    private static final Identifier TAB_SELECTED = Kegare.id("menu_tab_selected");
+    static final Identifier ICON_PROGRESS = Kegare.id("view_progress");
+    private static final Identifier ICON_TRAITS = Kegare.id("view_traits");
+    private static final Identifier ICON_PITY = Kegare.id("view_pity");
+    private static final Identifier ICON_SETTINGS = Kegare.id("view_settings");
     /** Text buttons (option values, Reset): the ink button, gold-framed when selected or hovered. */
-    private static final ResourceLocation BUTTON = Kegare.id("button");
-    private static final ResourceLocation BUTTON_LIT = Kegare.id("button_highlighted");
+    private static final Identifier BUTTON = Kegare.id("button");
+    private static final Identifier BUTTON_LIT = Kegare.id("button_highlighted");
     private static final int BUTTON_H = 16;
-    private static final ResourceLocation ICON_TECHNIQUE = Kegare.id("view_technique");
-    private static final ResourceLocation ICON_BACKGROUND = Kegare.id("view_background");
+    private static final Identifier ICON_TECHNIQUE = Kegare.id("view_technique");
+    private static final Identifier ICON_BACKGROUND = Kegare.id("view_background");
     private static final int TILE = CombatPanelLayer.SLOT_SIZE;
     private static final int TILE_INSET = 2;
     /** The tile and card for an ultimate still locked until its Dominion (Rime, Puppet Manipulation): there's no ability to show. */
-    private static final ResourceLocation ULTIMATE_LOCKED = Kegare.id("ultimate_locked");
+    private static final Identifier ULTIMATE_LOCKED = Kegare.id("ultimate_locked");
     private static final int TAB_SIZE = 24;
     private static final long STATUS_MS = 3500;
 
@@ -110,11 +110,11 @@ public final class SorcererScreen extends Screen {
 
     /** Clicked ability: its details stay in the box, and it is "in hand" for click-to-assign. */
     @Nullable
-    private ResourceLocation pinned;
+    private Identifier pinned;
     private boolean inHand;
     /** Mouse-down on a tile or a loadout slot, waiting to see if it becomes a drag. */
     @Nullable
-    private ResourceLocation pressAbility;
+    private Identifier pressAbility;
     private int pressSlot = -1;
     private double pressX, pressY;
     private boolean dragging;
@@ -140,9 +140,9 @@ public final class SorcererScreen extends Screen {
 
     /** The Background view: the task picked up to place in a slot. */
     @Nullable
-    private ResourceLocation bgPicked;
+    private Identifier bgPicked;
 
-    private record Hit(Kind kind, int x, int y, int w, int h, int index, @Nullable ResourceLocation ability, boolean unlocked) {
+    private record Hit(Kind kind, int x, int y, int w, int h, int index, @Nullable Identifier ability, boolean unlocked) {
         boolean contains(double mx, double my) {
             return mx >= x && mx < x + w && my >= y && my < y + h;
         }
@@ -238,7 +238,7 @@ public final class SorcererScreen extends Screen {
 
         // The big box.
         GuiDraw.sprite(g, WELL, lx0, wellY0, lx1 - lx0, wellY1 - wellY0);
-        ResourceLocation shown = view == View.TECHNIQUE ? shownAbility(mouseX, mouseY) : null;
+        Identifier shown = view == View.TECHNIQUE ? shownAbility(mouseX, mouseY) : null;
         Object key = view == View.TECHNIQUE ? (shown != null ? shown : category) : view;
         if (!key.equals(scrollFor)) {
             scrollFor = key;
@@ -381,7 +381,7 @@ public final class SorcererScreen extends Screen {
     private void renderUltimateTile(GuiGraphics g, InnateTechnique technique, SyncPayload data, int x, int ty, int mouseX, int mouseY) {
         Ability ultimate = technique.ultimate().orElse(null);
         if ((ultimate == null && !technique.ultimateLocked()) || x + TILE > lx1) return;
-        ResourceLocation id = ultimate != null ? ultimate.id() : ULTIMATE_LOCKED;
+        Identifier id = ultimate != null ? ultimate.id() : ULTIMATE_LOCKED;
         boolean unlocked = ultimate != null && !ClientLoadout.isLocked(data, ultimate);
         CombatPanelLayer.slotFrame(g, x, ty, id.equals(pinned) || (mouseX >= x && mouseX < x + TILE && mouseY >= ty && mouseY < ty + TILE));
         if (unlocked) {
@@ -467,7 +467,7 @@ public final class SorcererScreen extends Screen {
     }
 
     /** Draws the details of {@code shown} (or the overview); returns the y below the last line. */
-    private int renderDetails(GuiGraphics g, @Nullable InnateTechnique technique, @Nullable SyncPayload data, @Nullable ResourceLocation shown,
+    private int renderDetails(GuiGraphics g, @Nullable InnateTechnique technique, @Nullable SyncPayload data, @Nullable Identifier shown,
                               int x, int y, int w) {
         if (technique == null) {
             return y + GuiDraw.wrapped(g, font, Component.translatable(info.severed() ? "gui.kegare.sorcerer.severed.desc" : "gui.kegare.sorcerer.innate_technique.none"),
@@ -662,7 +662,7 @@ public final class SorcererScreen extends Screen {
         if (info.traits().isEmpty()) {
             return y + GuiDraw.wrapped(g, font, Component.translatable("gui.kegare.sorcerer.traits.none"), x, y, w, GuiDraw.GRAY);
         }
-        for (ResourceLocation id : info.traits()) {
+        for (Identifier id : info.traits()) {
             Trait trait = KegareRegistries.TRAIT.get(id);
             if (trait == null) continue;
             Component name = trait.isUnique() ? Component.translatable("gui.kegare.sorcerer.traits.unique", trait.displayName()) : trait.displayName();
@@ -955,7 +955,7 @@ public final class SorcererScreen extends Screen {
                 Ability ability = ClientLoadout.abilities().size() > slot.index() ? ClientLoadout.abilities().get(slot.index()) : null;
                 press(ability != null ? ability.id() : null, slot.index(), mouseX, mouseY); // a click keeps its card (on release)
             } else {
-                ResourceLocation ultimate = hoveredAbility((int) mouseX, (int) mouseY);
+                Identifier ultimate = hoveredAbility((int) mouseX, (int) mouseY);
                 if (ultimate != null) pinned = ultimate; // V: its card stays
             }
             return true;
@@ -987,7 +987,7 @@ public final class SorcererScreen extends Screen {
             return true;
         }
         if (button != 0 || (pressAbility == null && pressSlot < 0)) return super.mouseReleased(mouseX, mouseY, button);
-        ResourceLocation ability = pressAbility;
+        Identifier ability = pressAbility;
         int fromSlot = pressSlot;
         pressAbility = null;
         pressSlot = -1;
@@ -1067,7 +1067,7 @@ public final class SorcererScreen extends Screen {
     private static final int BG_SLOT_H = 34, BG_SWITCH_W = 24, BG_SWITCH_H = 12;
 
     /** Clipped to the part of the big box not scrolled away: a hit only where it shows. */
-    private void clippedHit(Kind kind, int x, int y, int w, int h, int index, @Nullable ResourceLocation id, boolean flag) {
+    private void clippedHit(Kind kind, int x, int y, int w, int h, int index, @Nullable Identifier id, boolean flag) {
         int top = Math.max(y, wellY0 + 3), bottom = Math.min(y + h, wellY1 - 3);
         if (bottom > top) hits.add(new Hit(kind, x, top, w, bottom - top, index, id, flag));
     }
@@ -1134,7 +1134,7 @@ public final class SorcererScreen extends Screen {
         return y;
     }
 
-    private void press(@Nullable ResourceLocation ability, int slot, double mx, double my) {
+    private void press(@Nullable Identifier ability, int slot, double mx, double my) {
         pressAbility = ability;
         pressSlot = slot;
         pressX = mx;
@@ -1144,14 +1144,14 @@ public final class SorcererScreen extends Screen {
 
     /** The ability the big box is about: the hovered tile or bar slot, else the clicked one. */
     @Nullable
-    private ResourceLocation shownAbility(int mouseX, int mouseY) {
+    private Identifier shownAbility(int mouseX, int mouseY) {
         if (dragging && pressAbility != null) return pressAbility;
-        ResourceLocation hovered = hoveredAbility(mouseX, mouseY);
+        Identifier hovered = hoveredAbility(mouseX, mouseY);
         return hovered != null ? hovered : pinned;
     }
 
     @Nullable
-    private ResourceLocation hoveredAbility(int mouseX, int mouseY) {
+    private Identifier hoveredAbility(int mouseX, int mouseY) {
         Hit hit = hitAt(mouseX, mouseY);
         if (hit != null && hit.kind == Kind.TILE) return hit.ability;
         CombatPanelLayer.SlotRect slot = slotAt(mouseX, mouseY);
@@ -1166,7 +1166,7 @@ public final class SorcererScreen extends Screen {
     }
 
     @Nullable
-    private SorcererInfoPayload.AbilityInfo abilityInfo(ResourceLocation id) {
+    private SorcererInfoPayload.AbilityInfo abilityInfo(Identifier id) {
         for (SorcererInfoPayload.AbilityInfo a : info.abilities()) if (a.id().equals(id)) return a;
         for (SorcererInfoPayload.AbilityInfo a : info.shared()) if (a.id().equals(id)) return a;
         return null;
@@ -1184,7 +1184,7 @@ public final class SorcererScreen extends Screen {
         return null;
     }
 
-    private static void send(LoadoutService.Action action, int slot, int other, @Nullable ResourceLocation ability) {
+    private static void send(LoadoutService.Action action, int slot, int other, @Nullable Identifier ability) {
         PacketDistributor.sendToServer(new LoadoutEditPayload(action, slot, other, Optional.ofNullable(ability)));
     }
 

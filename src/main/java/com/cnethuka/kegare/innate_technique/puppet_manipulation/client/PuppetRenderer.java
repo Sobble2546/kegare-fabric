@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.client.resources.PlayerSkin;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.joml.Vector3f;
 
 /**
@@ -48,7 +48,7 @@ public class PuppetRenderer extends EntityRenderer<PuppetEntity> {
     }
 
     @Override
-    public ResourceLocation getTextureLocation(PuppetEntity puppet) {
+    public Identifier getTextureLocation(PuppetEntity puppet) {
         return PuppetSkins.skin(puppet).texture();
     }
 
@@ -65,7 +65,7 @@ public class PuppetRenderer extends EntityRenderer<PuppetEntity> {
         }
 
         @Override
-        public ResourceLocation getTextureLocation(PuppetEntity puppet) {
+        public Identifier getTextureLocation(PuppetEntity puppet) {
             return PuppetSkins.skin(puppet).texture();
         }
 

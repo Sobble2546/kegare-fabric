@@ -19,7 +19,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -66,7 +66,7 @@ public final class BattleDamage {
     /** Per dimension: {game time, blocks broken} for the last second, for {@code maxBlocksPerSecond}. */
     private static final Map<ResourceKey<Level>, ArrayDeque<long[]>> RECENT = new HashMap<>();
     private static List<? extends String> protectedFrom = List.of();
-    private static Set<ResourceLocation> protectedBlocks = Set.of();
+    private static Set<Identifier> protectedBlocks = Set.of();
     private static List<TagKey<Block>> protectedTags = List.of();
 
     public record Result(List<BlockPos> broken, List<BlockPos> wouldBreak) {}
@@ -178,11 +178,11 @@ public final class BattleDamage {
     public static boolean isProtected(BlockState state) {
         List<? extends String> list = BattleDamageConfig.PROTECTED.get();
         if (list != protectedFrom) { // parsed again whenever the config's list changes
-            Set<ResourceLocation> blocks = new HashSet<>();
+            Set<Identifier> blocks = new HashSet<>();
             List<TagKey<Block>> tags = new ArrayList<>();
             for (String entry : list) {
                 String s = entry.trim();
-                ResourceLocation id = ResourceLocation.tryParse(s.startsWith("#") ? s.substring(1) : s);
+                Identifier id = Identifier.tryParse(s.startsWith("#") ? s.substring(1) : s);
                 if (id == null) continue;
                 if (s.startsWith("#")) tags.add(TagKey.create(Registries.BLOCK, id));
                 else blocks.add(id);

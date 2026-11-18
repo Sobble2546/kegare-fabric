@@ -3,8 +3,8 @@ package com.cnethuka.kegare.innate_technique.swap;
 import com.cnethuka.kegare.innatetechnique.Ability;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.bus.api.Event;
-import net.neoforged.bus.api.ICancellableEvent;
+import com.cnethuka.kegare.platform.bus.Event;
+import com.cnethuka.kegare.platform.bus.ICancellableEvent;
 
 /**
  * Fired on {@code NeoForge.EVENT_BUS} (server side) before ANY Swap ability acts on something: every position swap

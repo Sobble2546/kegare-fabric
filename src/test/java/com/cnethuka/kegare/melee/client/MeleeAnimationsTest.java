@@ -16,12 +16,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.junit.jupiter.api.Test;
 
 /** The shipped player_animations/melee.json, read by Player Animation Library's own loader. */
 class MeleeAnimationsTest {
-    private static final List<ResourceLocation> PLAYED = List.of(MeleeIds.ANIM_DASH_FORWARD, MeleeIds.ANIM_DASH_BACK, MeleeIds.ANIM_DASH_LEFT,
+    private static final List<Identifier> PLAYED = List.of(MeleeIds.ANIM_DASH_FORWARD, MeleeIds.ANIM_DASH_BACK, MeleeIds.ANIM_DASH_LEFT,
             MeleeIds.ANIM_DASH_RIGHT, MeleeIds.ANIM_PARRY_GUARD, MeleeIds.ANIM_PARRY_PERFECT, MeleeIds.ANIM_PARRY_RECOVERY, MeleeIds.ANIM_STAGGER,
             MeleeIds.ANIM_REINFORCED_STRIKE);
 
@@ -35,7 +35,7 @@ class MeleeAnimationsTest {
     @Test
     void palLoadsEveryAnimationTheCodePlays() throws IOException {
         Map<String, Animation> loaded = UniversalAnimLoader.loadAnimations(file());
-        for (ResourceLocation id : PLAYED) {
+        for (Identifier id : PLAYED) {
             Animation animation = loaded.get(id.getPath());
             assertNotNull(animation, id + " is in the file");
             assertTrue(animation.length() > 0f, id + " has a length");

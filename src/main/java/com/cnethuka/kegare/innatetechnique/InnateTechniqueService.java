@@ -7,7 +7,7 @@ import com.cnethuka.kegare.registry.KegareAttachments;
 import com.cnethuka.kegare.registry.KegareRegistries;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
@@ -82,7 +82,7 @@ public final class InnateTechniqueService {
      * Moves a running cooldown's end by {@code ticks} (negative: sooner). Nothing if it isn't running; past now, it's over. Used by the
      * abilities that run the clock (Time Manipulation, DESIGN §3.26).
      */
-    public static void shiftCooldown(ServerPlayer player, ResourceLocation cooldownKey, long ticks, boolean sync) {
+    public static void shiftCooldown(ServerPlayer player, Identifier cooldownKey, long ticks, boolean sync) {
         InnateTechniqueData data = get(player);
         InnateTechniqueData.Cooldown cooldown = data.cooldowns().get(cooldownKey);
         long now = player.level().getGameTime();
@@ -94,7 +94,7 @@ public final class InnateTechniqueService {
     }
 
     /** Ends one cooldown now (an ability's, or its special's: they share the key). */
-    public static void clearCooldown(ServerPlayer player, ResourceLocation cooldownKey) {
+    public static void clearCooldown(ServerPlayer player, Identifier cooldownKey) {
         get(player).removeCooldown(cooldownKey);
         PlayerSync.markDirty(player);
     }
@@ -112,7 +112,7 @@ public final class InnateTechniqueService {
     public static boolean validateOnLogin(ServerPlayer player) {
         InnateTechniqueData data = get(player);
         data.pruneCooldowns(player.level().getGameTime());
-        Optional<ResourceLocation> id = data.innateTechniqueId();
+        Optional<Identifier> id = data.innateTechniqueId();
         if (id.isPresent() && !KegareRegistries.INNATE_TECHNIQUE.containsKey(id.get())) {
             Kegare.LOGGER.warn("{} had unknown innate technique {}; clearing it", player.getGameProfile().getName(), id.get());
             data.setInnateTechnique(null);

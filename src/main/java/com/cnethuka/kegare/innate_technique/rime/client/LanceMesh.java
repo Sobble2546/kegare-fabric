@@ -16,7 +16,7 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.joml.Vector3f;
 
 /**
@@ -29,9 +29,9 @@ import org.joml.Vector3f;
  * faint cracks through it where the navy would vanish.
  */
 public final class LanceMesh {
-    public static final ResourceLocation MODEL = Kegare.id("models/fx/glacial_lance.obj");
-    public static final ResourceLocation TEXTURE = Kegare.id("textures/entity/glacial_lance.png");
-    public static final ResourceLocation GLOW = Kegare.id("textures/entity/glacial_lance_glow.png");
+    public static final Identifier MODEL = Kegare.id("models/fx/glacial_lance.obj");
+    public static final Identifier TEXTURE = Kegare.id("textures/entity/glacial_lance.png");
+    public static final Identifier GLOW = Kegare.id("textures/entity/glacial_lance_glow.png");
     /** Block light the body never drops below: dark at night, but navy, not black. */
     static final int LIGHT_FLOOR = 5;
     /** How much the faces' shading leans toward the world's up: the planes stay distinct, the undersides don't go black. */
@@ -46,12 +46,12 @@ public final class LanceMesh {
 
     /** One mesh of Rime's ice and its two textures (body and glow), all drawn the same way as the lance. */
     public static final class Model {
-        final ResourceLocation obj;
-        final ResourceLocation texture;
-        final ResourceLocation glowTexture;
+        final Identifier obj;
+        final Identifier texture;
+        final Identifier glowTexture;
         @Nullable private Map<String, Piece> pieces;
 
-        public Model(ResourceLocation obj, ResourceLocation texture, ResourceLocation glowTexture) {
+        public Model(Identifier obj, Identifier texture, Identifier glowTexture) {
             this.obj = obj;
             this.texture = texture;
             this.glowTexture = glowTexture;

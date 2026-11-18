@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.testframework.junit.EphemeralTestServerProvider;
@@ -28,7 +28,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 class UnlocksTest {
     private static final double RATE = 0.1;
     private static final double CAP = 0.5;
-    private final List<ResourceLocation> registered = new ArrayList<>();
+    private final List<Identifier> registered = new ArrayList<>();
 
     @AfterEach
     void cleanUp(MinecraftServer server) throws Exception {
@@ -40,8 +40,8 @@ class UnlocksTest {
         });
     }
 
-    private ResourceLocation entry(String name, UnlockRequirements requirements) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(Kegare.MODID, "test/" + name);
+    private Identifier entry(String name, UnlockRequirements requirements) {
+        Identifier id = Identifier.fromNamespaceAndPath(Kegare.MODID, "test/" + name);
         Unlocks.register(id, requirements);
         registered.add(id);
         return id;
@@ -103,7 +103,7 @@ class UnlocksTest {
     void everyEntryHasAName() throws java.io.IOException {
         java.nio.file.Path lang = java.nio.file.Path.of(System.getProperty("kegare.projectDir", "."), "src/generated/resources/assets/kegare/lang/en_us.json");
         com.google.gson.JsonObject names = com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(lang)).getAsJsonObject();
-        for (ResourceLocation id : Unlocks.registered()) {
+        for (Identifier id : Unlocks.registered()) {
             assertTrue(names.has(net.minecraft.Util.makeDescriptionId("unlock", id)), id + " has a name for its toast");
         }
     }
@@ -111,7 +111,7 @@ class UnlocksTest {
     @Test
     void registeringTwiceIsABug(MinecraftServer server) throws Exception {
         TestServer.onServerThread(server, () -> {
-            ResourceLocation id = entry("twice", UnlockRequirements.builder().build());
+            Identifier id = entry("twice", UnlockRequirements.builder().build());
             assertThrows(IllegalArgumentException.class, () -> Unlocks.register(id, UnlockRequirements.builder().build()));
         });
     }
@@ -119,9 +119,9 @@ class UnlocksTest {
     @Test
     void itReevaluatesWhenAnyOfTheThreeChanges(MinecraftServer server) throws Exception {
         TestServer.onServerThread(server, () -> {
-            ResourceLocation byGrade = entry("by_grade", UnlockRequirements.builder().grade(Grade.GRADE_3).build());
-            ResourceLocation byRefinement = entry("by_refinement", UnlockRequirements.builder().refinement(3).build());
-            ResourceLocation byInsight = entry("by_insight", UnlockRequirements.builder().insight(InsightCategory.OUTPUT, 5).build());
+            Identifier byGrade = entry("by_grade", UnlockRequirements.builder().grade(Grade.GRADE_3).build());
+            Identifier byRefinement = entry("by_refinement", UnlockRequirements.builder().refinement(3).build());
+            Identifier byInsight = entry("by_insight", UnlockRequirements.builder().insight(InsightCategory.OUTPUT, 5).build());
             ServerPlayer p = sorcerer(server, "reevaluates");
             assertFalse(Unlocks.has(p, byGrade));
             assertFalse(Unlocks.has(p, byRefinement));
@@ -166,8 +166,8 @@ class UnlocksTest {
     @Test
     void aSeveredPlayerCantReachARefinementGatedEntry(MinecraftServer server) throws Exception {
         TestServer.onServerThread(server, () -> {
-            ResourceLocation gated = entry("severed_gated", UnlockRequirements.builder().refinement(1).loweredBy(InsightCategory.WARD).build());
-            ResourceLocation open = entry("severed_open", UnlockRequirements.builder().grade(Grade.GRADE_3).insight(InsightCategory.WARD, 1).build());
+            Identifier gated = entry("severed_gated", UnlockRequirements.builder().refinement(1).loweredBy(InsightCategory.WARD).build());
+            Identifier open = entry("severed_open", UnlockRequirements.builder().grade(Grade.GRADE_3).insight(InsightCategory.WARD, 1).build());
             ServerPlayer p = TestServer.damageable(server, "severed_unlocks");
             server.overworld().addNewPlayer(p);
             BirthService.rebirth(p, java.util.OptionalInt.of(0));
@@ -181,7 +181,7 @@ class UnlocksTest {
     @Test
     void insightCanBeWhatFinishesARefinementUnlock(MinecraftServer server) throws Exception {
         TestServer.onServerThread(server, () -> {
-            ResourceLocation id = entry("lowered", UnlockRequirements.builder().refinement(4).loweredBy(InsightCategory.DOMINION).build());
+            Identifier id = entry("lowered", UnlockRequirements.builder().refinement(4).loweredBy(InsightCategory.DOMINION).build());
             ServerPlayer p = sorcerer(server, "lowered");
             RefinementService.setLevel(p, 2);
             assertFalse(Unlocks.has(p, id));
@@ -198,10 +198,10 @@ class UnlocksTest {
     @Test
     void aRerollTakesOnlyWhatsTiedToTheTechnique(MinecraftServer server) throws Exception {
         TestServer.onServerThread(server, () -> {
-            ResourceLocation tied = entry("tied", UnlockRequirements.builder().refinement(3).tiedToTechnique().build());
-            ResourceLocation stays = entry("stays", UnlockRequirements.builder().refinement(3).build());
-            ResourceLocation grade = entry("grade", UnlockRequirements.builder().grade(Grade.GRADE_3).build());
-            ResourceLocation insight = entry("insight", UnlockRequirements.builder().insight(InsightCategory.WARD, 1).build());
+            Identifier tied = entry("tied", UnlockRequirements.builder().refinement(3).tiedToTechnique().build());
+            Identifier stays = entry("stays", UnlockRequirements.builder().refinement(3).build());
+            Identifier grade = entry("grade", UnlockRequirements.builder().grade(Grade.GRADE_3).build());
+            Identifier insight = entry("insight", UnlockRequirements.builder().insight(InsightCategory.WARD, 1).build());
             ServerPlayer p = sorcerer(server, "reroll_unlocks");
             RefinementService.setLevel(p, 3);
             GradeService.set(p, Grade.GRADE_3);
@@ -222,8 +222,8 @@ class UnlocksTest {
     @Test
     void loweringRefinementTakesTiedUnlocks(MinecraftServer server) throws Exception {
         TestServer.onServerThread(server, () -> {
-            ResourceLocation tied = entry("tied_lower", UnlockRequirements.builder().refinement(3).tiedToTechnique().build());
-            ResourceLocation stays = entry("stays_lower", UnlockRequirements.builder().refinement(3).build());
+            Identifier tied = entry("tied_lower", UnlockRequirements.builder().refinement(3).tiedToTechnique().build());
+            Identifier stays = entry("stays_lower", UnlockRequirements.builder().refinement(3).build());
             ServerPlayer p = sorcerer(server, "lower_unlocks");
             RefinementService.setLevel(p, 5);
             RefinementService.setLevel(p, 1);
@@ -235,8 +235,8 @@ class UnlocksTest {
     @Test
     void listenersHearEachUnlockOnce(MinecraftServer server) throws Exception {
         TestServer.onServerThread(server, () -> {
-            ResourceLocation id = entry("heard", UnlockRequirements.builder().refinement(1).build());
-            List<ResourceLocation> heard = new ArrayList<>();
+            Identifier id = entry("heard", UnlockRequirements.builder().refinement(1).build());
+            List<Identifier> heard = new ArrayList<>();
             Unlocks.addListener((player, unlocked) -> {
                 if (unlocked.equals(id)) heard.add(unlocked);
             });

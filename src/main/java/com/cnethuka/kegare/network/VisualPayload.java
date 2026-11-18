@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
@@ -76,8 +76,8 @@ public record VisualPayload(Action action, int entityId, String key, Visual visu
         Action action = buf.readEnum(Action.class);
         int entityId = buf.readVarInt();
         String key = buf.readUtf(256);
-        Optional<ResourceLocation> animation = buf.readOptional(FriendlyByteBuf::readResourceLocation);
-        Optional<ResourceLocation> effect = buf.readOptional(FriendlyByteBuf::readResourceLocation);
+        Optional<Identifier> animation = buf.readOptional(FriendlyByteBuf::readResourceLocation);
+        Optional<Identifier> effect = buf.readOptional(FriendlyByteBuf::readResourceLocation);
         Visual.Anchor anchor = buf.readEnum(Visual.Anchor.class);
         boolean linger = buf.readBoolean();
         int tint = buf.readInt();

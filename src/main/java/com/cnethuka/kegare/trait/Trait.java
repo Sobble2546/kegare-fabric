@@ -5,7 +5,7 @@ import java.util.function.DoubleSupplier;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -127,7 +127,7 @@ public class Trait {
     /** Hook: the bearer was killed by {@code killer} and lost this trait (lostOnPvpDeath traits). */
     public void onBearerKilledByPlayer(ServerPlayer victim, ServerPlayer killer) {}
 
-    public final ResourceLocation id() {
+    public final Identifier id() {
         return KegareRegistries.TRAIT.getKey(this);
     }
 

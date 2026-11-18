@@ -38,7 +38,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelResource;
@@ -71,10 +71,10 @@ public final class KegareDatabase {
         void kick(UUID player, String langKey);
 
         /** The database refused a claim: someone else has the trait. */
-        void claimRefused(ResourceLocation trait, UUID player);
+        void claimRefused(Identifier trait, UUID player);
 
         /** Something happened on the network: a trait passed on, or the word of it. */
-        void networkEvent(String kind, ResourceLocation trait, @Nullable UUID player);
+        void networkEvent(String kind, Identifier trait, @Nullable UUID player);
 
         /** The trait record's fresh: apply any revocations waiting for players here. */
         void traitsRefreshed();
@@ -85,7 +85,7 @@ public final class KegareDatabase {
      *
      * @param preRolledBirth nothing was anywhere for them: this is a first join, and these unique traits were already rolled and won
      */
-    public record LoginResult(boolean admitted, @Nullable String refusal, Map<String, String> rows, @Nullable UUID token, @Nullable Set<ResourceLocation> preRolledBirth) {
+    public record LoginResult(boolean admitted, @Nullable String refusal, Map<String, String> rows, @Nullable UUID token, @Nullable Set<Identifier> preRolledBirth) {
         static final LoginResult UNREACHABLE_NOW = new LoginResult(false, UNREACHABLE, Map.of(), null, null);
         static final LoginResult HELD_ELSEWHERE = new LoginResult(false, HELD, Map.of(), null, null);
     }
@@ -424,7 +424,7 @@ public final class KegareDatabase {
                         if (token == null) return LoginResult.HELD_ELSEWHERE;
                         if (name != null) rememberName(connection, player, name);
                         Map<String, String> found = PlayerStore.load(connection, player);
-                        Set<ResourceLocation> won = null;
+                        Set<Identifier> won = null;
                         if (found.isEmpty()) {
                             found = fromWorldFile(player);
                             if (!found.isEmpty()) {
@@ -754,7 +754,7 @@ public final class KegareDatabase {
     private NetworkTraits.Applier applier() {
         return new NetworkTraits.Applier() {
             @Override
-            public void refused(ResourceLocation trait, UUID player) {
+            public void refused(Identifier trait, UUID player) {
                 host.onServerThread(() -> host.claimRefused(trait, player));
             }
 
@@ -837,12 +837,12 @@ public final class KegareDatabase {
         }
 
         @Override
-        public void claimRefused(ResourceLocation trait, UUID player) {
+        public void claimRefused(Identifier trait, UUID player) {
             TraitSuccession.claimRefused(server, trait, player);
         }
 
         @Override
-        public void networkEvent(String kind, ResourceLocation trait, @Nullable UUID player) {
+        public void networkEvent(String kind, Identifier trait, @Nullable UUID player) {
             TraitSuccession.networkEvent(server, kind, trait, player);
         }
 

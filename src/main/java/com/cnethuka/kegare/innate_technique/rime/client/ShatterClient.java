@@ -16,7 +16,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -38,12 +38,12 @@ import org.joml.Matrix4f;
  * </ul>
  */
 public final class ShatterClient {
-    static final ResourceLocation RING_MARK = Kegare.id("shatter_ring");
+    static final Identifier RING_MARK = Kegare.id("shatter_ring");
     /** The mark's ring, in texels from its middle (the art is drawn for the default reach, 4.5 blocks). */
     static final int ART_RADIUS = 72;
     /** Near its ring, the mark is moved in or out whole for another reach, so the ring keeps its width; inside, it's stretched. */
     static final int KEEP = 12;
-    static final ResourceLocation TEXTURE = Kegare.id("textures/fx/shatter_ring.png");
+    static final Identifier TEXTURE = Kegare.id("textures/fx/shatter_ring.png");
     /** Where the bright front is across the texture ({@code textures/fx/shatter_ring.png}, as u). */
     static final float FRONT = 0.82f;
     /** Ticks the shock takes to reach the edge; ticks it then takes to fade. */

@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
@@ -28,7 +28,7 @@ import org.joml.Vector3f;
  * ({@code {"vector": [x, y, z], "easing": "easeOutQuad"}}). A malformed animation is skipped, not the whole file.
  */
 public final class PuppetPoses implements ResourceManagerReloadListener {
-    private static final ResourceLocation FILE = Kegare.id("player_animations/puppet_manipulation.json");
+    private static final Identifier FILE = Kegare.id("player_animations/puppet_manipulation.json");
 
     /** One animation: rotation keyframes per bone, and its length in seconds. */
     public record Clip(float length, Map<String, List<Key>> rotations) {
@@ -61,9 +61,9 @@ public final class PuppetPoses implements ResourceManagerReloadListener {
 
     public record Key(float time, Vector3f value, String easing) {}
 
-    private static final Map<ResourceLocation, Clip> CLIPS = new HashMap<>();
+    private static final Map<Identifier, Clip> CLIPS = new HashMap<>();
 
-    public static Optional<Clip> clip(ResourceLocation id) {
+    public static Optional<Clip> clip(Identifier id) {
         return Optional.ofNullable(CLIPS.get(id));
     }
 

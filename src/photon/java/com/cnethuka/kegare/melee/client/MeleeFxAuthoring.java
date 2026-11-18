@@ -19,7 +19,7 @@ import com.lowdragmc.photon.client.gameobject.emitter.particle.ParticleRendererS
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.joml.Vector3f;
 
 /**
@@ -34,8 +34,8 @@ public final class MeleeFxAuthoring {
 
     private MeleeFxAuthoring() {}
 
-    public static Map<ResourceLocation, Supplier<FX>> effects() {
-        Map<ResourceLocation, Supplier<FX>> out = new LinkedHashMap<>();
+    public static Map<Identifier, Supplier<FX>> effects() {
+        Map<Identifier, Supplier<FX>> out = new LinkedHashMap<>();
         out.put(MeleeIds.FX_DASH_BURST, MeleeFxAuthoring::dashBurst);
         out.put(MeleeIds.FX_DASH_TRAIL, MeleeFxAuthoring::dashTrail);
         out.put(MeleeIds.FX_DASH_TRAIL_SELF, MeleeFxAuthoring::dashTrailSelf);
@@ -153,7 +153,7 @@ public final class MeleeFxAuthoring {
     /** Where a parry's effects sit, relative to the eyes: out over the raised guard, under the crosshair. */
     private static final Vector3f GUARD_POINT = new Vector3f(0.8f, -0.32f, 0f);
     private static final Vector3f GUARD_POINT_SELF = new Vector3f(2.2f, -0.75f, 0f);
-    private static final ResourceLocation ARC_MODEL = Kegare.id("models/fx/parry_arc.obj");
+    private static final Identifier ARC_MODEL = Kegare.id("models/fx/parry_arc.obj");
 
     private static ParticleEmitter at(ParticleEmitter e) {
         e.transform().localPosition(new Vector3f(GUARD_POINT));

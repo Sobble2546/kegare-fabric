@@ -16,7 +16,7 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -172,7 +172,7 @@ public class AnchorRenderer extends EntityRenderer<AnchorEntity> {
     }
 
     @Override
-    public ResourceLocation getTextureLocation(AnchorEntity anchor) {
+    public Identifier getTextureLocation(AnchorEntity anchor) {
         return Kegare.id("textures/entity/swap_anchor.png");
     }
 }

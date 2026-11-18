@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -55,11 +55,11 @@ public final class BackgroundClient {
         return r;
     }
 
-    public static Optional<BackgroundSyncPayload.TaskView> task(ResourceLocation id) {
+    public static Optional<BackgroundSyncPayload.TaskView> task(Identifier id) {
         return state.tasks().stream().filter(t -> t.id().equals(id)).findFirst();
     }
 
-    public static void set(int slot, ResourceLocation task) {
+    public static void set(int slot, Identifier task) {
         PacketDistributor.sendToServer(new BackgroundActionPayload(BackgroundActionPayload.SET, slot, Optional.of(task)));
     }
 

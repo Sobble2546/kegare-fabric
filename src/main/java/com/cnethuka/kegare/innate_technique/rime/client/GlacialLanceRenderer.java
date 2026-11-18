@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
@@ -75,7 +75,7 @@ public final class GlacialLanceRenderer extends EntityRenderer<GlacialLanceEntit
     }
 
     @Override
-    public ResourceLocation getTextureLocation(GlacialLanceEntity lance) {
+    public Identifier getTextureLocation(GlacialLanceEntity lance) {
         return LanceMesh.TEXTURE;
     }
 }

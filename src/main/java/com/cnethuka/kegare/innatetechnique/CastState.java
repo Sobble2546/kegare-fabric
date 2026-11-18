@@ -3,7 +3,7 @@ package com.cnethuka.kegare.innatetechnique;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Runtime-only cast state (attachment {@code kegare:cast_state}, never saved, never copied).
@@ -31,7 +31,7 @@ public final class CastState {
 
     @Nullable
     Active casting;
-    final Map<ResourceLocation, Active> toggles = new LinkedHashMap<>();
+    final Map<Identifier, Active> toggles = new LinkedHashMap<>();
     /** Set during an INSTANT cast's execute: the cast fizzled after paying, so no cooldown starts. */
     boolean noCooldown;
 
@@ -40,7 +40,7 @@ public final class CastState {
         return casting;
     }
 
-    public Map<ResourceLocation, Active> toggles() {
+    public Map<Identifier, Active> toggles() {
         return java.util.Collections.unmodifiableMap(toggles);
     }
 

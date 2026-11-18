@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Per player, saved and kept on death (attachment {@code kegare:shared_abilities}): which shared abilities are
@@ -14,11 +14,11 @@ import net.minecraft.resources.ResourceLocation;
  */
 public final class SharedAbilityData {
     public static final Codec<SharedAbilityData> CODEC = RecordCodecBuilder.create(i -> i.group(
-            ResourceLocation.CODEC.listOf().optionalFieldOf("unlocked", List.of()).forGetter(d -> List.copyOf(d.unlocked)),
+            Identifier.CODEC.listOf().optionalFieldOf("unlocked", List.of()).forGetter(d -> List.copyOf(d.unlocked)),
             Codec.LONG.optionalFieldOf("last_orb_roll", Long.MIN_VALUE).forGetter(d -> d.lastOrbRoll)
     ).apply(i, SharedAbilityData::new));
 
-    final Set<ResourceLocation> unlocked;
+    final Set<Identifier> unlocked;
     /** Game time of the last green-orb chance roll (MIN_VALUE: never). */
     long lastOrbRoll;
 
@@ -26,16 +26,16 @@ public final class SharedAbilityData {
         this(List.of(), Long.MIN_VALUE);
     }
 
-    private SharedAbilityData(List<ResourceLocation> unlocked, long lastOrbRoll) {
+    private SharedAbilityData(List<Identifier> unlocked, long lastOrbRoll) {
         this.unlocked = new LinkedHashSet<>(unlocked);
         this.lastOrbRoll = lastOrbRoll;
     }
 
-    public Set<ResourceLocation> unlocked() {
+    public Set<Identifier> unlocked() {
         return Collections.unmodifiableSet(unlocked);
     }
 
-    public boolean isUnlocked(ResourceLocation id) {
+    public boolean isUnlocked(Identifier id) {
         return unlocked.contains(id);
     }
 

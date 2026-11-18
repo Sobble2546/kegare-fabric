@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -35,15 +35,15 @@ public final class VanillaFallback {
     }
 
     private static final Spec DEFAULT = new Spec(ParticleTypes.END_ROD, 1, 8, 0.3, 0.05);
-    private static final Map<ResourceLocation, Spec> SPECS = new ConcurrentHashMap<>();
+    private static final Map<Identifier, Spec> SPECS = new ConcurrentHashMap<>();
 
     private VanillaFallback() {}
 
-    public static void register(ResourceLocation effect, Spec spec) {
+    public static void register(Identifier effect, Spec spec) {
         SPECS.put(effect, spec);
     }
 
-    static Spec spec(ResourceLocation effect) {
+    static Spec spec(Identifier effect) {
         return SPECS.getOrDefault(effect, DEFAULT);
     }
 

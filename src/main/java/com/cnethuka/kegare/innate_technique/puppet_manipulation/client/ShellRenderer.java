@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.resources.PlayerSkin;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * A possessing player's empty body: their skin, armor and name, standing slack (head bowed, arms hanging) where they
@@ -35,7 +35,7 @@ public class ShellRenderer extends EntityRenderer<PuppetShellEntity> {
     }
 
     @Override
-    public ResourceLocation getTextureLocation(PuppetShellEntity shell) {
+    public Identifier getTextureLocation(PuppetShellEntity shell) {
         return PuppetSkins.skin(shell).texture();
     }
 
@@ -70,7 +70,7 @@ public class ShellRenderer extends EntityRenderer<PuppetShellEntity> {
         }
 
         @Override
-        public ResourceLocation getTextureLocation(PuppetShellEntity shell) {
+        public Identifier getTextureLocation(PuppetShellEntity shell) {
             return PuppetSkins.skin(shell).texture();
         }
     }

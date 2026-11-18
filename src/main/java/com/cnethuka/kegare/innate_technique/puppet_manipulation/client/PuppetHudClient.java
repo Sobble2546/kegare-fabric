@@ -21,7 +21,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Puppet Manipulation on the combat panel (Technique Mode): "Puppets: X/15" above the meter's left end (gold at the cap),
@@ -42,7 +42,7 @@ final class PuppetHudClient {
         SorcererScreen.addDetailLines(PuppetHudClient::sorcererLines);
     }
 
-    private static ResourceLocation glyph(PuppetOrder order) {
+    private static Identifier glyph(PuppetOrder order) {
         return Kegare.id("textures/gui/puppet_order/" + order.serializedName() + ".png");
     }
 
@@ -64,7 +64,7 @@ final class PuppetHudClient {
         return data.loadout().get(data.selectedSlot()).map(id -> id.equals(PuppetManipulation.STRINGS.id())).orElse(false);
     }
 
-    private static ResourceLocation icon(StringsVariation variation) {
+    private static Identifier icon(StringsVariation variation) {
         return Kegare.id("textures/gui/ability/strings_" + switch (variation) {
             case REEL_IN -> "reel";
             case TIE -> "tie";
@@ -124,7 +124,7 @@ final class PuppetHudClient {
             g.pose().popPose();
         } else if (ability == PuppetManipulation.DIRECTIVE) {
             RenderSystem.enableBlend();
-            ResourceLocation glyph = glyph(PuppetOrder.byId(hud.order()));
+            Identifier glyph = glyph(PuppetOrder.byId(hud.order()));
             g.setColor(0f, 0f, 0f, 0.85f); // a drop shadow, so it reads over the icon
             g.blit(glyph, x + 1, y, 0f, 0f, 7, 7, 7, 7);
             g.setColor(1f, 1f, 1f, 1f);

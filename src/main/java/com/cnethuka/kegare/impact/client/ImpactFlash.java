@@ -17,7 +17,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
@@ -32,7 +32,7 @@ import org.joml.Vector3f;
  * smaller the closer it is to your camera. Reduced: fewer spikes, sooner gone. Vanilla: vanilla's crit sparks, or dust in the color.
  */
 final class ImpactFlash {
-    private static final ResourceLocation WHITE = ResourceLocation.withDefaultNamespace("textures/misc/white.png");
+    private static final Identifier WHITE = Identifier.withDefaultNamespace("textures/misc/white.png");
     private static final RenderType TYPE = RenderType.entityTranslucentEmissive(WHITE);
 
     private record Flash(Vec3 at, float size, int spikeRgb, float born, int life, long seed, int spikes) {}

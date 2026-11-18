@@ -9,7 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 /**
@@ -18,11 +18,11 @@ import net.minecraft.world.item.ItemStack;
  * upright with vanilla's pick-up "pop". Nothing custom: it is the normal hotbar, moved.
  */
 public final class CombatHotbarLayer implements LayeredDraw.Layer {
-    public static final ResourceLocation ID = Kegare.id("combat_hotbar");
+    public static final Identifier ID = Kegare.id("combat_hotbar");
 
-    private static final ResourceLocation HOTBAR = ResourceLocation.withDefaultNamespace("hud/hotbar");
-    private static final ResourceLocation SELECTION = ResourceLocation.withDefaultNamespace("hud/hotbar_selection");
-    private static final ResourceLocation OFFHAND = ResourceLocation.withDefaultNamespace("hud/hotbar_offhand_left");
+    private static final Identifier HOTBAR = Identifier.withDefaultNamespace("hud/hotbar");
+    private static final Identifier SELECTION = Identifier.withDefaultNamespace("hud/hotbar_selection");
+    private static final Identifier OFFHAND = Identifier.withDefaultNamespace("hud/hotbar_offhand_left");
     /** The column's footprint: vanilla's 182x22 hotbar, turned. */
     public static final int WIDTH = 22;
     public static final int LENGTH = 182;

@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.WeakHashMap;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -41,7 +41,7 @@ public final class AccelerateAbility extends TimeAbility {
             .toggleLoop(null, TimeIds.FX_ACCELERATE)
             .build();
     /** The id of every modifier it puts on (movement, swimming, attack and mining speed). */
-    static final ResourceLocation MODIFIER = Kegare.id("accelerate");
+    static final Identifier MODIFIER = Kegare.id("accelerate");
     static final String RATE = "accelerate";
     /** When each player switched it on (for Overclock). */
     private static final Map<UUID, Long> ON_SINCE = new HashMap<>();
@@ -141,13 +141,13 @@ public final class AccelerateAbility extends TimeAbility {
 
     /** Fast Forward: {@code ticks} off every cooldown of the technique except this one's and the ultimate's. Returns how many it touched. */
     static int fastForward(ServerPlayer p, InnateTechnique technique, long ticks) {
-        ResourceLocation ultimate = technique.ultimate().map(Ability::cooldownKey).orElse(null);
-        java.util.Set<ResourceLocation> keys = new java.util.HashSet<>();
+        Identifier ultimate = technique.ultimate().map(Ability::cooldownKey).orElse(null);
+        java.util.Set<Identifier> keys = new java.util.HashSet<>();
         for (Ability a : technique.everyAbility()) keys.add(a.cooldownKey());
         keys.remove(TimeManipulation.ACCELERATE.cooldownKey());
         keys.remove(ultimate);
         int touched = 0;
-        for (ResourceLocation key : keys) {
+        for (Identifier key : keys) {
             if (InnateTechniqueService.get(p).cooldowns().containsKey(key)) touched++;
             InnateTechniqueService.shiftCooldown(p, key, -ticks, true);
         }

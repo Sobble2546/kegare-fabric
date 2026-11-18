@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
@@ -46,7 +46,7 @@ public final class BackgroundTaskService {
     }
 
     /** Puts a task in a slot (or empties it, {@code task} null). A task already in another slot moves, swapping with what was here. */
-    public static BackgroundTaskResult set(ServerPlayer player, int slot, @Nullable ResourceLocation task) {
+    public static BackgroundTaskResult set(ServerPlayer player, int slot, @Nullable Identifier task) {
         if (MaliceService.isSevered(player)) return BackgroundTaskResult.SEVERED;
         if (slot < 0 || slot >= slotCount(player)) return BackgroundTaskResult.BAD_SLOT;
         if (CombatHelper.isInCombat(player)) return BackgroundTaskResult.IN_COMBAT;
@@ -81,7 +81,7 @@ public final class BackgroundTaskService {
     }
 
     /** Slotted in a slot they have, on and unlocked: it runs unless paused. */
-    public static boolean isActive(Player player, ResourceLocation task) {
+    public static boolean isActive(Player player, Identifier task) {
         if (MaliceService.isSevered(player)) return false;
         BackgroundTaskData data = data(player);
         int count = slotCount(player);
@@ -93,11 +93,11 @@ public final class BackgroundTaskService {
     }
 
     /** Running right now (this tick): active, paid for and not paused. */
-    public static boolean isRunning(Player player, ResourceLocation task) {
+    public static boolean isRunning(Player player, Identifier task) {
         return data(player).ran.contains(task);
     }
 
-    public static boolean isPaused(Player player, ResourceLocation task) {
+    public static boolean isPaused(Player player, Identifier task) {
         return isActive(player, task) && data(player).paused.contains(task);
     }
 
@@ -110,8 +110,8 @@ public final class BackgroundTaskService {
             BackgroundTaskData.Slot s = data.slots.get(i);
             if (s.on()) data.slots.set(i, new BackgroundTaskData.Slot(s.task(), false));
         }
-        Set<ResourceLocation> ran = new java.util.LinkedHashSet<>();
-        Set<ResourceLocation> paused = new HashSet<>();
+        Set<Identifier> ran = new java.util.LinkedHashSet<>();
+        Set<Identifier> paused = new HashSet<>();
         for (int i = 0; i < count; i++) {
             BackgroundTaskData.Slot s = data.slots.get(i);
             if (!s.on() || s.task().isEmpty() || !Unlocks.has(player, s.task().get())) continue;
@@ -126,25 +126,25 @@ public final class BackgroundTaskService {
             else ran.add(task.id());
         }
         // What runs this tick is known before any task acts, so isRunning is right inside tick and stopped.
-        Set<ResourceLocation> before = new HashSet<>(data.ran);
+        Set<Identifier> before = new HashSet<>(data.ran);
         data.ran.clear();
         data.ran.addAll(ran);
         data.paused.clear();
         data.paused.addAll(paused);
-        for (ResourceLocation id : before) {
+        for (Identifier id : before) {
             if (!ran.contains(id)) BackgroundTasks.find(id).ifPresent(t -> t.stopped(player));
         }
-        for (ResourceLocation id : ran) BackgroundTasks.find(id).ifPresent(t -> t.tick(player));
+        for (Identifier id : ran) BackgroundTasks.find(id).ifPresent(t -> t.tick(player));
         BackgroundTaskSync.sync(player);
     }
 
     /** Admin and tests: every slot emptied (saved too). */
     public static void reset(ServerPlayer player) {
         BackgroundTaskData data = data(player);
-        Set<ResourceLocation> before = new HashSet<>(data.ran);
+        Set<Identifier> before = new HashSet<>(data.ran);
         data.ran.clear();
         data.paused.clear();
-        for (ResourceLocation id : before) BackgroundTasks.find(id).ifPresent(t -> t.stopped(player));
+        for (Identifier id : before) BackgroundTasks.find(id).ifPresent(t -> t.stopped(player));
         for (int i = 0; i < data.slots.size(); i++) data.slots.set(i, BackgroundTaskData.Slot.EMPTY);
     }
 }

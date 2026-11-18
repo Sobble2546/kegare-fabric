@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Unique traits across a network (DESIGN §3.33). The game keeps asking {@link UniqueTraitSavedData}, which answers from memory and never waits; what
@@ -56,16 +56,16 @@ public final class NetworkTraits implements UniqueTraitSavedData.Backend {
     }
 
     /** What the database holds, read off the server thread and applied on it. */
-    record Snapshot(Map<ResourceLocation, UUID> bearers, Map<ResourceLocation, UniqueTraitSavedData.Pending> pending, Map<UUID, Set<ResourceLocation>> revoked,
+    record Snapshot(Map<Identifier, UUID> bearers, Map<Identifier, UniqueTraitSavedData.Pending> pending, Map<UUID, Set<Identifier>> revoked,
                     Map<UUID, Long> seen, Set<UUID> online) {}
 
     /** What happened on the network, in order. */
-    record Event(long id, String kind, ResourceLocation trait, @Nullable UUID player) {}
+    record Event(long id, String kind, Identifier trait, @Nullable UUID player) {}
 
     /** What the storage does with what comes back: on the server thread. */
     interface Applier {
         /** A claim the database refused: someone else has it. */
-        void refused(ResourceLocation trait, UUID player);
+        void refused(Identifier trait, UUID player);
 
         void event(Event event);
 
@@ -96,22 +96,22 @@ public final class NetworkTraits implements UniqueTraitSavedData.Backend {
     }
 
     @Override
-    public void claimed(ResourceLocation trait, UUID player, boolean force) {
+    public void claimed(Identifier trait, UUID player, boolean force) {
         add(new Op(force ? "force_claim" : "claim", trait.toString(), player, null, 0));
     }
 
     @Override
-    public void released(ResourceLocation trait, UUID player) {
+    public void released(Identifier trait, UUID player) {
         add(new Op("release", trait.toString(), player, null, 0));
     }
 
     @Override
-    public void succession(ResourceLocation trait, UniqueTraitSavedData.Pending pending) {
+    public void succession(Identifier trait, UniqueTraitSavedData.Pending pending) {
         add(new Op("succession", trait.toString(), pending.previousBearer(), pending.killer().orElse(null), pending.dueTick() * 50));
     }
 
     @Override
-    public void revoked(UUID player, ResourceLocation trait) {
+    public void revoked(UUID player, Identifier trait) {
         add(new Op("revoke", trait.toString(), player, null, 0));
     }
 
@@ -146,7 +146,7 @@ public final class NetworkTraits implements UniqueTraitSavedData.Backend {
             Op next = op;
             Optional<UUID> refused = pool.transaction(connection -> apply(connection, next));
             ops.poll();
-            refused.ifPresent(player -> applier.refused(ResourceLocation.parse(next.trait()), player));
+            refused.ifPresent(player -> applier.refused(Identifier.parse(next.trait()), player));
         }
     }
 
@@ -240,8 +240,8 @@ public final class NetworkTraits implements UniqueTraitSavedData.Backend {
      * A new player's unique traits are rolled here, off the server thread and before they enter, so the database has said yes before anything shows them
      * they won. A trait waiting for an heir can't be won. Returns what they won.
      */
-    Set<ResourceLocation> preRollBirth(Connection connection, UUID player) throws SQLException {
-        Set<ResourceLocation> won = new HashSet<>();
+    Set<Identifier> preRollBirth(Connection connection, UUID player) throws SQLException {
+        Set<Identifier> won = new HashSet<>();
         for (Trait trait : KegareRegistries.TRAIT) {
             if (!trait.isUnique() || trait.birthChance() <= 0 || ThreadLocalRandom.current().nextDouble() >= trait.birthChance()) continue;
             if (pendingExists(connection, trait.id().toString())) continue;
@@ -278,14 +278,14 @@ public final class NetworkTraits implements UniqueTraitSavedData.Backend {
         });
     }
 
-    private record DuePending(ResourceLocation trait, UUID previous, @Nullable UUID killer) {}
+    private record DuePending(Identifier trait, UUID previous, @Nullable UUID killer) {}
 
     private static List<DuePending> duePending(Connection connection) throws SQLException {
         List<DuePending> out = new ArrayList<>();
         try (PreparedStatement select = connection.prepareStatement("SELECT trait, previous, killer FROM kegare.trait_pending WHERE due_at <= now()");
              ResultSet result = select.executeQuery()) {
             while (result.next()) {
-                ResourceLocation trait = ResourceLocation.tryParse(result.getString(1));
+                Identifier trait = Identifier.tryParse(result.getString(1));
                 if (trait != null) out.add(new DuePending(trait, result.getObject(2, UUID.class), result.getObject(3, UUID.class)));
             }
         }
@@ -308,7 +308,7 @@ public final class NetworkTraits implements UniqueTraitSavedData.Backend {
         return out;
     }
 
-    private static void event(Connection connection, String kind, ResourceLocation trait, @Nullable UUID player) throws SQLException {
+    private static void event(Connection connection, String kind, Identifier trait, @Nullable UUID player) throws SQLException {
         try (PreparedStatement insert = connection.prepareStatement("INSERT INTO kegare.network_event (kind, trait, player) VALUES (?, ?, ?)")) {
             insert.setString(1, kind);
             insert.setString(2, trait.toString());
@@ -333,7 +333,7 @@ public final class NetworkTraits implements UniqueTraitSavedData.Backend {
                 select.setLong(1, lastEvent);
                 try (ResultSet result = select.executeQuery()) {
                     while (result.next()) {
-                        ResourceLocation trait = ResourceLocation.tryParse(result.getString(3));
+                        Identifier trait = Identifier.tryParse(result.getString(3));
                         lastEvent = result.getLong(1);
                         if (trait != null) out.add(new Event(lastEvent, result.getString(2), trait, result.getObject(4, UUID.class)));
                     }
@@ -353,24 +353,24 @@ public final class NetworkTraits implements UniqueTraitSavedData.Backend {
 
     Snapshot read(ConnectionPool pool) throws SQLException {
         return pool.transaction(connection -> {
-            Map<ResourceLocation, UUID> bearers = new HashMap<>();
+            Map<Identifier, UUID> bearers = new HashMap<>();
             try (PreparedStatement select = connection.prepareStatement("SELECT trait, bearer FROM kegare.unique_trait"); ResultSet r = select.executeQuery()) {
                 while (r.next()) {
-                    ResourceLocation trait = ResourceLocation.tryParse(r.getString(1));
+                    Identifier trait = Identifier.tryParse(r.getString(1));
                     if (trait != null) bearers.put(trait, r.getObject(2, UUID.class));
                 }
             }
-            Map<ResourceLocation, UniqueTraitSavedData.Pending> pending = new LinkedHashMap<>();
+            Map<Identifier, UniqueTraitSavedData.Pending> pending = new LinkedHashMap<>();
             try (PreparedStatement select = connection.prepareStatement("SELECT trait, previous, killer, due_at FROM kegare.trait_pending"); ResultSet r = select.executeQuery()) {
                 while (r.next()) {
-                    ResourceLocation trait = ResourceLocation.tryParse(r.getString(1));
+                    Identifier trait = Identifier.tryParse(r.getString(1));
                     if (trait != null) pending.put(trait, new UniqueTraitSavedData.Pending(r.getObject(2, UUID.class), Optional.ofNullable(r.getObject(3, UUID.class)), r.getTimestamp(4).getTime() / 50));
                 }
             }
-            Map<UUID, Set<ResourceLocation>> revoked = new HashMap<>();
+            Map<UUID, Set<Identifier>> revoked = new HashMap<>();
             try (PreparedStatement select = connection.prepareStatement("SELECT player, trait FROM kegare.trait_revoked"); ResultSet r = select.executeQuery()) {
                 while (r.next()) {
-                    ResourceLocation trait = ResourceLocation.tryParse(r.getString(2));
+                    Identifier trait = Identifier.tryParse(r.getString(2));
                     if (trait != null) revoked.computeIfAbsent(r.getObject(1, UUID.class), u -> new HashSet<>()).add(trait);
                 }
             }

@@ -80,7 +80,7 @@ public final class TestServer {
         }
     }
 
-    public static boolean hasAdvancement(MinecraftServer server, ServerPlayer player, net.minecraft.resources.ResourceLocation id) {
+    public static boolean hasAdvancement(MinecraftServer server, ServerPlayer player, net.minecraft.resources.Identifier id) {
         var holder = server.getAdvancements().get(id);
         if (holder == null) throw new IllegalStateException("advancement " + id + " isn't loaded");
         return player.getAdvancements().getOrStartProgress(holder).isDone();
