@@ -136,10 +136,10 @@ public final class BattleDamageClient {
 
     private static void debris(ClientLevel level, BattleDamagePayload hit, BlockPos pos, BlockState state, int count) {
         Minecraft mc = Minecraft.getInstance();
-        TextureAtlasSprite sprite = mc.getBlockRenderer().getBlockModelShaper().getParticleIcon(state);
+        TextureAtlasSprite sprite = com.cnethuka.kegare.client.visual.RenderCompat.particleIcon(state);
         int rgb = 0xFFFFFF;
         if (!state.is(Blocks.GRASS_BLOCK)) { // as vanilla: the grass block's particle is plain dirt, so no tint
-            int c = mc.getBlockColors().getColor(state, level, pos, 0);
+            int c = com.cnethuka.kegare.client.visual.RenderCompat.blockColor(state, level, pos);
             if (c != -1) rgb = c & 0xFFFFFF;
         }
         Vec3 centre = Vec3.atCenterOf(pos);

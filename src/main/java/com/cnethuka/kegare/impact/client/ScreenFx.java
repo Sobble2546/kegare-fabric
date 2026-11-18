@@ -150,13 +150,13 @@ public final class ScreenFx {
     }
 
     private static TextureTarget held(RenderTarget main) {
-        if (held == null) held = new TextureTarget("kegare_hit_stop", main.width, main.height, false);
+        if (held == null) held = com.cnethuka.kegare.client.visual.RenderCompat.target("kegare_hit_stop", main.width, main.height);
         else if (held.width != main.width || held.height != main.height) held.resize(main.width, main.height);
         return held;
     }
 
     private static TextureTarget scratch(RenderTarget main) {
-        if (scratch == null) scratch = new TextureTarget("kegare_screen_fx", main.width, main.height, false);
+        if (scratch == null) scratch = com.cnethuka.kegare.client.visual.RenderCompat.target("kegare_screen_fx", main.width, main.height);
         else if (scratch.width != main.width || scratch.height != main.height) scratch.resize(main.width, main.height);
         return scratch;
     }

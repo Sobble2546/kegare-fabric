@@ -32,7 +32,7 @@
 \b(mc|minecraft|Minecraft\.getInstance\(\))\.setScreen\(	$1.gui.setScreen(
 \b(mc|minecraft|Minecraft\.getInstance\(\))\.getToastManager\(\)	$1.gui.toastManager()
 \b(mc|minecraft|Minecraft\.getInstance\(\))\.getOverlay\(\)	$1.gui.overlay()
-\b(mc|minecraft|Minecraft\.getInstance\(\))\.getMainRenderTarget\(\)	$1.mainRenderTarget()
+\b(mc|minecraft|Minecraft\.getInstance\(\))\.getMainRenderTarget\(\)	$1.gameRenderer.mainRenderTarget()
 \b(mc|minecraft)\.options\.hideGui\b	$1.gui.hud.isHidden()
 \borg\.lwjgl\.glfw\.GLFW\b	com.mojang.blaze3d.platform.InputConstants
 \bGLFW\.GLFW_	InputConstants.
@@ -58,3 +58,27 @@
 \bprevious\.render\(graphics, delta\)	previous.extractRenderState(graphics, delta)
 \.renderItem\(	.item(
 \bRenderTypes\.itemEntityTranslucentCull\(	RenderTypes.itemTranslucent(
+\bnet\.minecraft\.client\.renderer\.MultiBufferSource\b	com.cnethuka.kegare.platform.client.KBuffers
+\b(?:mc|minecraft|Minecraft\.getInstance\(\))\.renderBuffers\(\)\.bufferSource\(\)	com.cnethuka.kegare.platform.client.KBuffers.immediate()
+\bMultiBufferSource\b	KBuffers
+\bcom\.mojang\.blaze3d\.platform\.DepthTestFunction\b	com.mojang.renderpearl.api.pipeline.CompareOp
+\bDepthTestFunction\.NO_DEPTH_TEST\b	CompareOp.ALWAYS_PASS
+\bDepthTestFunction\.LEQUAL_DEPTH_TEST\b	CompareOp.LESS_THAN_OR_EQUAL
+\bDepthTestFunction\.GREATER_DEPTH_TEST\b	CompareOp.GREATER_THAN
+\bDepthTestFunction\b	CompareOp
+\bLevelRenderer\.getLightColor\(	net.minecraft.util.LightCoordsUtil.getLightCoords(
+\bcom\.mojang\.blaze3d\.textures\.(GpuTextureView|FilterMode|GpuTexture|GpuSampler)\b	com.mojang.renderpearl.api.textures.$1
+\bprotected void renderContents\(GuiGraphicsExtractor	protected void extractContents(GuiGraphicsExtractor
+\bInventoryScreen\.renderEntityInInventoryFollowsMouse\(	InventoryScreen.extractEntityInInventoryFollowsMouse(
+\bGui\.getMobEffectSprite\(	net.minecraft.client.gui.Hud.getMobEffectSprite(
+\bRenderTypes::entityCutoutNoCull\b	RenderTypes::entityCutout
+\bcom\.mojang\.blaze3d\.platform\.(SourceFactor|DestFactor)\b	com.mojang.renderpearl.api.pipeline.BlendFactor
+\b(SourceFactor|DestFactor)\.	BlendFactor.
+\.withBlend\((.*)\)$	.withColorTargetState(new com.mojang.renderpearl.api.pipeline.ColorTargetState($1))
+(public boolean shouldRender\(.*double camZ)\)	$1, float partialTick)
+\bpublic void knockback\(double strength, double x, double z\) \{	public void knockback(double strength, double x, double z, net.minecraft.world.damagesource.DamageSource source, float amount, boolean flag) {
+"knockback\(DDD\)V"	"knockback(DDDLnet/minecraft/world/damagesource/DamageSource;FZ)V"
+kegare\$knockback\(double strength, double x, double z, CallbackInfo ci\)	kegare\$knockback(double strength, double x, double z, net.minecraft.world.damagesource.DamageSource source, float amount, boolean flag, CallbackInfo ci)
+, null, 0, null\);$	, null, 0);
+, null, state\.outlineColor, null\);$	, null, state.outlineColor);
+, null, color, null\);$	, null, color, 0);

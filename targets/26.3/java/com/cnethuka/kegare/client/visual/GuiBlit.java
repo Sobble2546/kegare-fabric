@@ -1,11 +1,11 @@
 package com.cnethuka.kegare.client.visual;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.gui.render.state.BlitRenderState;
+import net.minecraft.client.renderer.state.gui.BlitRenderState;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.Identifier;
@@ -26,7 +26,7 @@ public final class GuiBlit {
                             int argb, boolean linear) {
         AbstractTexture t = Minecraft.getInstance().getTextureManager().getTexture(texture);
         FilterMode filter = linear ? FilterMode.LINEAR : FilterMode.NEAREST;
-        g.guiRenderState.submitGuiElement(new BlitRenderState(RenderPipelines.GUI_TEXTURED,
+        g.guiRenderState.addBlitToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED,
                 TextureSetup.singleTexture(t.getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(filter)),
                 new Matrix3x2f(g.pose()), x0, y0, x1, y1, u0, u1, v0, v1, argb, g.scissorStack.peek()));
     }

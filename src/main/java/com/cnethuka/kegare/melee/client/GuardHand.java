@@ -3,7 +3,6 @@ package com.cnethuka.kegare.melee.client;
 import com.cnethuka.kegare.client.visual.PlayerAnimations;
 import com.cnethuka.kegare.config.KegareClientConfig;
 import com.cnethuka.kegare.melee.MeleeIds;
-import com.cnethuka.kegare.mixin.client.ItemInHandRendererInvoker;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
@@ -76,7 +75,7 @@ final class GuardHand {
         PoseStack pose = event.getPoseStack();
         pose.pushPose();
         apply(pose, player.getMainArm() == HumanoidArm.LEFT ? -1f : 1f, event.getPartialTick());
-        ((ItemInHandRendererInvoker) mc.getEntityRenderDispatcher().getItemInHandRenderer()).kegare$renderArmWithItem(player, event.getPartialTick(),
+        com.cnethuka.kegare.platform.client.HandCompat.renderArm(player, event.getPartialTick(),
                 event.getInterpolatedPitch(), InteractionHand.MAIN_HAND, event.getSwingProgress(), event.getItemStack(), event.getEquipProgress(),
                 pose, event.getMultiBufferSource(), event.getPackedLight());
         pose.popPose();

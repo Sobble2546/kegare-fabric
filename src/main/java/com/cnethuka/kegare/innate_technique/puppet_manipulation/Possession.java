@@ -185,7 +185,7 @@ public final class Possession {
             if (saved.isValidInContainer(inventory.getContainerSize())) inventory.setItem(saved.slot(), saved.stack().copy());
         }
         inventory.setSelectedSlot(d.selectedSlot);
-        meanwhile.forEach(inventory::placeItemBackInInventory);
+        meanwhile.forEach(stack -> com.cnethuka.kegare.platform.EntityCompat.giveBack(inventory, stack));
         player.inventoryMenu.broadcastChanges();
         Vec3 bodyAt = shell != null ? shell.position() : d.bodyPos;
         float bodyYaw = shell != null ? shell.getYRot() : d.bodyYaw;

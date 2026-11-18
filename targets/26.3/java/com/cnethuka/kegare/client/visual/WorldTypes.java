@@ -3,9 +3,11 @@ package com.cnethuka.kegare.client.visual;
 import com.cnethuka.kegare.Kegare;
 import com.mojang.renderpearl.api.pipeline.BlendFunction;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DepthTestFunction;
+import com.mojang.renderpearl.api.pipeline.CompareOp;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.DepthStencilState;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,8 +34,8 @@ import net.minecraft.resources.Identifier;
 public final class WorldTypes {
     public static final Identifier WHITE = Identifier.fromNamespaceAndPath("kegare", "textures/misc/white.png");
 
-    private static final Map<DepthTestFunction, RenderPipeline> GLOW = new HashMap<>();
-    private record Key(Identifier texture, DepthTestFunction depth, boolean smooth) {}
+    private static final Map<CompareOp, RenderPipeline> GLOW = new HashMap<>();
+    private record Key(Identifier texture, CompareOp depth, boolean smooth) {}
 
     private static final Map<Key, RenderType> TYPES = new HashMap<>();
     /** The per-texture memos of {@link #glowTypes}, emptied together with {@link #TYPES} on a reload. */
@@ -41,22 +43,20 @@ public final class WorldTypes {
 
     private WorldTypes() {}
 
-    private static RenderPipeline glowPipeline(DepthTestFunction depth) {
+    private static RenderPipeline glowPipeline(CompareOp depth) {
         // Vanilla's pipeline/entity_translucent_emissive, with the depth test swapped.
         return GLOW.computeIfAbsent(depth, d -> RenderPipeline.builder(RenderPipelines.ENTITY_EMISSIVE_SNIPPET)
                 .withLocation(Kegare.id("pipeline/glow_" + d.name().toLowerCase(java.util.Locale.ROOT)))
                 .withShaderDefine("ALPHA_CUTOUT", 0.1f)
                 .withShaderDefine("PER_FACE_LIGHTING")
-                .withSampler("Sampler1")
-                .withBlend(BlendFunction.TRANSLUCENT)
+                .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
                 .withCull(false)
-                .withDepthWrite(false)
-                .withDepthTestFunction(d)
+                .withDepthStencilState(new DepthStencilState(d, false))
                 .build());
     }
 
     /** Translucent, unlit, both faces, nothing written to depth; {@code smooth} filters the texture linearly instead of pixel-sharp. */
-    public static synchronized RenderType glow(Identifier texture, DepthTestFunction depth, boolean smooth) {
+    public static synchronized RenderType glow(Identifier texture, CompareOp depth, boolean smooth) {
         return TYPES.computeIfAbsent(new Key(texture, depth, smooth), k -> {
             RenderSetup.RenderSetupBuilder setup = RenderSetup.builder(glowPipeline(k.depth()));
             if (k.smooth()) setup.withTexture("Sampler0", k.texture(), () -> RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
@@ -69,7 +69,7 @@ public final class WorldTypes {
      * {@link #glow} for a depth test and filtering fixed, as a function of the texture, for what is drawn every frame: a texture looked
      * up again finds its type in a map of its own (no key built, no lock), and {@link #forget} empties it with the rest.
      */
-    public static Function<Identifier, RenderType> glowTypes(DepthTestFunction depth, boolean smooth) {
+    public static Function<Identifier, RenderType> glowTypes(CompareOp depth, boolean smooth) {
         Map<Identifier, RenderType> memo = new ConcurrentHashMap<>();
         synchronized (WorldTypes.class) {
             MEMOS.add(memo);

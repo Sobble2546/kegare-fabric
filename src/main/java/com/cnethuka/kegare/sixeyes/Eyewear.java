@@ -21,7 +21,7 @@ public enum Eyewear {
     public static final String GROUP = "head";
     public static final String SLOT_ID = GROUP + "/" + SLOT;
 
-    private static final boolean TRINKETS = FabricLoader.getInstance().isModLoaded("trinkets");
+    private static final boolean TRINKETS = EyewearSlots.SUPPORTED && FabricLoader.getInstance().isModLoaded("trinkets");
 
     public boolean covered() {
         return this != NONE;

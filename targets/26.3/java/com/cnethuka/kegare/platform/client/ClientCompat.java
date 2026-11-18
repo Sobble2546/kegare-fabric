@@ -8,12 +8,12 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.model.loading.v1.ExtraModelKey;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.model.loading.v1.SimpleUnbakedExtraModel;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.fabricmc.fabric.api.resource.v1.reloader.ResourceReloaderKeys;
@@ -65,21 +65,21 @@ final class ClientCompat {
     }
 
     static void registerKey(KeyMapping mapping) {
-        KeyBindingHelper.registerKeyBinding(mapping);
+        KeyMappingHelper.registerKeyMapping(mapping);
     }
 
     // ------------------------------------------------------------------------------------------------ resources
 
     /** Registers a client resource reload listener under this id; it runs after vanilla's own. */
     static void registerReloader(Identifier id, PreparableReloadListener listener) {
-        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(id, listener);
+        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(id, listener);
     }
 
     /** Same, but ordered after the model manager (so the models it bakes are ready). */
     static void registerReloaderAfterModels(Identifier id, PreparableReloadListener listener) {
         ResourceLoader loader = ResourceLoader.get(PackType.CLIENT_RESOURCES);
-        loader.registerReloader(id, listener);
-        loader.addReloaderOrdering(ResourceReloaderKeys.Client.MODELS, id);
+        loader.registerReloadListener(id, listener);
+        loader.addListenerOrdering(ResourceReloaderKeys.Client.MODELS, id);
     }
 
     // ------------------------------------------------------------------------------------------------ renderers, layers, models
@@ -93,7 +93,7 @@ final class ClientCompat {
 
             @Override
             public void layerDefinition(ModelLayerLocation location, Supplier<LayerDefinition> definition) {
-                EntityModelLayerRegistry.registerModelLayer(location, definition::get);
+                ModelLayerRegistry.registerModelLayer(location, definition::get);
             }
         };
     }

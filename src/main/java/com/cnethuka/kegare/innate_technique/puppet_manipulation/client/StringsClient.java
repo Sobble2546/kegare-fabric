@@ -19,7 +19,6 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.Direction;
@@ -202,7 +201,7 @@ public final class StringsClient {
         List<BakedQuad> knot = knot(mc);
         if (segment.isEmpty()) return; // not baked yet
         // The models' texture is in whichever atlas the model baker put it (the items atlas for textures/item/), so the quads name it.
-        RenderType type = RenderTypes.entityTranslucentEmissive(segment.get(0).sprite().atlasLocation());
+        RenderType type = RenderTypes.entityTranslucentEmissive(com.cnethuka.kegare.client.visual.RenderCompat.atlas(segment.get(0)));
         VertexConsumer out = buffers.getBuffer(type);
         float age = level.getGameTime() + partial;
         for (Shown shown : SHOWN.values()) {
@@ -290,7 +289,7 @@ public final class StringsClient {
 
     private static void emit(PoseStack pose, VertexConsumer out, List<BakedQuad> quads) {
         for (BakedQuad quad : quads) {
-            out.putBulkData(pose.last(), quad, 1f, 1f, 1f, 1f, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+            com.cnethuka.kegare.client.visual.RenderCompat.put(out, pose.last(), quad, LightTexture.FULL_BRIGHT);
         }
     }
 
@@ -314,13 +313,7 @@ public final class StringsClient {
 
     /** Every quad of a baked model, unculled and on every side (it is drawn as a mesh, whatever faces it hides). */
     private static List<BakedQuad> quads(@Nullable BlockStateModel model) {
-        List<BakedQuad> out = new ArrayList<>();
-        if (model == null) return out; // not baked (yet): nothing to draw, asked again next frame
-        for (BlockModelPart part : model.collectParts(RandomSource.create(42L))) {
-            out.addAll(part.getQuads(null));
-            for (Direction side : Direction.values()) out.addAll(part.getQuads(side));
-        }
-        return out;
+        return com.cnethuka.kegare.client.visual.RenderCompat.quads(model); // empty while not baked: asked again next frame
     }
 
     // ---------------------------------------------------------------- the tension shimmer

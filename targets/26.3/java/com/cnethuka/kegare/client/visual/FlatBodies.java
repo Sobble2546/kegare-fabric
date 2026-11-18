@@ -2,7 +2,7 @@ package com.cnethuka.kegare.client.visual;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,7 +17,14 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.renderer.gizmos.DrawableGizmoPrimitives;
+import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
+import net.minecraft.client.renderer.texture.UvMapping;
+import net.minecraft.client.resources.model.geometry.ItemQuads;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
@@ -148,7 +155,8 @@ public final class FlatBodies {
         CameraRenderState s = new CameraRenderState();
         s.pos = camera.position();
         s.blockPos = camera.blockPosition();
-        s.entityPos = camera.entity() != null ? camera.entity().position() : camera.position();
+        s.xRot = camera.xRot();
+        s.yRot = camera.yRot();
         s.orientation = new Quaternionf(camera.rotation());
         s.initialized = true;
         return s;
@@ -182,6 +190,7 @@ public final class FlatBodies {
         @Override public VertexConsumer setUv(float u, float v) { return this; }
         @Override public VertexConsumer setUv1(int u, int v) { return this; }
         @Override public VertexConsumer setUv2(int u, int v) { return this; }
+        @Override public VertexConsumer setUv3(float u, float v) { return this; }
         @Override public VertexConsumer setNormal(float x, float y, float z) { return this; }
         @Override public VertexConsumer setLineWidth(float width) { return this; }
     }
@@ -190,12 +199,15 @@ public final class FlatBodies {
     private static final Set<RenderPipeline> NOT_THE_BODY = new HashSet<>(List.of(
             RenderPipelines.ENTITY_SHADOW, RenderPipelines.GLINT, RenderPipelines.LEASH, RenderPipelines.CRUMBLING,
             RenderPipelines.LINES, RenderPipelines.LINES_TRANSLUCENT,
-            RenderPipelines.TEXT, RenderPipelines.GUI_TEXT, RenderPipelines.TEXT_BACKGROUND, RenderPipelines.TEXT_INTENSITY,
-            RenderPipelines.GUI_TEXT_INTENSITY, RenderPipelines.TEXT_POLYGON_OFFSET, RenderPipelines.TEXT_SEE_THROUGH,
-            RenderPipelines.TEXT_BACKGROUND_SEE_THROUGH, RenderPipelines.TEXT_INTENSITY_SEE_THROUGH,
+            RenderPipelines.TEXT, RenderPipelines.GUI_TEXT, RenderPipelines.TEXT_GRAYSCALE, RenderPipelines.GUI_TEXT_GRAYSCALE,
+            RenderPipelines.TEXT_POLYGON_OFFSET, RenderPipelines.TEXT_GRAYSCALE_POLYGON_OFFSET, RenderPipelines.TEXT_SEE_THROUGH,
+            RenderPipelines.TEXT_GRAYSCALE_SEE_THROUGH,
             RenderPipelines.ENERGY_SWIRL, RenderPipelines.BREEZE_WIND)); // the swirl and the wind are bigger than the body
 
-    /** Draws what's submitted straight through {@link Flat}; the body's quads only. */
+    /**
+     * Draws what's submitted straight through {@link Flat}; the body's quads only. 26.x: models, model parts (through the interface's
+     * defaults) and custom geometry; a held item is left out of the copy (its quads carry no render type to test here).
+     */
     private static final class Collector implements SubmitNodeCollector {
         private final Flat flat;
 
@@ -205,34 +217,20 @@ public final class FlatBodies {
 
         /** The body's own quads go in; its name, glint, lines, shadow, leash and outline don't, nor the armour layers that swell it. */
         private static boolean drawn(RenderType type) {
-            return type.mode() == VertexFormat.Mode.QUADS && !type.isOutline() && !NOT_THE_BODY.contains(type.pipeline());
+            return type.primitiveTopology() == PrimitiveTopology.QUADS && !type.isOutline() && !NOT_THE_BODY.contains(type.pipeline());
         }
 
         @Override
-        public net.minecraft.client.renderer.OrderedSubmitNodeCollector order(int order) {
+        public OrderedSubmitNodeCollector order(int order) {
             return this;
         }
 
         @Override
         public <S> void submitModel(Model<? super S> model, S state, PoseStack pose, RenderType type, int light, int overlay, int tint,
-                                    TextureAtlasSprite sprite, int outline, ModelFeatureRenderer.CrumblingOverlay crumbling) {
+                                    UvMapping uv, int outline) {
             if (!drawn(type)) return;
             model.setupAnim(state);
             model.renderToBuffer(pose, flat, light, OverlayTexture.NO_OVERLAY, -1);
-        }
-
-        @Override
-        public void submitModelPart(ModelPart part, PoseStack pose, RenderType type, int light, int overlay, TextureAtlasSprite sprite,
-                                    boolean sheeted, boolean foil, int tint, ModelFeatureRenderer.CrumblingOverlay crumbling, int outline) {
-            if (!drawn(type)) return;
-            part.render(pose, flat, light, OverlayTexture.NO_OVERLAY, -1);
-        }
-
-        @Override
-        public void submitItem(PoseStack pose, ItemDisplayContext context, int light, int overlay, int outline, int[] tints,
-                               List<BakedQuad> quads, RenderType type, ItemStackRenderState.FoilType foil) {
-            if (!drawn(type)) return;
-            for (BakedQuad quad : quads) flat.putBulkData(pose.last(), quad, 1f, 1f, 1f, 1f, light, OverlayTexture.NO_OVERLAY);
         }
 
         @Override
@@ -241,17 +239,23 @@ public final class FlatBodies {
             renderer.render(pose.last(), flat);
         }
 
+        @Override public <S> void submitCrumblingOverlay(Model<? super S> model, S state, PoseStack pose, RenderType type, int light, int overlay,
+                                                         int tint, ModelFeatureRenderer.CrumblingOverlay crumbling) {}
+        @Override public void submitItem(PoseStack pose, ItemDisplayContext context, int light, int overlay, int outline, int[] tints,
+                                         ItemQuads quads, ItemStackRenderState.FoilType foil) {}
         @Override public void submitShadow(PoseStack pose, float radius, List<EntityRenderState.ShadowPiece> pieces) {}
-        @Override public void submitNameTag(PoseStack pose, Vec3 offset, int y, Component text, boolean seeThrough, int light, double distanceSq,
-                                            CameraRenderState camera) {}
+        @Override public void submitNameTag(PoseStack pose, Vec3 offset, int y, Component text, boolean seeThrough, int light, CameraRenderState camera) {}
         @Override public void submitText(PoseStack pose, float x, float y, FormattedCharSequence text, boolean dropShadow, Font.DisplayMode mode,
                                          int light, int color, int background, int outline) {}
+        @Override public void submitTextBackground(PoseStack pose, float x0, float y0, float x1, float y1, int color, Font.DisplayMode mode, int light) {}
         @Override public void submitFlame(PoseStack pose, EntityRenderState state, Quaternionf rotation) {}
         @Override public void submitLeash(PoseStack pose, EntityRenderState.LeashState leash) {}
-        @Override public void submitBlock(PoseStack pose, BlockState block, int light, int overlay, int outline) {}
-        @Override public void submitMovingBlock(PoseStack pose, MovingBlockRenderState block) {}
-        @Override public void submitBlockModel(PoseStack pose, RenderType type, BlockStateModel model, float r, float g, float b, int light,
-                                               int overlay, int outline) {}
-        @Override public void submitParticleGroup(ParticleGroupRenderer renderer) {}
+        @Override public void submitMovingBlock(PoseStack pose, MovingBlockRenderState block, int outline) {}
+        @Override public void submitBlockModel(PoseStack pose, RenderType type, List<BlockStateModelPart> parts, int[] tints, int light, int overlay,
+                                               int outline) {}
+        @Override public void submitBreakingBlockModel(PoseStack pose, List<BlockStateModelPart> parts, int progress, boolean flag) {}
+        @Override public void submitShapeOutline(PoseStack pose, VoxelShape shape, RenderType type, int color, float width, boolean flag) {}
+        @Override public void submitQuadParticleGroup(QuadParticleRenderState particles) {}
+        @Override public void submitGizmoPrimitives(DrawableGizmoPrimitives.Group group, CameraRenderState camera, boolean flag) {}
     }
 }

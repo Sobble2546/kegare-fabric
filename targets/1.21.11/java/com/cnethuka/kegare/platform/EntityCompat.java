@@ -47,4 +47,9 @@ public final class EntityCompat {
     public static long dayTime(Level level) {
         return level.getDayTime();
     }
+
+    /** Puts a stack back in a player inventory (dropping what does not fit), as the server. */
+    public static void giveBack(net.minecraft.world.entity.player.Inventory inventory, net.minecraft.world.item.ItemStack stack) {
+        inventory.placeItemBackInInventory(stack);
+    }
 }

@@ -18,6 +18,9 @@ import net.minecraft.world.entity.LivingEntity;
 final class EyewearSlots {
     private EyewearSlots() {}
 
+    /** Whether this target has the eyewear slot wired up at all (26.x does not yet). */
+    static final boolean SUPPORTED = true;
+
     private static Method getInventory;
 
     /** The best eyewear in the wearer's eyes slot (it holds one item; a datapack could give it more). */

@@ -14,6 +14,8 @@ def targetProps = new Properties()
 file("targets/${targetName}.properties").withInputStream { targetProps.load(it) }
 ext.tp = targetProps
 def remap = tp.getProperty('remap') == 'true'
+// The overlay directory: a target can borrow another's (26.2 uses 26.3's) with `overlay=` in its properties.
+def overlayName = tp.getProperty('overlay') ?: targetName
 
 apply plugin: remap ? 'net.fabricmc.fabric-loom-remap' : 'net.fabricmc.fabric-loom'
 apply plugin: 'java-library'
@@ -55,7 +57,7 @@ if (renamesName != null) {
     }
 }
 sourceSets.main {
-    java.srcDir "targets/${targetName}/java"
+    java.srcDir "targets/${overlayName}/java"
     // 26.x: the data generators are left out (their Fabric and vanilla base classes changed shape); src/generated is made on 1.21.11.
     if (tp.getProperty('exclude_sources') != null) java.exclude tp.getProperty('exclude_sources').split(',')
     resources {
@@ -65,13 +67,14 @@ sourceSets.main {
     }
 }
 // Test-only overlay for the spellings that differ per target (the throwaway server's MinecraftServer subclass, Trinkets in tests).
-sourceSets.test.java.srcDir "targets/${targetName}/testJava"
+sourceSets.test.java.srcDir "targets/${overlayName}/testJava"
 
 def mc = tp.getProperty('minecraft_version')
 // One access widener source (Mojang names). 1.21.11 is remapped, so it stays "named"; 26.x is unobfuscated, where Mojang names are the "official" namespace.
 def awFile = layout.buildDirectory.file('aw/kegare.accesswidener').get().asFile
 awFile.parentFile.mkdirs()
 awFile.text = file('targets/kegare.accesswidener').text.replaceFirst('(?m)^accessWidener v2 named', remap ? 'accessWidener v2 named' : 'accessWidener v2 official')
+if (tp.getProperty('aw_extra') != null) awFile.append('\n' + file("targets/${tp.getProperty('aw_extra')}").text) // access only that target needs
 loom { accessWidenerPath = awFile }
 dependencies {
     minecraft "com.mojang:minecraft:${mc}"

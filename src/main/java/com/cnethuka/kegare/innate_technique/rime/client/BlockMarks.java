@@ -339,7 +339,7 @@ public final class BlockMarks {
         for (Face f : FACES.values()) {
             if (f.solid.distToCenterSqr(cam) > DRAW_DISTANCE * DRAW_DISTANCE) continue;
             if (!carries(level, f.solid, f.face)) continue; // the block went, or something now covers that face
-            drawFace(out, cam, f, LevelRenderer.getLightColor(level, f.solid.relative(f.face)), level.getShade(f.face, true));
+            drawFace(out, cam, f, LevelRenderer.getLightColor(level, f.solid.relative(f.face)), com.cnethuka.kegare.client.visual.RenderCompat.shade(level, f.face));
         }
         buffers.endBatch(type);
     }
