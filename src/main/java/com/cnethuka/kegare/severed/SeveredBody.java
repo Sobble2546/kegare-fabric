@@ -51,7 +51,7 @@ public final class SeveredBody {
 
     /** Stamina: the hunger a Severed player feels from normal activity. Called from the mixins, on both sides. */
     public static float exhaustion(Player player, float amount) {
-        if (amount <= 0f || player.level().isClientSide || !MaliceService.isSevered(player)) return amount;
+        if (amount <= 0f || player.level().isClientSide() || !MaliceService.isSevered(player)) return amount;
         return amount * SeveredConfig.EXHAUSTION.get().floatValue();
     }
 }

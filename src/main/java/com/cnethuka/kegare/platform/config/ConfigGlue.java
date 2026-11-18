@@ -27,6 +27,9 @@ public final class ConfigGlue {
         ModConfigEvents.reloading(Kegare.MODID).register(config -> modBus.post(new ModConfigEvent.Reloading(config)));
         ModConfigEvents.unloading(Kegare.MODID).register(config -> modBus.post(new ModConfigEvent.Unloading(config)));
         ConfigRegistry.INSTANCE.register(Kegare.MODID, ModConfig.Type.SERVER, KegareServerConfig.SPEC);
-        ConfigRegistry.INSTANCE.register(Kegare.MODID, ModConfig.Type.CLIENT, KegareClientConfig.SPEC);
+        // NeoForge never loaded a CLIENT config on a dedicated server; neither do we (no stray kegare-client.toml).
+        if (net.fabricmc.loader.api.FabricLoader.getInstance().getEnvironmentType() == net.fabricmc.api.EnvType.CLIENT) {
+            ConfigRegistry.INSTANCE.register(Kegare.MODID, ModConfig.Type.CLIENT, KegareClientConfig.SPEC);
+        }
     }
 }

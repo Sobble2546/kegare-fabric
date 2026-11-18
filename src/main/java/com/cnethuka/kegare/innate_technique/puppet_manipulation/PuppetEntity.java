@@ -269,13 +269,13 @@ public class PuppetEntity extends PathfinderMob implements Puppet {
     @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
-        if (SPINNING.equals(key) && level().isClientSide && isSpinning()) spinStartTick = tickCount;
+        if (SPINNING.equals(key) && level().isClientSide() && isSpinning()) spinStartTick = tickCount;
     }
 
     /** A full puppet's outline (client side, see the hook). */
     @Override
     public boolean isCurrentlyGlowing() {
-        return super.isCurrentlyGlowing() || level().isClientSide && outlineHook.test(this);
+        return super.isCurrentlyGlowing() || level().isClientSide() && outlineHook.test(this);
     }
 
     /** The outline is drawn in the puppet's glow color. */
@@ -301,7 +301,7 @@ public class PuppetEntity extends PathfinderMob implements Puppet {
     @Nullable
     public ServerPlayer owner() {
         UUID id = ownerId();
-        if (id == null || level().isClientSide) return null;
+        if (id == null || level().isClientSide()) return null;
         return level().getPlayerByUUID(id) instanceof ServerPlayer player && player.isAlive() && !player.isSpectator() ? player : null;
     }
 
@@ -334,7 +334,7 @@ public class PuppetEntity extends PathfinderMob implements Puppet {
 
     @Override
     public void tick() {
-        if (!level().isClientSide && isPossessed()) {
+        if (!level().isClientSide() && isPossessed()) {
             // Inside its possessor: no AI, no physics, just carried along (until they let go).
             ServerPlayer inside = Possession.possessorOf(this, possessor);
             if (inside == null) {
@@ -345,9 +345,9 @@ public class PuppetEntity extends PathfinderMob implements Puppet {
                 return;
             }
         }
-        ServerPlayer standingInFor = !level().isClientSide && isStandIn() ? owner() : null;
+        ServerPlayer standingInFor = !level().isClientSide() && isStandIn() ? owner() : null;
         super.tick();
-        if (level().isClientSide) return;
+        if (level().isClientSide()) return;
         if (isStandIn()) {
             // Moves as its owner moves (the same step each tick), on its own feet: it still falls and bumps into things.
             if (standingInFor == null || --standInTicks <= 0) {
@@ -418,7 +418,7 @@ public class PuppetEntity extends PathfinderMob implements Puppet {
     /** No corpse: a puppet dissolves the moment it dies. */
     @Override
     protected void tickDeath() {
-        if (!level().isClientSide && !isRemoved()) {
+        if (!level().isClientSide() && !isRemoved()) {
             Puppets.dissolveEffect(this);
             remove(RemovalReason.KILLED);
         }
@@ -426,14 +426,14 @@ public class PuppetEntity extends PathfinderMob implements Puppet {
 
     @Override
     public void remove(RemovalReason reason) {
-        if (!level().isClientSide && reason.shouldDestroy()) Puppets.forget(this);
+        if (!level().isClientSide() && reason.shouldDestroy()) Puppets.forget(this);
         super.remove(reason);
     }
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
         boolean hurt = super.hurt(source, amount);
-        if (hurt && !level().isClientSide && isStandIn() && source.getEntity() instanceof ServerPlayer attacker && !isOwnedBy(attacker)
+        if (hurt && !level().isClientSide() && isStandIn() && source.getEntity() instanceof ServerPlayer attacker && !isOwnedBy(attacker)
                 && owner() != null) {
             PuppetAdvancements.award(owner(), PuppetAdvancements.WHOS_REAL);
         }

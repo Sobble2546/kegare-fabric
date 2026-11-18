@@ -91,13 +91,13 @@ public class PuppetShellEntity extends LivingEntity implements com.cnethuka.kega
     public void tick() {
         super.tick();
         // Nobody inside any more (they returned some other way, or logged out): the shell goes.
-        if (!level().isClientSide && tickCount > 1 && !Possession.isShell(this)) discard();
+        if (!level().isClientSide() && tickCount > 1 && !Possession.isShell(this)) discard();
     }
 
     /** Any damage at all snaps its owner back, and they take the hit. */
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        if (level().isClientSide || isRemoved() || isInvulnerableTo(source)) return false;
+        if (level().isClientSide() || isRemoved() || isInvulnerableTo(source)) return false;
         return Possession.onShellHit(this, source, amount);
     }
 

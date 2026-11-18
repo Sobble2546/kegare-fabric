@@ -43,14 +43,15 @@ public final class Kegare implements ModInitializer {
         // Registries first: entries below are registered into them.
         KegareRegistries.register(modBus);
         KegareAttachments.ATTACHMENT_TYPES.register(modBus);
-        KegareItems.ITEMS.register(modBus);
-        com.cnethuka.kegare.registry.KegareCreativeTab.TABS.register(modBus);
         com.cnethuka.kegare.sound.KegareSounds.SOUND_EVENTS.register(modBus);
         KegareTraits.TRAITS.register(modBus);
         Rime.register(modBus);
         com.cnethuka.kegare.innate_technique.swap.Swap.register(modBus);
         com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetManipulation.register(modBus);
         com.cnethuka.kegare.innate_technique.time_manipulation.TimeManipulation.register(modBus);
+        // Items, then the creative tab (its icon and contents read the items), as NeoForge's registry order had it.
+        KegareItems.ITEMS.register(modBus);
+        com.cnethuka.kegare.registry.KegareCreativeTab.TABS.register(modBus);
         com.cnethuka.kegare.melee.MeleeLayer.init(modBus);
         com.cnethuka.kegare.severed.Severed.init(modBus); // a Severed player's body (DESIGN §3.27)
         com.cnethuka.kegare.rmt.Rmt.init(modBus); // registers Reverse Malice Technique as a shared ability

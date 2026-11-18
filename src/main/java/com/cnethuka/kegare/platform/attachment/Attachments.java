@@ -49,7 +49,15 @@ public final class Attachments {
         if (copy != null) to.setData(type, copy);
     }
 
+    /** After a respawn: forget what is never saved (cast state, visual state, ...), which NeoForge never carried over. */
+    public static void dropRuntimeOnly(Entity entity) {
+        for (AttachmentType<?> type : all()) {
+            if (!type.isSaved() && entity.hasData(type)) entity.removeData(type);
+        }
+    }
+
     private static <T> void copyReference(Entity from, Entity to, AttachmentType<T> type) {
+        if (!type.isSaved()) return;
         if (from.hasData(type)) to.setData(type, from.getData(type));
     }
 

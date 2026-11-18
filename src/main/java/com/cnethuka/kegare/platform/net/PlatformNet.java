@@ -49,9 +49,14 @@ public final class PlatformNet {
         VersionCompat.registerHelloAckReceiver(HelloTask::answered);
         ServerConfigurationConnectionEvents.CONFIGURE.register((handler, srv) -> {
             server = srv;
-            // A client that cannot receive the hello has no Kegare: it is let through (Fabric's registry sync decides whether the vanilla
-            // entries it lacks matter) and never passes the gate, so it is sent nothing and its Kegare packets are dropped.
-            if (VersionCompat.canSendConfig(handler, KegareHello.S2C.TYPE)) VersionCompat.addConfigTask(handler, new HelloTask(handler, srv));
+            // A client that cannot receive the hello has no Kegare. Fabric's registry sync refuses most of them, but a Via server turns it off
+            // (ignore-registry-sync-errors), and such a client would break later on a Kegare item or entity it cannot decode: refuse it here.
+            if (VersionCompat.canSendConfig(handler, KegareHello.S2C.TYPE)) {
+                VersionCompat.addConfigTask(handler, new HelloTask(handler, srv));
+            } else {
+                handler.disconnect(net.minecraft.network.chat.Component.translatable("kegare.network.missing"));
+                return;
+            }
             modBus.post(new RegisterConfigurationTasksEvent(handler, srv));
         });
         ServerConfigurationConnectionEvents.DISCONNECT.register((handler, srv) -> {
@@ -59,6 +64,7 @@ public final class PlatformNet {
             KegareClients.remove(KegareClients.connectionOf(handler));
         });
         ServerPlayConnectionEvents.INIT.register((handler, srv) -> server = srv);
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STOPPED.register(srv -> { if (server == srv) server = null; });
         ServerPlayConnectionEvents.DISCONNECT.register((handler, srv) -> KegareClients.remove(KegareClients.connectionOf(handler)));
         // every payload
         modBus.post(new RegisterPayloadHandlersEvent(new FabricBackend()));

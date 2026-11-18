@@ -133,7 +133,7 @@ public final class VisualService {
     }
 
     private static void send(Entity entity, VisualPayload payload) {
-        if (entity.level().isClientSide) return;
+        if (entity.level().isClientSide()) return;
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, payload);
     }
 }

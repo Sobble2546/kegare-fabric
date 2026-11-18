@@ -64,7 +64,7 @@ public class GlacialSpireEntity extends Entity implements com.cnethuka.kegare.im
     @Override
     public void tick() {
         super.tick();
-        if (level().isClientSide) return;
+        if (level().isClientSide()) return;
         if (caster == null) { // only ever made by the ability; anything else is stray
             discard();
             return;

@@ -60,7 +60,7 @@ public abstract class RimeProjectile extends ThrowableItemProjectile {
     @Override
     public void tick() {
         super.tick();
-        if (level().isClientSide) {
+        if (level().isClientSide()) {
             if (!trailStarted) trailStarted = VisualHooks.startTrail(this, trailEffect(), trailScale(), trailClearOfOwnEyes());
         } else if (isAlive() && tickCount >= lifetime) {
             impactVisual(position(), null);
@@ -71,7 +71,7 @@ public abstract class RimeProjectile extends ThrowableItemProjectile {
     @Override
     protected void onHitEntity(EntityHitResult hit) {
         super.onHitEntity(hit);
-        if (level().isClientSide || !(hit.getEntity() instanceof LivingEntity target)) return;
+        if (level().isClientSide() || !(hit.getEntity() instanceof LivingEntity target)) return;
         ServerPlayer caster = getOwner() instanceof ServerPlayer p ? p : null;
         beforeHurt(target, caster);
         if (target.hurt(RimeDamage.source(level(), this, getOwner()), damage)) onLivingHit(target, caster);
@@ -83,7 +83,7 @@ public abstract class RimeProjectile extends ThrowableItemProjectile {
     @Override
     protected void onHit(HitResult result) {
         super.onHit(result);
-        if (level().isClientSide) return;
+        if (level().isClientSide()) return;
         impactVisual(result.getLocation(), result);
         level().playSound(null, getX(), getY(), getZ(), SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, 0.6f, 1.6f);
         discard();

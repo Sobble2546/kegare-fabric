@@ -76,7 +76,7 @@ public final class Switchback {
 
     /** Calls off every swap back this player or mob is part of (death, logout, dimension change). */
     static void cancelInvolving(LivingEntity entity) {
-        if (PENDING.isEmpty() || entity.level().isClientSide) return;
+        if (PENDING.isEmpty() || entity.level().isClientSide()) return;
         UUID id = entity.getUUID();
         MinecraftServer server = entity.getServer();
         for (Iterator<Map.Entry<UUID, Pending>> it = PENDING.entrySet().iterator(); it.hasNext(); ) {

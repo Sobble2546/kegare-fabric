@@ -56,7 +56,7 @@ public class DecelerateEntity extends ThrowableProjectile {
     @Override
     public void tick() {
         super.tick();
-        if (level().isClientSide) {
+        if (level().isClientSide()) {
             spinO = spin;
             spin += SPIN_PER_TICK * (float) Math.min(1.5, getDeltaMovement().length() / 2.0);
         } else if (isAlive() && tickCount >= lifetime) {
@@ -67,7 +67,7 @@ public class DecelerateEntity extends ThrowableProjectile {
     @Override
     protected void onHitEntity(EntityHitResult hit) {
         super.onHitEntity(hit);
-        if (level().isClientSide || !(hit.getEntity() instanceof LivingEntity target)) return;
+        if (level().isClientSide() || !(hit.getEntity() instanceof LivingEntity target)) return;
         ServerPlayer caster = getOwner() instanceof ServerPlayer p ? p : null;
         if (target != caster) strike(this, caster, target, damage);
     }
@@ -101,7 +101,7 @@ public class DecelerateEntity extends ThrowableProjectile {
     @Override
     protected void onHit(HitResult result) {
         super.onHit(result);
-        if (level().isClientSide) return;
+        if (level().isClientSide()) return;
         level().playSound(null, getX(), getY(), getZ(), KegareSounds.TIME_CLICK.value(), SoundSource.PLAYERS, 0.6f, 1.4f);
         discard();
     }

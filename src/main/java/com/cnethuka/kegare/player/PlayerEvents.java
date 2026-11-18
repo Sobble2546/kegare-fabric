@@ -89,7 +89,7 @@ public final class PlayerEvents {
     /** Any living entity's visuals stop when it dies (status loops on mobs, too). */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     static void onAnyDeath(LivingDeathEvent event) {
-        if (event.isCanceled() || event.getEntity().level().isClientSide) return;
+        if (event.isCanceled() || event.getEntity().level().isClientSide()) return;
         if (!(event.getEntity() instanceof ServerPlayer)) VisualService.stopAll(event.getEntity());
     }
 

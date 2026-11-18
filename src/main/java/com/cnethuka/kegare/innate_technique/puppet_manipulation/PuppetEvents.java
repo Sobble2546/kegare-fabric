@@ -133,7 +133,7 @@ public final class PuppetEvents {
      */
     @SubscribeEvent(priority = EventPriority.HIGH)
     static void onKill(LivingDeathEvent event) {
-        if (event.getEntity().level().isClientSide) return;
+        if (event.getEntity().level().isClientSide()) return;
         if (event.getEntity() instanceof PuppetEntity puppet && event.getSource().getEntity() instanceof ServerPlayer killer) {
             PuppetAdvancements.puppetKilled(puppet, killer);
         }

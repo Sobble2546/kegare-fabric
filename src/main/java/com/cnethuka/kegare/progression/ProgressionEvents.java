@@ -69,7 +69,7 @@ public final class ProgressionEvents {
     @SubscribeEvent
     static void onEffectAdded(MobEffectEvent.Added event) {
         LivingEntity target = event.getEntity();
-        if (target.level().isClientSide) return;
+        if (target.level().isClientSide()) return;
         ServerPlayer caster = CastScope.player();
         if (caster != null && event.getEffectSource() == caster) Landings.land(caster, target, CastScope.ability());
     }
@@ -78,7 +78,7 @@ public final class ProgressionEvents {
     @SubscribeEvent
     static void onKnockback(LivingKnockBackEvent event) {
         LivingEntity target = event.getEntity();
-        if (target.level().isClientSide) return;
+        if (target.level().isClientSide()) return;
         ServerPlayer caster = CastScope.player();
         if (caster != null) Landings.land(caster, target, CastScope.ability());
     }
@@ -92,7 +92,7 @@ public final class ProgressionEvents {
     /** Runs after everything else has had its say: a cancelled death is no death. */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     static void onDeath(LivingDeathEvent event) {
-        if (event.isCanceled() || !(event.getEntity() instanceof ServerPlayer dead) || dead.level().isClientSide) return;
+        if (event.isCanceled() || !(event.getEntity() instanceof ServerPlayer dead) || dead.level().isClientSide()) return;
         Attribution.Hit blow = Attribution.of(event.getSource(), dead.server);
         BushCamper.died(dead, blow == null ? null : blow.attacker(), dead.level().getGameTime());
         FightTracker.onDeath(dead);

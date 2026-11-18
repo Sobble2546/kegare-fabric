@@ -70,7 +70,7 @@ public final class Disguises {
 
     /** Who this entity looks like to other players right now, if anyone. */
     public static Optional<UUID> getDisguisedAs(Entity entity) {
-        if (entity.level().isClientSide) {
+        if (entity.level().isClientSide()) {
             Entry entry = client.get(entity.getUUID());
             return entry == null || entry.endTick() <= entity.level().getGameTime() ? Optional.empty() : Optional.of(entry.as());
         }

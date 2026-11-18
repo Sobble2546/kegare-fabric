@@ -61,7 +61,7 @@ public final class SwapEvents {
     @SubscribeEvent
     static void onDeath(LivingDeathEvent event) {
         LivingEntity entity = event.getEntity();
-        if (entity.level().isClientSide) return;
+        if (entity.level().isClientSide()) return;
         if (event.getSource().is(DamageTypeTags.IS_FALL)) SwapTracker.fellToDeath(entity);
         SwapTracker.forget(entity);
         if (entity instanceof ServerPlayer player) {

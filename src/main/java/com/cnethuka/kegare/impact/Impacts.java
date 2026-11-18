@@ -193,7 +193,7 @@ public final class Impacts {
     }
 
     private static void onKnockback(LivingKnockBackEvent event) {
-        if (event.isCanceled() || event.getStrength() <= 0 || event.getEntity().level().isClientSide) return;
+        if (event.isCanceled() || event.getStrength() <= 0 || event.getEntity().level().isClientSide()) return;
         KNOCKS.merge(event.getEntity(), (double) event.getStrength(), (sofar, push) -> ImpactStrength.stack(sofar, push));
     }
 

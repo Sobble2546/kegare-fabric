@@ -106,7 +106,7 @@ public final class TimeStopClient {
 
     private static void onEntityTick(EntityTickEvent.Pre event) {
         Entity e = event.getEntity();
-        if (!e.level().isClientSide || !stop.active()) return;
+        if (!e.level().isClientSide() || !stop.active()) return;
         Integer flying = FLIGHT.get(e.getId());
         if (flying != null && flying > 0) {
             FLIGHT.put(e.getId(), flying - 1);
@@ -118,7 +118,7 @@ public final class TimeStopClient {
     }
 
     private static void onJoin(EntityJoinLevelEvent event) {
-        if (!event.getLevel().isClientSide || !stop.active() || !(event.getEntity() instanceof Projectile p)) return;
+        if (!event.getLevel().isClientSide() || !stop.active() || !(event.getEntity() instanceof Projectile p)) return;
         Entity owner = p.getOwner();
         if (owner != null && (owner.getId() == stop.caster() || FREE.contains(owner.getId()))) FLIGHT.put(p.getId(), stop.flightTicks());
     }

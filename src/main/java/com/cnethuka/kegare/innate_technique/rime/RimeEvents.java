@@ -56,7 +56,7 @@ public final class RimeEvents {
     /** Freeze stacks melt and frozen targets break free (only entities that ever had freeze data). */
     @SubscribeEvent
     static void onEntityTick(EntityTickEvent.Post event) {
-        if (event.getEntity() instanceof LivingEntity living && !living.level().isClientSide && living.hasData(RimeRegistry.FREEZE)) {
+        if (event.getEntity() instanceof LivingEntity living && !living.level().isClientSide() && living.hasData(RimeRegistry.FREEZE)) {
             FreezeService.tick(living);
         }
     }
@@ -75,7 +75,7 @@ public final class RimeEvents {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     static void onDeath(LivingDeathEvent event) {
         LivingEntity victim = event.getEntity();
-        if (victim.level().isClientSide || event.isCanceled()) return;
+        if (victim.level().isClientSide() || event.isCanceled()) return;
         if (victim instanceof ServerPlayer && FreezeService.isFrozen(victim)) {
             ServerPlayer killer = event.getSource().getEntity() instanceof ServerPlayer p ? p
                     : victim.getKillCredit() instanceof ServerPlayer p ? p : null;

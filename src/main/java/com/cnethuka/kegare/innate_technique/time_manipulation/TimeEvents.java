@@ -65,7 +65,7 @@ final class TimeEvents {
 
         NeoForge.EVENT_BUS.addListener((LivingDeathEvent e) -> {
             LivingEntity entity = e.getEntity();
-            if (entity.level().isClientSide) return;
+            if (entity.level().isClientSide()) return;
             PositionHistory.forget(entity);
             if (entity instanceof ServerPlayer p) {
                 PointMarks.clear(p);

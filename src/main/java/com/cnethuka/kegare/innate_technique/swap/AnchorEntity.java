@@ -60,7 +60,7 @@ public class AnchorEntity extends ThrowableItemProjectile {
             super.tick();
         }
         // AnchorRenderer draws it, its line and its ping; only the server times it out.
-        if (!level().isClientSide && isAlive() && tickCount >= lifetime) Anchors.expire(this);
+        if (!level().isClientSide() && isAlive() && tickCount >= lifetime) Anchors.expire(this);
     }
 
     /** Creatures don't stop it. */
@@ -71,7 +71,7 @@ public class AnchorEntity extends ThrowableItemProjectile {
 
     @Override
     protected void onHit(HitResult result) {
-        if (level().isClientSide || isStuck() || !(result instanceof BlockHitResult block)) return;
+        if (level().isClientSide() || isStuck() || !(result instanceof BlockHitResult block)) return;
         face = block.getDirection();
         Vec3 at = block.getLocation().add(Vec3.atLowerCornerOf(face.getNormal()).scale(0.08));
         setPos(at.x, at.y, at.z);

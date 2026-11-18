@@ -139,7 +139,7 @@ public final class TimeStops {
 
     /** Whether time is stopped for this entity right now (server side). */
     public static boolean frozen(Entity e) {
-        if (e.level().isClientSide) return false;
+        if (e.level().isClientSide()) return false;
         Stop stop = STOPS.get(e.level().dimension());
         return stop != null && stop.frozen(e);
     }
@@ -294,7 +294,7 @@ public final class TimeStops {
     /** Server side: a frozen entity's tick is skipped, and its age with it (lifetimes counted by it don't run). */
     static void onEntityTick(EntityTickEvent.Pre event) {
         Entity e = event.getEntity();
-        if (e.level().isClientSide) return;
+        if (e.level().isClientSide()) return;
         Stop stop = STOPS.get(e.level().dimension());
         if (stop == null) return;
         Integer flying = stop.flight.get(e);
@@ -309,7 +309,7 @@ public final class TimeStops {
 
     /** A projectile the caster or someone immune throws into it flies its first few ticks, then hangs too. */
     static void onJoin(EntityJoinLevelEvent event) {
-        if (event.getLevel().isClientSide || !(event.getEntity() instanceof Projectile p)) return;
+        if (event.getLevel().isClientSide() || !(event.getEntity() instanceof Projectile p)) return;
         Stop stop = STOPS.get(event.getLevel().dimension());
         if (stop == null || p.getOwner() == null || !stop.free(p.getOwner())) return;
         stop.flight.put(p, TimeConfig.STANDSTILL_FLIGHT_TICKS.get());
@@ -322,7 +322,7 @@ public final class TimeStops {
      */
     static void onIncomingDamage(LivingIncomingDamageEvent event) {
         LivingEntity victim = event.getEntity();
-        if (victim.level().isClientSide) return;
+        if (victim.level().isClientSide()) return;
         Stop stop = STOPS.get(victim.level().dimension());
         if (stop == null || victim == landing) return;
         DamageSource source = event.getSource();
@@ -362,18 +362,18 @@ public final class TimeStops {
     /** Nothing frozen is knocked back by a swing or sweep; the held hit brings its own knockback when it lands. */
     static void onKnockBack(LivingKnockBackEvent event) {
         LivingEntity e = event.getEntity();
-        if (!e.level().isClientSide && e != landing && frozen(e)) event.setCanceled(true);
+        if (!e.level().isClientSide() && e != landing && frozen(e)) event.setCanceled(true);
     }
 
     /** Nothing frozen moves itself: an enderman hit by one of the caster's still-flying projectiles stays where it stands. */
     static void onEnderTeleport(com.cnethuka.kegare.platform.event.entity.EntityTeleportEvent.EnderEntity event) {
-        if (!event.getEntity().level().isClientSide && frozen(event.getEntity())) event.setCanceled(true);
+        if (!event.getEntity().level().isClientSide() && frozen(event.getEntity())) event.setCanceled(true);
     }
 
     /** Pre-Planned: a projectile that hung in a stop hitting a player once time runs again. */
     static void onImpact(ProjectileImpactEvent event) {
         Entity projectile = event.getProjectile();
-        if (projectile.level().isClientSide || !(event.getRayTraceResult() instanceof EntityHitResult hit)) return;
+        if (projectile.level().isClientSide() || !(event.getRayTraceResult() instanceof EntityHitResult hit)) return;
         Volley volley = VOLLEYS.remove(projectile);
         if (volley == null || !(hit.getEntity() instanceof ServerPlayer victim) || victim.getUUID().equals(volley.owner())) return;
         if (projectile.level().getGameTime() > volley.until()) return;

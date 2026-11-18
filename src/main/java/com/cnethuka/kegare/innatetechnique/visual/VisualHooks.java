@@ -40,7 +40,7 @@ public final class VisualHooks {
      * @return false if it hasn't started yet: call again next tick
      */
     public static boolean startTrail(Entity projectile, Identifier effect, float scale, double clearOfOwnEyes) {
-        if (!projectile.level().isClientSide || trailStarter == null) return true;
+        if (!projectile.level().isClientSide() || trailStarter == null) return true;
         return trailStarter.start(projectile, effect, scale, clearOfOwnEyes);
     }
 

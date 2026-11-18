@@ -35,6 +35,7 @@ import net.minecraft.world.phys.Vec3;
 public final class ServerEventHooks {
     private ServerEventHooks() {}
 
+    private static final net.minecraft.resources.Identifier KEGARE_AFTER_TRANSFER = net.minecraft.resources.Identifier.fromNamespaceAndPath("kegare", "after_transfer");
     private static boolean initialised;
 
     /** The respawned player whose Fabric "changed world" callback NeoForge has no event for (see the respawn comment below). */
@@ -73,14 +74,22 @@ public final class ServerEventHooks {
         // the like only. COPY_FROM is the start of a respawn (the new player is the one the world-change callback will name), AFTER_RESPAWN the end.
         ServerPlayerEvents.COPY_FROM.register((oldPlayer, newPlayer, alive) -> {
             respawning = newPlayer;
+            // Attachments first (Fabric's own copy is off, see Attachments), so Clone handlers see the data.
+            com.cnethuka.kegare.platform.attachment.Attachments.copyOnDeath(oldPlayer, newPlayer, !alive);
             NeoForge.EVENT_BUS.post(new PlayerEvent.Clone(newPlayer, oldPlayer, !alive));
         });
-        ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
-            respawning = null;
+        // Fabric's own transfer runs in the default phase of AFTER_RESPAWN and carries every attachment over by reference; ours runs after it
+        // and removes what NeoForge never copied (runtime-only state such as CastState), then tells the listeners.
+        ServerPlayerEvents.AFTER_RESPAWN.addPhaseOrdering(net.fabricmc.fabric.api.event.Event.DEFAULT_PHASE, KEGARE_AFTER_TRANSFER);
+        ServerPlayerEvents.AFTER_RESPAWN.register(KEGARE_AFTER_TRANSFER, (oldPlayer, newPlayer, alive) -> {
+            com.cnethuka.kegare.platform.attachment.Attachments.dropRuntimeOnly(newPlayer);
             NeoForge.EVENT_BUS.post(new PlayerEvent.PlayerRespawnEvent(newPlayer, alive));
         });
         ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
-            if (player == respawning) return;
+            if (player == respawning) {
+                respawning = null;
+                return;
+            }
             NeoForge.EVENT_BUS.post(new PlayerEvent.PlayerChangedDimensionEvent(player, origin.dimension(), destination.dimension()));
         });
         // Fabric names the tracked entity first; NeoForge's event is the player's (getEntity) with the tracked one as the target.
