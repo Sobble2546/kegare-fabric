@@ -40,6 +40,8 @@ public final class EyewearClient {
     }
 
     private static void setup() {
+        // Trinkets is optional: without it nobody can wear eyewear, and naming its classes would fail to load.
+        if (!com.cnethuka.kegare.sixeyes.Eyewear.slotAvailable()) return;
         EyewearPlatform.register(KegareItems.BLINDFOLD.get(), BLINDFOLD);
         EyewearPlatform.register(KegareItems.SUNGLASSES.get(), SUNGLASSES);
     }
