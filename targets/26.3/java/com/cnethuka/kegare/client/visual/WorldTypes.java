@@ -49,6 +49,7 @@ public final class WorldTypes {
                 .withLocation(Kegare.id("pipeline/glow_" + d.name().toLowerCase(java.util.Locale.ROOT)))
                 .withShaderDefine("ALPHA_CUTOUT", 0.1f)
                 .withShaderDefine("PER_FACE_LIGHTING")
+                .withBindGroupLayout(net.minecraft.client.renderer.BindGroupLayouts.SAMPLER1) // the overlay texture the shader declares; without it the pipeline fails and 26.x crashes
                 .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
                 .withCull(false)
                 .withDepthStencilState(new DepthStencilState(d, false))

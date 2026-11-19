@@ -76,7 +76,7 @@ Every player **and** the server need the Kegare jar for their own Minecraft vers
 | [Player Animation Library](https://modrinth.com/mod/player-animation-library) (by ZigyTheBird, *not* KosmX's playerAnimator) | 1.1.12 | 1.2.9 | 1.2.9 | player animations |
 | [Forge Config API Port](https://modrinth.com/mod/forge-config-api-port) (by Fuzs) | 21.11.1 | 26.2.1 | 26.3.1 | the config files and config screen |
 | [Trinkets (Updated)](https://modrinth.com/mod/trinkets-updated), optional | 3.11.0-beta.2 | not used | not used | the slot eyewear sits in (1.21.11 only for now) |
-| Photon FX and ldlib2-lite (our Fabric port of [Photon](https://github.com/Low-Drag-MC/Photon) and the part of [LDLib2](https://github.com/Low-Drag-MC/LDLib2) it needs) | bundled in the Kegare jar, nothing to install | not included | not included | ability effects (the `.fx` particle effects) |
+| Photon FX and ldlib2-lite (our Fabric port of [Photon](https://github.com/Low-Drag-MC/Photon) and the part of [LDLib2](https://github.com/Low-Drag-MC/LDLib2) it needs) | bundled in the Kegare jar, nothing to install | bundled | bundled | ability effects (the `.fx` particle effects) |
 
 The versions listed are the ones Kegare was built against; newer ones for the same Minecraft version should work. Minecraft
 refuses to start and names the missing mod if a required one is absent.
@@ -85,8 +85,9 @@ refuses to start and names the missing mod if a required one is absent.
 invert screens, the hit-stop hold), the Severed Senses outline and the eyewear slot are not there yet; everything else is the
 same game (DESIGN.md §3.13 lists it). Ability effects that used Photon on NeoForge are played on 1.21.11 by Photon FX, our own
 runtime port of Photon, which sits inside the Kegare jar: do not install Photon or LDLib2 (they have no Fabric build). It has
-no bloom, so bright effects look flatter than on NeoForge (DESIGN.md §3.13 lists the differences). On 26.2 and 26.3 the
-port is not there yet and those effects draw with vanilla particles, as they do anywhere with effects set to Vanilla.
+no bloom, so bright effects look flatter than on NeoForge (DESIGN.md §3.13 lists the differences). On 26.2 and 26.3 it is
+bundled too, with a simpler drawing backend: the same particles, colours and motion, but without UV distortion, the second
+texture layer, the soft fade into the scene and polar mapping, so smoke and shockwaves look plainer there than on 1.21.11.
 
 **Joining a server that doesn't run Kegare.** You can keep Kegare installed: it stays switched off (no HUD, no keys, nothing
 sent) on any server that doesn't announce itself as a Kegare server, and switches on again when you join one. A Kegare server
@@ -197,10 +198,9 @@ Requires JDK 25 (e.g. Temurin) to run Gradle, for every target; point `JAVA_HOME
 `-Ptarget=1.21.11`, `-Ptarget=26.2` or `-Ptarget=26.3` to any command (1.21.11 is the default). Tests and `runData` are
 1.21.11 only; build the 26.x jars with `./gradlew -Ptarget=26.3 build -x test -x compileTestJava`.
 
-The 1.21.11 build needs Photon FX built first: it is a separate source tree (`photon-fabric`, next to this one) and is never
-downloaded. There, run `./gradlew -Ptarget=1.21.11 publishAllPublicationsToLocalRepository`; Kegare's build reads the result
-from `../photon-fabric/build/maven` (or `-PphotonfxMaven=<dir>`) and stops with a message saying so if it is missing. The
-26.x builds do not use it.
+Every build needs Photon FX built first for the same target: it is a separate source tree (`photon-fabric`, next to this one) and is never
+downloaded. There, run `./gradlew -Ptarget=<target> publishAllPublicationsToLocalRepository`; Kegare's build reads the result
+from `../photon-fabric/build/maven` (or `-PphotonfxMaven=<dir>`) and stops with a message saying so if it is missing. 
 
 | Command | What it does |
 |---|---|
@@ -236,10 +236,10 @@ Please report vulnerabilities privately: see [SECURITY.md](SECURITY.md).
 Kegare is **All Rights Reserved**: see [LICENSE](LICENSE). Please ask before you copy, modify or redistribute any of its code
 or assets. *Jujutsu Kaisen* belongs to Gege Akutami and Shueisha, and Minecraft to Mojang.
 
-**Other people's work inside the 1.21.11 jar.** That jar nests two separate jars that are not Kegare's and are not under
+**Other people's work inside the jars.** Each jar nests two separate jars that are not Kegare's and are not under
 Kegare's licence: **Photon FX**, a modified, runtime-only port of Photon by KilaBash / Low-Drag-MC, under
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) plus Photon's own additional terms (non-commercial: no
 fees, paid downloads, donations, sponsorships or crowdfunding), and inside it **ldlib2-lite**, a modified maths subset of
 LDLib2, under the LGPL 3.0. Neither is made or endorsed by the original authors. Their licence texts and the list of what
 was derived from where are in the jar under `META-INF/licenses/`; [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) says what is
-where and how to replace the LGPL part. The 26.2 and 26.3 jars do not contain them.
+where and how to replace the LGPL part.

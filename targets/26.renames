@@ -62,9 +62,10 @@
 \b(?:mc|minecraft|Minecraft\.getInstance\(\))\.renderBuffers\(\)\.bufferSource\(\)	com.cnethuka.kegare.platform.client.KBuffers.immediate()
 \bMultiBufferSource\b	KBuffers
 \bcom\.mojang\.blaze3d\.platform\.DepthTestFunction\b	com.mojang.renderpearl.api.pipeline.CompareOp
+# 26.x depth is reversed (nearer is greater): "in front" is GREATER_THAN_OR_EQUAL, "behind" is LESS_THAN.
 \bDepthTestFunction\.NO_DEPTH_TEST\b	CompareOp.ALWAYS_PASS
-\bDepthTestFunction\.LEQUAL_DEPTH_TEST\b	CompareOp.LESS_THAN_OR_EQUAL
-\bDepthTestFunction\.GREATER_DEPTH_TEST\b	CompareOp.GREATER_THAN
+\bDepthTestFunction\.LEQUAL_DEPTH_TEST\b	CompareOp.GREATER_THAN_OR_EQUAL
+\bDepthTestFunction\.GREATER_DEPTH_TEST\b	CompareOp.LESS_THAN
 \bDepthTestFunction\b	CompareOp
 \bLevelRenderer\.getLightColor\(	net.minecraft.util.LightCoordsUtil.getLightCoords(
 \bcom\.mojang\.blaze3d\.textures\.(GpuTextureView|FilterMode|GpuTexture|GpuSampler)\b	com.mojang.renderpearl.api.textures.$1

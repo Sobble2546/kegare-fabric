@@ -35,8 +35,8 @@ repositories {
 }
 
 // Photon FX (mod ids photonfx + ldlib2lite): our own runtime port of Photon, a separate checkout (photon-fabric) with its own licences.
-// It plays assets/kegare/fx (DESIGN 3.13). Only a target whose properties name `photonfx_version` (1.21.11) compiles against it and
-// nests it; the 26.x jars have neither. It is never downloaded: it comes from that checkout's local maven output, made there with
+// It plays assets/kegare/fx (DESIGN 3.13). Only a target whose properties name `photonfx_version` (all three today) compiles against it and
+// nests it. It is never downloaded: it comes from that checkout's local maven output, made there with
 //   ./gradlew -Ptarget=1.21.11 publishAllPublicationsToLocalRepository      (writes <photon-fabric>/build/maven)
 // looked for in -PphotonfxMaven=<dir>, then ../photon-fabric/build/maven, then ../photon/build/maven.
 def photonfxVersion = tp.getProperty('photonfx_version')
@@ -121,7 +121,7 @@ dependencies {
     // Photon FX, nested as a jar of its own (META-INF/jars) that nests ldlib2lite in turn; the photonfx jar is the only one included.
     // In dev runs and tests ldlib2lite arrives as photonfx's own dependency (Loom does not load nested copies there).
     if (photonfxVersion != null) {
-        modImplementation photonfxMods[0]
+        mod photonfxMods[0]
         include photonfxMods[0]
     }
 

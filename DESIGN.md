@@ -840,6 +840,11 @@ things changed in how it is built; what the player sees is meant to be the same.
     with `platform.client.KBuffers` standing in for `MultiBufferSource`: an effect's vertices are recorded and handed to the frame's
     submit collector as one custom-geometry node per render type when it ends the batch. Vanilla then sorts and draws them, so the
     order between Kegare's stages no longer decides what covers what.
+  - *Photon FX on 26.x.* The nested photonfx draws through render types of its own on vanilla's emissive entity shader (its 26.x
+    `FxRenderer`), not the Kila shader: tint, intensity, tiling and scroll are worked out per vertex; UV distortion, the layer texture, soft
+    particles, camera fade and polar mapping are left out. Seen in game on 26.2 and 26.3 (Frost Shard and Glacial Lance bursts).
+  - *Depth and pipelines on 26.x.* Depth is reversed there (nearer is greater): `targets/26*.renames` maps the depth tests accordingly.
+    A pipeline built on an entity snippet must declare `BindGroupLayouts.SAMPLER1`; one that fails to compile crashes the game on 26.3.
   - *Not ported on 26.x yet (the effect is skipped, the game is otherwise unaffected):* the full-screen shader effects (`FullscreenFx`:
     grayscale, invert, the hit-stop hold, impact-frame screen pass) and the Severed Senses outline (`SilhouetteMask`). Both report
     themselves invalid, which callers treat like a shader that failed to compile. Held items are left out of body copies.
