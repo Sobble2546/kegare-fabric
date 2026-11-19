@@ -10,6 +10,7 @@ import com.cnethuka.kegare.platform.bus.EventBusSubscriber;
 import com.cnethuka.kegare.platform.client.event.FMLClientSetupEvent;
 import com.cnethuka.kegare.platform.client.event.ClientPlayerNetworkEvent;
 import com.cnethuka.kegare.platform.client.event.ClientTickEvent;
+import net.fabricmc.loader.api.FabricLoader;
 
 /** Wires the client visual system: payload handler, PAL layer, Photon preloading, per-tick work and cleanup. */
 @EventBusSubscriber(modid = Kegare.MODID, value = Dist.CLIENT)
@@ -26,6 +27,7 @@ public final class VisualClientEvents {
     private static void clientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             PlayerAnimations.registerLayer(); // PAL: registered once the client has started
+            if (FabricLoader.getInstance().isModLoaded("photonfx")) PhotonBridge.install(); // the particle engine, when it is there (DESIGN §3.13)
             PhotonEffects.preload(VisualHooks.allEffects().stream().filter(e -> !ClientVisuals.isDrawnByMove(e)).toList());
         });
     }

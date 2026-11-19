@@ -515,8 +515,8 @@ Everything that exists only for testing is under `/kegare debug`:
 | `/kegare debug orb status [player]` | Time to the next roll, and any orb under way |
 | `/kegare debug swap unswappable <player> <on>` | For Swap (§3.19): cancels `SwapTargetEvent` for swaps targeting this player (a stand-in for a future immunity) |
 | `/kegare debug strings unmovable <player> <on>` | For Strings (§3.20): cancels `StringsTargetEvent` for this player (a stand-in for a future immunity) |
-| `/kegare debug fx export` | Dev client only: rewrite every effect in `FxCatalog` (§3.14) |
-| `/kegare debug fx play <name> [front\|self\|loop]` | Dev client only: preview an effect |
+| `/kegare debug fx export` | NeoForge dev client only (not on Fabric, §3.14): rewrite every effect in `FxCatalog` |
+| `/kegare debug fx play <name> [front\|self\|loop]` | NeoForge dev client only (not on Fabric): preview an effect |
 
 `debug fx` builds Photon effects, so it has to run on the client: `FxDevCommand` registers it in the dev client's own command tree, under the same `/kegare debug` and at the same level. NeoForge tries that tree first and sends anything it doesn't recognise on to the server, and the client's suggestions merge the two. Help lists it only outside a released game.
 
@@ -850,8 +850,71 @@ things changed in how it is built; what the player sees is meant to be the same.
   - *Unverified.* On 26.x only a dedicated-server boot has been observed. Knockback through `EntityCompat` passes a generic damage source
     and 0 for the new arguments; the "swing started this tick" test reads the animation progress; neither was checked in game.
 
-- **Libraries:** player animations use Player Animation Library (PAL, by ZigyTheBird). VFX use Photon (by
-  KilaBash), which needs LDLib2. All three are required mods; see README.
+- **The particle engine on Fabric: Photon FX (1.21.11 only).** Photon and LDLib2 have no Fabric build, so the `.fx` effects are
+  played by **Photon FX** (mod id `photonfx`, with `ldlib2lite`), our own runtime port of Photon: a separate source tree
+  (`photon-fabric`, with its own DESIGN.md) that reads the same `.fx` files and draws them through 1.21.11's render pipeline. It
+  only plays effects. It has no editor and writes no `.fx`: **effects are still authored and exported on the NeoForge build**
+  (§3.14), and the Fabric tree ships the committed files unchanged.
+  - *Seam.* `client.visual.PhotonEffects` is the only thing Kegare's visuals call. `PhotonBridge` (1.21.11 overlay, same
+    package) implements its `Backend` by delegating to photonfx's public API (`PhotonFx.onEntity` / `at` / `movableAt` /
+    `preload` and the handle's `stop`, `isPlaying`, `scale`, `tint`, `persistLifetime`), mapping `Visual.Anchor` to photonfx's
+    `Anchor` by name. It is the only Kegare class that names photonfx's types. `VisualClientEvents` installs it at client
+    setup, before the preload, only if `FabricLoader.isModLoaded("photonfx")`. On 26.x the overlay's `PhotonBridge` installs
+    nothing.
+  - *Failure.* A backend never throws. The first engine call that fails (an exception or a linkage error) is logged once
+    and switches the bridge off until the game restarts: every later start reports "can't play", so effects fall back to
+    vanilla particles like a missing `.fx`, and `stop` still reaches the engine so nothing on screen outlives its loop. A
+    single effect the engine cannot play (missing or unreadable file, another level, an unloaded chunk) is not a failure: it
+    returns null and that one effect falls back.
+  - *Packaging.* `targets/1.21.11.properties` names `photonfx_version`; a target without it (26.2, 26.3) neither compiles
+    against the engine nor nests it. build.gradle takes `com.cnethuka.photonfx:photonfx-1.21.11` from the photon-fabric
+    checkout's local maven output (`-PphotonfxMaven`, `../photon-fabric/build/maven`, `../photon/build/maven`; never a
+    remote repository; the build stops with a message if it is not there) as `modImplementation` + `include`. The Kegare jar
+    nests the photonfx jar under `META-INF/jars/`, and that jar nests `ldlib2lite` (LGPL, a mod of its own so it can be
+    replaced). `fabric.mod.json` does not depend on it: without it Kegare runs and draws vanilla particles.
+  - *Licences.* Photon FX is CC BY-NC-SA 4.0 plus Photon's own terms (non-commercial; ports beyond 1.21.x need the author's
+    written consent), `ldlib2lite` LGPL-3.0-only; neither is Kegare's. The jar carries `THIRD-PARTY-NOTICES.md` in its root
+    and each nested jar's own `LICENSE*`, `COPYING*`, `NOTICE.md` and `DERIVED.md` under `META-INF/licenses/<mod id>/`, copied
+    by build.gradle out of the very jar it nests. README's License section says the same.
+  - *Tests.* `PhotonBridgeTest` (1.21.11 test overlay): both mods are found by the loader; every `.fx` under
+    `assets/kegare/fx` is read by the nested engine with no problem reported (a key, emitter type or version the port does
+    not handle fails here) and every texture or model it names exists in Kegare's or Photon FX's assets; anchors map by name;
+    a failing engine switches the bridge off without throwing.
+  - *What can look different from the NeoForge build* (nothing was compared with Photon running; the port's DESIGN.md records
+    what was and was not observed):
+    1. **No HDR and no bloom.** 1.21.11 has no float colour target. Intensity above 1 is multiplied into the colour and
+       clamps, so bright cores are flat white and glows are flatter; additive overlap saturates sooner.
+    2. **Draw order.** Effects are drawn in one pass after vanilla's weather pass into the main target. Photon's late
+       composite is gone. Water, translucent blocks, clouds, weather and Fabulous graphics may cover or tint effects
+       differently; Fabulous was never tried.
+    3. **Soft particles** (the mist emitters) fade against a copy of the scene depth; if that copy fails on a driver they are
+       drawn with a hard edge where they meet terrain (logged once).
+    4. **The Kila material shader** is pruned to the five modules the effects use and rewritten for 1.21.11's uniforms: colour,
+       falloff, distortion strength, scroll speed and fog can differ by a visible amount.
+    5. **Randomness** is not the same stream: same rates and distributions, different individual particles.
+    6. **Time.** Effects tick on the client tick with their own clock and are not ticked while the game is paused. They no
+       longer ride vanilla's particle engine, so vanilla's Particles setting and particle limit do not apply (`vfxQuality`
+       is the control), and anything that acts on vanilla's particle engine (a tick-rate change, a mod that freezes particles)
+       does not reach them.
+    7. **Texture sampling** (filter, wrap, mip bias) of Photon's textures follows 1.21.11's sampler choices.
+    8. **The lance's ribbon trail** (width, taper, tail alpha) and **the parry arc** (Model mode: an OBJ transformed on the
+       CPU; shading and back-face culling) are re-implemented.
+    9. **Shader packs and Sodium/Iris** were never tried; Photon's Iris branches are not ported.
+    10. **Near the camera and culling.** Whole emitters are not frustum-culled; particles very close to a first-person
+        camera may clip or white out differently.
+    11. **Lighting** is fixed full-bright, as authored (Photon's lights module at 15/15); it is not a dynamic light.
+    12. **REDUCED** halves a constant emission rate and a particle cap above 1 and leaves bursts alone, as before; an effect
+        with a cap of 2 and one particle (`rmt_trail_dot`) can blink under it.
+  - *Rebuilding the engine.* After publishing Photon FX again under the same version, delete
+    `.gradle/loom-cache/remapped_mods/remapped/com/cnethuka` in this tree before building: Loom keeps its remapped copy by
+    coordinates (whether it would notice the new jar by itself was not tried).
+  - *Seen so far* only under software rendering (llvmpipe) on a build box, in a dev client joined to a dev server
+    (`tools/fxshots`: Rime's casts in first and third person at FULL; the client logs `Ability effects are played by Photon
+    FX` and `photonfx: preloaded 45 of 45 effects`). REDUCED, the other techniques, a second player's view, a real GPU,
+    frame cost, and the built jar in a launcher (rather than the dev client) are unverified.
+- **Libraries:** player animations use Player Animation Library (PAL, by ZigyTheBird), a required mod. VFX on NeoForge use
+  Photon (by KilaBash), which needs LDLib2; on Fabric 1.21.11 they use the bundled Photon FX above, and on 26.x vanilla
+  particles. See README.
 - **Declaring:** `Ability.visuals()` returns `AbilityVisuals`, which can set a PAL animation ID and/or a Photon effect
   ID for each `VisualPhase`:
 
@@ -914,7 +977,8 @@ things changed in how it is built; what the player sees is meant to be the same.
     player's body skip it: Freeze's frost, the Rime Shell's plates and a possessor's glow. PAL hides the head and body
     there, but a layer draws its own copy of the parts and would put them round the camera.
 - **Failures never crash:** a missing or broken `.fx` falls back to vanilla particles (`VanillaFallback`, per-effect
-  lookalikes), and a missing animation is skipped. Each one is logged once. Effects are preloaded at client setup.
+  lookalikes), and a missing animation is skipped. Each one is logged once. Effects are preloaded at client setup. With no
+  particle engine installed (26.x), or after the engine failed (above), every effect takes the same fallback.
 - **Client config (`visuals`):**
   - `firstPersonAnimations` (default on): your own arms animate in first person (PAL `THIRD_PERSON_MODEL` mode), within
     the rules under "Your own hands" above.
@@ -927,7 +991,8 @@ things changed in how it is built; what the player sees is meant to be the same.
   should start and end on rest keys, so that with fades off they never jump to a mid-pose. Channels an animation doesn't key
   keep the vanilla pose throughout.
   - `vfxQuality`: `FULL` (Photon), `REDUCED` (Photon, emitters at half rate and half particle cap) or `VANILLA`
-    (vanilla particles only).
+    (vanilla particles only). On Fabric "Photon" is Photon FX; where there is none, `FULL` and `REDUCED` draw what
+    `VANILLA` draws.
 - Network version: see §3.5 (the one place it is kept).
 
 ### 3.14 Rime
@@ -1219,6 +1284,10 @@ Package `com.cnethuka.kegare.innate_technique.rime`. **Rarity: RARE.** All numbe
   shared `client.visual.FxKit`) and written with Photon's serializer, the same `.fx` format the editor exports. In a
   dev client, `/kegare debug fx export` rewrites every effect in `FxCatalog` (Rime's and RMT's, and the running game's
   copy), and `/kegare debug fx play <name> [front|self|loop]` previews one. The command exists only in the dev environment.
+  **On Fabric there is no authoring:** Photon FX (§3.13) only plays `.fx` files, the authoring classes, `FxKit`, `FxCatalog`
+  and `debug fx` are parked under `src/photon/java` (not compiled), and `assets/kegare/fx/` holds the files exported on
+  NeoForge. To change an effect, change its authoring class and export on the NeoForge build, then copy the `.fx` over;
+  `PhotonBridgeTest` fails if the new file uses something the port does not read.
 - **Advancements** (Rime tab, root `kegare:innate_technique/rime`, which unlocks on first rolling Rime). All are
   hidden, use `minecraft:impossible`, are awarded from code, and are never announced in chat: they would reveal who
   has Rime. Datagen enforces this for every advancement under `innate_technique/`. Only a player who currently holds

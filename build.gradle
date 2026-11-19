@@ -34,6 +34,23 @@ repositories {
     maven { name = 'Fuzs'; url = 'https://raw.githubusercontent.com/Fuzss/modresources/main/maven/'; content { includeGroup 'fuzs.forgeconfigapiport' } }
 }
 
+// Photon FX (mod ids photonfx + ldlib2lite): our own runtime port of Photon, a separate checkout (photon-fabric) with its own licences.
+// It plays assets/kegare/fx (DESIGN 3.13). Only a target whose properties name `photonfx_version` (1.21.11) compiles against it and
+// nests it; the 26.x jars have neither. It is never downloaded: it comes from that checkout's local maven output, made there with
+//   ./gradlew -Ptarget=1.21.11 publishAllPublicationsToLocalRepository      (writes <photon-fabric>/build/maven)
+// looked for in -PphotonfxMaven=<dir>, then ../photon-fabric/build/maven, then ../photon/build/maven.
+def photonfxVersion = tp.getProperty('photonfx_version')
+def photonfxMods = photonfxVersion == null ? [] : ['photonfx', 'ldlib2lite'].collect { "com.cnethuka.${it}:${it}-${tp.getProperty('minecraft_version')}:${photonfxVersion}" }
+if (photonfxVersion != null) {
+    def looked = [findProperty('photonfxMaven'), '../photon-fabric/build/maven', '../photon/build/maven'].findAll { it != null }.collect { file(it) }
+    def photonfxRepo = looked.find { new File(it, 'com/cnethuka/photonfx').isDirectory() }
+    if (photonfxRepo == null) throw new GradleException("Photon FX ${photonfxVersion} is not built. In the photon-fabric checkout run " +
+            "`./gradlew -Ptarget=${targetName} publishAllPublicationsToLocalRepository`, or pass -PphotonfxMaven=<its build/maven>. Looked in: ${looked.join(', ')}")
+    repositories {
+        maven { name = 'PhotonFxLocal'; url = photonfxRepo.toURI(); content { includeGroup 'com.cnethuka.photonfx'; includeGroup 'com.cnethuka.ldlib2lite' } }
+    }
+}
+
 // Targets with a `renames` file (26.x) compile a renamed copy of the shared sources: Mojang renamed many classes and methods without changing
 // them, and those spellings are swapped line by line (so compiler line numbers still match src/). See targets/26.renames.
 def renamesName = tp.getProperty('renames')
@@ -72,9 +89,13 @@ sourceSets.test.java.srcDir "targets/${overlayName}/testJava"
 def mc = tp.getProperty('minecraft_version')
 // One access widener source (Mojang names). 1.21.11 is remapped, so it stays "named"; 26.x is unobfuscated, where Mojang names are the "official" namespace.
 def awFile = layout.buildDirectory.file('aw/kegare.accesswidener').get().asFile
-awFile.parentFile.mkdirs()
-awFile.text = file('targets/kegare.accesswidener').text.replaceFirst('(?m)^accessWidener v2 named', remap ? 'accessWidener v2 named' : 'accessWidener v2 official')
-if (tp.getProperty('aw_extra') != null) awFile.append('\n' + file("targets/${tp.getProperty('aw_extra')}").text) // access only that target needs
+// Written now (Loom reads it while configuring) and again before the resources are processed, since `clean` deletes it in between.
+def writeAw = {
+    awFile.parentFile.mkdirs()
+    awFile.text = file('targets/kegare.accesswidener').text.replaceFirst('(?m)^accessWidener v2 named', remap ? 'accessWidener v2 named' : 'accessWidener v2 official')
+    if (tp.getProperty('aw_extra') != null) awFile.append('\n' + file("targets/${tp.getProperty('aw_extra')}").text) // access only that target needs
+}
+writeAw()
 loom { accessWidenerPath = awFile }
 dependencies {
     minecraft "com.mojang:minecraft:${mc}"
@@ -97,6 +118,12 @@ dependencies {
     // PostgreSQL JDBC (DESIGN 3.33): bundled inside our jar, only ever opened on a dedicated server with storage on.
     implementation('org.postgresql:postgresql:42.7.4') { exclude group: 'org.checkerframework' }
     include('org.postgresql:postgresql:42.7.4') { exclude group: 'org.checkerframework' }
+    // Photon FX, nested as a jar of its own (META-INF/jars) that nests ldlib2lite in turn; the photonfx jar is the only one included.
+    // In dev runs and tests ldlib2lite arrives as photonfx's own dependency (Loom does not load nested copies there).
+    if (photonfxVersion != null) {
+        modImplementation photonfxMods[0]
+        include photonfxMods[0]
+    }
 
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2' // javax.annotation.Nullable, which the sources use
 
@@ -121,10 +148,24 @@ java {
 
 tasks.named('processResources') {
     from(awFile) // fabric.mod.json names it; Loom reads it from build/aw, the jar needs its own copy
+    doFirst { writeAw() }
     def props = [mod_id: mod_id, mod_name: mod_name, mod_version: mod_version, mod_license: mod_license,
                  minecraft_version: mc, java_release: tp.getProperty('java_release')]
     inputs.properties props
     filesMatching('fabric.mod.json') { expand props }
+    // The nested Photon FX jars are other people's work under other licences (CC BY-NC-SA 4.0, LGPL 3): our notice goes in the jar's root
+    // and each jar's own licence and attribution files, taken out of the very jar that is nested, under META-INF/licenses/<mod id>.
+    if (photonfxVersion != null) {
+        from('THIRD-PARTY-NOTICES.md')
+        photonfxMods.each { String coords ->
+            def one = configurations.detachedConfiguration(dependencies.create(coords))
+            one.transitive = false
+            from({ zipTree(one.singleFile) }) {
+                include 'LICENSE*', 'COPYING*', 'NOTICE.md', 'DERIVED.md'
+                into "META-INF/licenses/${coords.split(':')[0].tokenize('.').last()}"
+            }
+        }
+    }
     // 26.3 renamed the recipe_unlocked trigger's condition key ("recipe" to "recipes"); the generated files are 1.21.11's.
     def unlockedKey = tp.getProperty('recipe_unlocked_key')
     if (unlockedKey != null) {
