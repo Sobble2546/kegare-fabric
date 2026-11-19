@@ -1,6 +1,5 @@
 package com.cnethuka.kegare.fists;
 
-import com.cnethuka.kegare.melee.MeleeTell;
 import com.cnethuka.kegare.sound.KegareSounds;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -11,9 +10,9 @@ import net.minecraft.world.phys.Vec3;
 import com.cnethuka.kegare.platform.net.PacketDistributor;
 
 /**
- * Black Spark's look and tell (DESIGN §3.28, §3.15): a brief burst of black sparks and crackling black arcs from the point of contact,
- * fringed in the attacker's Malice color, with a sharp crack. Everyone within {@link #RANGE} sees it; the attacker sees their own
- * color, everyone else the color of the face a disguise shows. Drawn by {@code fists/client/BlackSparkClient}.
+ * Black Spark's look and tell (DESIGN §3.28, §3.15): a brief burst of black and red pixel art from the point of contact (jagged bolts, a
+ * starburst, sparks), with a sharp crack. Everyone within {@link #RANGE} sees it, all the same: it's black and red whoever struck, so a
+ * disguise changes nothing about it. Drawn by {@code fists/client/BlackSparkClient}.
  */
 public final class BlackSparkFx {
     static final double RANGE = 48;
@@ -28,15 +27,10 @@ public final class BlackSparkFx {
         Vec3 at = box.contains(from) ? centre : box.clip(from, centre).orElse(centre);
         Vec3 direction = centre.subtract(from);
         direction = direction.lengthSqr() < 1.0e-6 ? attacker.getLookAngle() : direction.normalize();
-        int own = color(MeleeTell.of(attacker)), others = color(MeleeTell.seenByOthers(attacker));
+        BlackSparkPayload payload = new BlackSparkPayload(at, direction, attacker.getId(), target.getId());
         for (ServerPlayer viewer : level.players()) {
-            if (viewer.distanceToSqr(at) > RANGE * RANGE) continue;
-            PacketDistributor.sendToPlayer(viewer, new BlackSparkPayload(at, direction, viewer == attacker ? own : others, attacker.getId(), target.getId()));
+            if (viewer.distanceToSqr(at) <= RANGE * RANGE) PacketDistributor.sendToPlayer(viewer, payload);
         }
         level.playSound(null, at.x, at.y, at.z, KegareSounds.BLACK_SPARK.get(), SoundSource.PLAYERS, 1.6f, 1.0f);
-    }
-
-    private static int color(MeleeTell.Look look) {
-        return look.kind() == MeleeTell.Kind.GLOW ? look.color() : com.cnethuka.kegare.api.technique.InnateTechnique.DEFAULT_MALICE_COLOR;
     }
 }

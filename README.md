@@ -18,7 +18,7 @@ Black Flash).
 > **Made with generative AI.** Kegare's code and assets were made with generative AI, from a human designer's specifications.
 > See [How Kegare was made](#how-kegare-was-made).
 
-**Status:** early development (version 0.2.0-alpha). Expect changes, balance passes and the odd bug. Dominions, and the hostile spirits
+**Status:** early development (version 0.2.1-alpha). Expect changes, balance passes and the odd bug. Dominions, and the hostile spirits
 that will share the mod's name, are still to come.
 
 ## Features
@@ -207,7 +207,7 @@ from `../photon-fabric/build/maven` (or `-PphotonfxMaven=<dir>`) and stops with 
 
 | Command | What it does |
 |---|---|
-| `./gradlew build` | Compile, run unit tests, build `build/libs/kegare-<minecraft version>-<version>.jar` (for example `kegare-1.21.11-0.2.0-alpha.jar`) |
+| `./gradlew build` | Compile, run unit tests, build `build/libs/kegare-<minecraft version>-<version>.jar` (for example `kegare-1.21.11-0.2.1-alpha.jar`) |
 | `./gradlew test` | Unit tests (roll/pity math, trait rules, lang keys) plus in-game tests on a throwaway server (e.g. no reroll path changes Malice capacity) |
 | `./gradlew universalJar` | After building each target's jar (`-Ptarget=1.21.11`, `26.2`, `26.3`), pack them into `build/universal/kegare-universal-<version>.jar` (or `-PuniversalFrom=<dir>` if the three jars are elsewhere) |
 | `./gradlew runData` | Regenerate lang, models, tags, recipes, advancements into `src/generated/resources` |

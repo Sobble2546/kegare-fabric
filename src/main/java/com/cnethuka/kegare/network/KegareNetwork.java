@@ -13,7 +13,7 @@ import com.cnethuka.kegare.platform.net.PayloadRegistrar;
  * decided and saved; screens are cosmetic.
  */
 public final class KegareNetwork {
-    public static final String VERSION = "30";
+    public static final String VERSION = "31";
 
     private KegareNetwork() {}
 

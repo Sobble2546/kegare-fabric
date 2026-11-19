@@ -4,7 +4,7 @@ Kegare is a hobby project. We still take security seriously, and thank you for h
 
 ## Supported versions
 
-Only the latest release and the `main` branch get security fixes. Kegare is in early development (0.1.x), so please update
+Only the latest release and the `main` branch get security fixes. Kegare is in early development (0.x), so please update
 before you report.
 
 ## Reporting a vulnerability

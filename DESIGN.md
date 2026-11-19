@@ -391,8 +391,9 @@ All timestamps use **level game time**. They persist across restarts and are ide
 - **Kegare item stacks travel as marked paper** (`platform.net.ItemWire`, `ItemStackWireMixin` on the item stack network codec, both sides and
   both directions): paper with every component of the real stack and a `kegare:item` entry in its custom data, turned back into the real
   item on arrival. The same translator rewrites every item stack and knows no modded item id. Saving to disk is unaffected.
-- Network version `30` (the addon API's join check, §3.34: `TechniqueCheck.Ask` and `.Answer` in the configuration phase, after the hello; on
-  NeoForge that change was `28`); `29` was `EntityKindPayload`, below; `28` was the Fabric port: the hello above, `SightPayloads.Mobs.Dot` and
+- Network version `31` (since Black Spark's black and red redesign, §3.28: `BlackSparkPayload` no longer carries a colour; on NeoForge
+  that change was `29`); `30` was the addon API's join check, §3.34 (`TechniqueCheck.Ask` and `.Answer` in the configuration phase, after
+  the hello; on NeoForge that change was `28`); `29` was `EntityKindPayload`, below; `28` was the Fabric port: the hello above, `SightPayloads.Mobs.Dot` and
   `BattleDamagePayload` carry names instead of raw ids;
   `27` was a disguise wearing the face's eyewear, §3.19 and §3.32 (`Disguises.StatePayload` carries it); `26` was Six Eyes'
   Reads reading a body's whole state, §3.32 (`ReadsPayload` gained mob health and the focus's body); `25`
@@ -1363,7 +1364,7 @@ Package `com.cnethuka.kegare.innate_technique.rime`. **Rarity: RARE.** All numbe
   | Fast Forward (Accelerate) | its own sweep round the clock (`fast_forward_cast`), where Accelerate winds a crown; ticks running together into a whirr (`time_manipulation.whirl`); a clock face round the caster, three hands whirling forward faster and faster |
   | Stasis Field (Decelerate) | its own palm pushed at the ground (`stasis_field_cast`), where Decelerate flicks a blade; a slowed, ringing tick (`time_manipulation.stasis`); a glassy bronze dome snapping open over a clock face laid on the ground, and projectiles crawling through it |
   | Closing Line (Blur, Severed, §3.27) | a planted push-off (`closing_line_launch`), a crack and a burst of dust and grit off the ground where they left, and a heavy launch everyone nearby hears (`severed.closing_line_launch`, loud); on arrival a skid (`closing_line_arrive`, `severed.closing_line_arrive`) and dust where they stop |
-  | Black Spark (Reinforced Fists, §3.28; not a special, but it gets a tell all the same) | black sparks and crackling black arcs bursting from the point of contact, fringed in the attacker's Malice color, for one sharp moment, at every effects setting, and a sharp crack (`black_spark.crack`) everyone near hears |
+  | Black Spark (Reinforced Fists, §3.28; not a special, but it gets a tell all the same) | black and red pixel art bursting from the point of contact for one sharp moment: jagged stair-stepped bolts, black with red edges, crackling outward round a black starburst, and black and red pixels thrown out and falling; the same for everyone, at every effects setting (Vanilla: black and red dust and crit sparks), and a sharp crack (`black_spark.crack`) everyone near hears |
   | Reverse Malice Technique, on another (RMT, §3.17) | a white-and-green link from the healer's hand to the one healed, seen by everyone for as long as it lasts (`RmtLinkClient`, our own mesh, every effects setting), and a soft chime as it starts (an amethyst chime, high) |
 
   Standstill isn't a special, but it has a tell of its own all the same: the raised watch (`standstill_cast`), the sharp click
@@ -3051,17 +3052,27 @@ a millionth of a second of a hit. It isn't random, but nobody can do it at will.
   every sword does. Top stays unreached: nothing asks for it.
 - **Mobs** can be Black Sparked; the advancements (§3.28's zone and chain, "Lights Out") count players only.
 - **Insight:** the first Black Spark ever, on anything living, pays `first_black_spark` (Output 5) once (§3.21).
-- **Look and tell** (§3.15; `BlackSparkFx`, `BlackSparkPayload`, `fists/client/BlackSparkClient`): for one sharp moment (6 ticks),
-  crackling black arcs and black sparks burst from the point of contact, every one fringed in the attacker's Malice color, round a black
-  star at its heart. The arcs are crooked lines redrawn every tick, so they crackle; they shoot out on the first tick and break up as they
-  go; the sparks are black chips with a rim of color, thrown out and falling. Solid and full-bright, so the black holds by day, at night
-  and against the sky. Our own: nothing like the anime's red-and-black lightning. The attacker sees their own color, everyone else (within
-  48 blocks) the color of the face a disguise shows. Never on your own body in your own first person (the Impact System gives you the hit).
-  Reduced: 4 arcs and 6 sparks, gone in 4 ticks. Vanilla: black dust, dust in the color, and crit sparks. A sharp crack everyone near
-  hears (`black_spark.crack`: a hard snap, a spray of crackle and the body's thump).
+- **Look and tell** (§3.15; `BlackSparkFx`, `BlackSparkPayload`, `fists/client/BlackSparkClient` and `BlackSparkPixels`): for one sharp
+  moment (6 ticks), black and red pixel art bursts from the point of contact. Pixel art with hard pixels, like the fist's fire: square
+  pixels of one colour each, 16 to a block at full size, on a plane through the point of contact that faces the camera; no antialiasing,
+  no soft alpha, no glow. Black and red only, the same for everyone whoever struck (no Malice colour, so a disguise changes nothing):
+  near-black `#0A0505`, deep red `#8B0000` and bright red `#E01B24`.
+  - **Bolts** (7): jagged pixel lightning, stair-stepped (every step straight, never corner to corner), black two pixels thick for their
+    inner half and one at the tips, outlined in bright red. Their crooks are rerolled every tick, so they crackle; they shoot out on the
+    first tick (reaching 9 to 14 pixels) and break up from the tips over the second half, now and then forking.
+  - **The heart:** a black pixel starburst (arms straight out and corner to corner round a solid middle), rimmed in bright red and then
+    deep red, shrinking away over the first half.
+  - **Sparks** (14): black, deep red and bright red pixels (every third two by two) thrown out and falling.
+  - Full-bright, so the black holds by day and against the sky, and the red carries it at night (the black then reads as the dark inside
+    the red). Everyone within 48 blocks sees it. Never on your own body in your own first person (the Impact System gives you the hit).
+    Smaller the closer it is to the camera. Reduced: 4 bolts and 6 sparks, gone in 4 ticks. Vanilla: black and red dust and crit sparks.
+    A sharp crack everyone near hears (`black_spark.crack`: a hard snap, a spray of crackle and the body's thump), and the impact frame
+    (§3.23).
 - **Tests:** `BlackSparkTest` (the power formula and table, with no cap; the offset never sent; each window factor moving it the right
   way and the cap; a try only right after Fists go on and only once, a hit and a miss by the offset, the Strike on the scale, bosses
-  damaged and never moved by it, the knockback, a forced one, and the first-ever Insight paid once).
+  damaged and never moved by it, the knockback, a forced one, and the first-ever Insight paid once; the payload with no colour in it).
+  `BlackSparkPixels`'s test: black and red only, one colour per pixel, the bolts stair-stepped (every pixel joins its bolt along a side),
+  new crooks every tick and breaking up as it fades, a black heart rimmed in bright and deep red that goes first, and Reduced drawing less.
 
 **The zone** (`Zone`; numbers in `[reinforced_fists.zone]`). Canon: after a Black Flash the sorcerer is "in the zone", at 120% of their
 potential, where the next one comes easier, and consecutive Black Flashes can rebuild a sorcerer's healing output.
@@ -3076,9 +3087,10 @@ potential, where the next one comes easier, and consecutive Black Flashes can re
 - **The chain** counts Black Sparks landed while the zone from the one before is still up (1 for the one that started it). It ends when
   the zone does. Death ends the zone.
 - **HUD:** a small "120% · 7s" cue under the crosshair with the melee cues (§3.6), with a bar for the zone's time left (`ZoneHud`,
-  `ZonePayload`). Others see a faint flicker of black sparks round both your fists while you're in it: a few small black chips with a
-  rim of your Malice color (the face a disguise shows, as for the burn), each there for a tick and gone (`FistsPayload.ZONE`, drawn by
-  `FistBurn.drawFlicker`, at every effects setting). Not in your own first person (the cue is yours).
+  `ZonePayload`). Others see a faint flicker round both your fists while you're in it, in Black Spark's black and red: a few small chips,
+  each a black pixel with a bright red one beside it (now and then a lone deep red one), skin-pixel sized and square, each there for a
+  tick and gone (`FistsPayload.ZONE`, drawn by `FistBurn.drawFlicker`, at every effects setting). The same for everyone: with only the
+  zone on, `FistsPayload` carries no colour (0); its colour is the burn's. Not in your own first person (the cue is yours).
 - `/kegare debug spark zone <player> <seconds>` puts them in it (0 ends it); it starts no chain.
 - **Advancements** (`FistsAdvancements`; Base tab, §3.11): all hidden, announced in chat, Challenge, players only, awarded from code.
   None needs a kill or a win (§3.21).

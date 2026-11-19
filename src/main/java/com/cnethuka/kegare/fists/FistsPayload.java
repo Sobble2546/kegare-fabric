@@ -9,11 +9,12 @@ import com.cnethuka.kegare.platform.net.IPayloadContext;
 
 /**
  * Server to client: what's round a player's fists as whoever this is sent to should see it ({@link FistsTell}). {@code color} is the
- * Malice color (RGB) of the face they show that viewer; {@code flags} say what's there ({@link #BURN}: Fists are on; {@link #ZONE}: in the zone).
+ * Malice color (RGB) of the face they show that viewer, for the burn (0 with only the zone: its flicker is black and red for everyone);
+ * {@code flags} say what's there ({@link #BURN}: Fists are on; {@link #ZONE}: in the zone).
  */
 public record FistsPayload(int entityId, int color, int flags) implements CustomPacketPayload {
     public static final int BURN = 1;
-    /** In the zone: a faint flicker of black sparks round both fists. */
+    /** In the zone: a faint flicker of black and red pixels round both fists. */
     public static final int ZONE = 2;
     public static final Type<FistsPayload> TYPE = new Type<>(Kegare.id("fists"));
     public static final StreamCodec<FriendlyByteBuf, FistsPayload> STREAM_CODEC = StreamCodec.of(

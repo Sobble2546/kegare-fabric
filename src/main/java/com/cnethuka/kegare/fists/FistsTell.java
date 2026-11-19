@@ -9,9 +9,10 @@ import net.minecraft.world.entity.Entity;
 import com.cnethuka.kegare.platform.net.PacketDistributor;
 
 /**
- * What's round a player's fists, sent to each client as that client should see it (DESIGN §3.28): the wearer their own Malice color,
- * everyone else the color of the face they wear, as for the ready fist ({@link MeleeTell}), so a disguise is never given away. Sent when
- * it changes, checked every tick while there's something to show (a disguise can begin or end while it's on).
+ * What's round a player's fists, sent to each client as that client should see it (DESIGN §3.28). Reinforced Fists burn in a Malice colour:
+ * the wearer's own to them, to everyone else the colour of the face they wear, as for the ready fist ({@link MeleeTell}), so a disguise is
+ * never given away. The zone's flicker is black and red for everyone, so with only the zone there's no colour to send (0). Sent when it
+ * changes, checked every tick while there's something to show (a disguise can begin or end while it's on).
  */
 public final class FistsTell {
     private record Sent(int color, int flags) {
@@ -34,12 +35,13 @@ public final class FistsTell {
 
     static void sync(ServerPlayer player, boolean on) {
         int flags = flags(player, on);
-        Sent own = flags == 0 ? Sent.NONE : new Sent(color(MeleeTell.of(player)), flags);
+        boolean burns = (flags & FistsPayload.BURN) != 0;
+        Sent own = flags == 0 ? Sent.NONE : new Sent(burns ? color(MeleeTell.of(player)) : 0, flags);
         if (!own.equals(OWN.getOrDefault(player.getUUID(), Sent.NONE))) {
             OWN.put(player.getUUID(), own);
             PacketDistributor.sendToPlayer(player, new FistsPayload(player.getId(), own.color(), own.flags()));
         }
-        Sent others = flags == 0 ? Sent.NONE : new Sent(color(MeleeTell.seenByOthers(player)), flags);
+        Sent others = flags == 0 ? Sent.NONE : new Sent(burns ? color(MeleeTell.seenByOthers(player)) : 0, flags);
         if (!others.equals(OTHERS.getOrDefault(player.getUUID(), Sent.NONE))) {
             OTHERS.put(player.getUUID(), others);
             PacketDistributor.sendToPlayersTrackingEntity(player, new FistsPayload(player.getId(), others.color(), others.flags()));

@@ -71,7 +71,7 @@ class BlackSparkTest {
     @Test
     void theOffsetIsNeverSent() {
         List<String> spark = Arrays.stream(BlackSparkPayload.class.getRecordComponents()).map(c -> c.getName()).toList();
-        assertEquals(List.of("at", "direction", "color", "attackerId", "victimId"), spark, "where, which way, the color and who: nothing of the roll");
+        assertEquals(List.of("at", "direction", "attackerId", "victimId"), spark, "where, which way and who: nothing of the roll (and no colour: it's black and red for everyone)");
         List<String> fists = Arrays.stream(FistsPayload.class.getRecordComponents()).map(c -> c.getName()).toList();
         assertEquals(List.of("entityId", "color", "flags"), fists);
         assertTrue(BlackSpark.lands(30, 20, 25) && !BlackSpark.lands(19, 20, 25) && !BlackSpark.lands(46, 20, 25), "[offset, offset + window]");
