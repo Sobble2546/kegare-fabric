@@ -67,8 +67,11 @@ Every system is described in full in [DESIGN.md](DESIGN.md).
 
 ## Installing
 
-Kegare is a Fabric mod (Fabric Loader 0.20 or newer) with one jar per Minecraft version: **1.21.11**, **26.2** and **26.3**.
-Every player **and** the server need the Kegare jar for their own Minecraft version and these mods in their `mods` folder:
+Kegare is a Fabric mod (Fabric Loader 0.20 or newer) for Minecraft **1.21.11**, **26.2** and **26.3**. The simplest download is
+**`kegare-universal-<version>.jar`**: one jar that carries all three versions; drop it into the `mods` folder of any of them and
+Fabric loads the matching one (the mod list shows `kegare_universal` with the real `kegare` under it). The single-version jars
+(`kegare-<minecraft version>-<version>.jar`) work the same way if you prefer a smaller file. Every player **and** the server need
+Kegare and these mods in their `mods` folder:
 
 | Mod | 1.21.11 | 26.2 | 26.3 | Why |
 |---|---|---|---|---|
@@ -206,6 +209,7 @@ from `../photon-fabric/build/maven` (or `-PphotonfxMaven=<dir>`) and stops with 
 |---|---|
 | `./gradlew build` | Compile, run unit tests, build `build/libs/kegare-<minecraft version>-<version>.jar` (for example `kegare-1.21.11-0.1.0-alpha.jar`) |
 | `./gradlew test` | Unit tests (roll/pity math, trait rules, lang keys) plus in-game tests on a throwaway server (e.g. no reroll path changes Malice capacity) |
+| `./gradlew universalJar` | After building each target's jar (`-Ptarget=1.21.11`, `26.2`, `26.3`), pack them into `build/universal/kegare-universal-<version>.jar` (or `-PuniversalFrom=<dir>` if the three jars are elsewhere) |
 | `./gradlew runData` | Regenerate lang, models, tags, recipes, advancements into `src/generated/resources` |
 | `./gradlew runClient` | Dev client |
 | `./gradlew runClient -PquickPlayWorld=<world>` | Dev client, straight into an existing singleplayer world |

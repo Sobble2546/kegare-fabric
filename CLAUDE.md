@@ -35,6 +35,8 @@
 - Data: `./gradlew runData` after any lang, advancement, tag or config-option change. Run it and `test` as separate Gradle
   invocations. Afterwards `git status` must show no changes from runData.
 - Jar: `./gradlew -Ptarget=<target> build -x test` → `build/libs/kegare-<minecraft version>-<version>.jar`.
+- One jar for all targets: build each target's jar, then `./gradlew universalJar` (nests the three; each pins its Minecraft
+  version and carries its own version string `<version>+mc.<minecraft>`, so Fabric Loader loads the matching one).
 
 ## Workflow
 - Commit each working step as you finish it, not all at the end. Each commit builds and passes tests on its own. End every

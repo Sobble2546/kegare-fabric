@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "${mod_id}",
-  "version": "${mod_version}",
+  "version": "${mod_version}+mc.${minecraft_version}",
   "name": "${mod_name}",
   "description": "Kegare: a cursed-energy combat framework for PvP with friends.",
   "authors": ["cnethuka"],

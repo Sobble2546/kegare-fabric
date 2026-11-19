@@ -205,3 +205,29 @@ tasks.named('test', Test).configure {
     // AgentFilesTest reads these; without them as inputs, a change to only them would leave the tests "up to date".
     inputs.files('CLAUDE.md', 'AGENTS.md', 'AGENT.md').withPropertyName('agentFiles').withPathSensitivity(PathSensitivity.RELATIVE)
 }
+
+// One jar for every Minecraft version: `./gradlew universalJar` after building each target's jar (build/libs, or -PuniversalFrom=<dir>
+// holding kegare-<mc>-<version>.jar for every target in `universal_targets`). The result nests the three as jar-in-jar; each pins its
+// Minecraft and Java version and has its own version string (+mc.<version>), so Fabric Loader picks the one made for the running game.
+tasks.register('universalJar', Jar) {
+    group = 'build'
+    description = 'Packs the per-version Kegare jars into build/libs/kegare-universal-<version>.jar.'
+    def targets = universal_targets.split(',')*.trim()
+    def sourceDir = file(findProperty('universalFrom') ?: layout.buildDirectory.dir('libs').get().asFile)
+    def inner = targets.collect { new File(sourceDir, "kegare-${it}-${mod_version}.jar") }
+    inputs.files(inner)
+    inputs.file('universal/fabric.mod.json')
+    archiveFileName = "kegare-universal-${mod_version}.jar"
+    destinationDirectory = layout.buildDirectory.dir('universal')
+    doFirst {
+        def missing = inner.findAll { !it.isFile() }
+        if (missing) throw new GradleException("universalJar needs every target's jar first; missing: ${missing.join(', ')} " +
+                "(build each with ./gradlew -Ptarget=<mc> build -x test, or point -PuniversalFrom at the folder that has them)")
+    }
+    from(inner) { into 'META-INF/jars' }
+    from('LICENSE', 'THIRD-PARTY-NOTICES.md')
+    from('universal/fabric.mod.json') {
+        expand(mod_version: mod_version, mod_license: mod_license, targets: targets.join(', '),
+                jars: inner.collect { "    { \"file\": \"META-INF/jars/${it.name}\" }" }.join(',\n'))
+    }
+}

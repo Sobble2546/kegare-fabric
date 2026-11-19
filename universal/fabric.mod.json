@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "kegare_universal",
+  "version": "${mod_version}",
+  "name": "Kegare (all Minecraft versions)",
+  "description": "Carries Kegare for Minecraft ${targets}. Fabric Loader loads the one made for the game it is started in; this jar itself does nothing else.",
+  "authors": ["cnethuka"],
+  "license": "${mod_license}",
+  "environment": "*",
+  "jars": [
+${jars}
+  ],
+  "depends": {
+    "fabricloader": ">=0.20.1"
+  },
+  "custom": {
+    "modmenu": { "parent": "kegare" }
+  }
+}
