@@ -38,7 +38,7 @@ import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
  * Its power is canon's exponent with no ceiling: the damage goes on a scale starting at 2 ({@code s = 2 + damage / scaleDamage}), is
  * raised to the 2.5 and turned back into damage (times {@code s^1.5}). It is added before the target's defences, which are what stop
  * it: armour, a guard, a perfect parry (which never reaches here), Toughness, Rime Shell. It counts as fully charged in the Impact
- * System, adds {@code knockback} (never to a boss), and a black crack bursts from the point of contact ({@link BlackSparkFx}).
+ * System, adds {@code knockback} (never to a boss), and black and red pixel lightning bursts from the point of contact ({@link BlackSparkFx}).
  */
 public final class BlackSpark {
     @FunctionalInterface

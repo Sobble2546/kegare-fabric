@@ -29,10 +29,9 @@ final class FistTellLayer extends PlayerItemInHandLayer<AbstractClientPlayer, Pl
     public void render(PoseStack pose, MultiBufferSource buffers, int light, AbstractClientPlayer player, float limbSwing, float limbSwingAmount,
                        float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
         boolean mainLeft = player.getMainArm() == HumanoidArm.LEFT;
-        Integer zone = FistBurn.zoneOn(player);
-        if (zone != null && !FistTell.firstPersonSelf(player)) { // the zone: a faint flicker of black sparks round both fists
-            drawFlicker(pose, buffers, player, zone, getParentModel().leftArm, true, partialTick);
-            drawFlicker(pose, buffers, player, zone, getParentModel().rightArm, false, partialTick);
+        if (FistBurn.zoneOn(player) && !FistTell.firstPersonSelf(player)) { // the zone: a faint flicker of black and red pixels round both fists
+            drawFlicker(pose, buffers, player, getParentModel().leftArm, true, partialTick);
+            drawFlicker(pose, buffers, player, getParentModel().rightArm, false, partialTick);
         }
         // A ready Strike on the attacking hand; Reinforced Fists' fire, the very same, on both (§3.28).
         drawFist(pose, buffers, light, player, false, mainLeft, partialTick);
@@ -58,12 +57,12 @@ final class FistTellLayer extends PlayerItemInHandLayer<AbstractClientPlayer, Pl
         pose.popPose();
     }
 
-    private void drawFlicker(PoseStack pose, MultiBufferSource buffers, AbstractClientPlayer player, int color, ModelPart arm, boolean leftArm, float partialTick) {
+    private void drawFlicker(PoseStack pose, MultiBufferSource buffers, AbstractClientPlayer player, ModelPart arm, boolean leftArm, float partialTick) {
         pose.pushPose();
         arm.translateAndRotate(pose);
         Vector3f fist = pose.last().pose().transformPosition(FistShellMesh.armCentre(slim, leftArm), FistShellMesh.fistY(), 0f, new Vector3f());
         if (FistTell.inWorld(player, fist, partialTick)) {
-            FistBurn.drawFlicker(pose, buffers, color, player.tickCount, player.getId() * 2 + (leftArm ? 1 : 0), slim, leftArm, fist.negate(new Vector3f()).normalize());
+            FistBurn.drawFlicker(pose, buffers, player.tickCount, player.getId() * 2 + (leftArm ? 1 : 0), slim, leftArm, fist.negate(new Vector3f()).normalize());
         }
         pose.popPose();
     }
