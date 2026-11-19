@@ -2867,7 +2867,7 @@ a millionth of a second of a hit. It isn't random, but nobody can do it at will.
     the red). Everyone within 48 blocks sees it. Never on your own body in your own first person (the Impact System gives you the hit).
     Smaller the closer it is to the camera. Reduced: 4 bolts and 6 sparks, gone in 4 ticks. Vanilla: black and red dust and crit sparks.
     A sharp crack everyone near hears (`black_spark.crack`: a hard snap, a spray of crackle and the body's thump), and the impact frame
-    (§3.23) as before.
+    (§3.23).
 - **Tests:** `BlackSparkTest` (the power formula and table, with no cap; the offset never sent; each window factor moving it the right
   way and the cap; a try only right after Fists go on and only once, a hit and a miss by the offset, the Strike on the scale, bosses
   damaged and never moved by it, the knockback, a forced one, and the first-ever Insight paid once; the payload with no colour in it).
