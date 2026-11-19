@@ -275,7 +275,7 @@ class PuppetTest {
 
     static void cleanUp(MinecraftServer server, ServerLevel level, ServerPlayer owner) {
         Puppets.dissolveAll(server, owner.getUUID());
-        CastManager.stopAll(owner, com.cnethuka.kegare.innatetechnique.EndReason.CANCELLED);
+        CastManager.stopAll(owner, com.cnethuka.kegare.api.ability.EndReason.CANCELLED);
         level.removePlayerImmediately(owner, Entity.RemovalReason.DISCARDED);
     }
 

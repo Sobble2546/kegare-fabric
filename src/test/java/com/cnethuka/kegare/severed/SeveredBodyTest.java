@@ -9,7 +9,7 @@ import com.cnethuka.kegare.innate_technique.rime.RimeDamage;
 import com.cnethuka.kegare.innate_technique.swap.Swap;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.player.BirthService;
-import com.cnethuka.kegare.trait.Trait;
+import com.cnethuka.kegare.api.trait.Trait;
 import com.cnethuka.kegare.trait.TraitService;
 import java.util.List;
 import java.util.OptionalInt;

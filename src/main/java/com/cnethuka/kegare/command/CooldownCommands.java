@@ -4,14 +4,14 @@ import static com.cnethuka.kegare.command.CommandArgs.forEachPlayer;
 import static com.cnethuka.kegare.command.CommandArgs.name;
 import static com.cnethuka.kegare.command.CommandArgs.player;
 import static com.cnethuka.kegare.command.CommandArgs.say;
-import static com.cnethuka.kegare.command.CommandArgs.shortName;
+import static com.cnethuka.kegare.command.CommandArgs.commandName;
 import static com.cnethuka.kegare.command.CommandArgs.suggest;
 import static com.cnethuka.kegare.command.CommandArgs.system;
 import static com.cnethuka.kegare.command.CommandArgs.typedName;
 
-import com.cnethuka.kegare.innatetechnique.Ability;
+import com.cnethuka.kegare.api.ability.Ability;
 import com.cnethuka.kegare.innatetechnique.Burnout;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.loadout.SharedAbilities;
 import com.cnethuka.kegare.melee.MeleeLayer;
@@ -22,13 +22,15 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import com.cnethuka.kegare.Kegare;
 import java.util.LinkedHashMap;
-import java.util.Locale;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -40,8 +42,8 @@ final class CooldownCommands {
     private static final DynamicCommandExceptionType UNKNOWN =
             new DynamicCommandExceptionType(typed -> Component.translatable("commands.kegare.cooldown.unknown", String.valueOf(typed)));
 
-    /** Something with a cooldown, by the short name the command takes. */
-    private record Target(String name, Component display, Consumer<ServerPlayer> clear) {}
+    /** Something with a cooldown: its ID decides the name the command takes ({@link CommandArgs#commandName}). */
+    private record Target(Identifier id, Component display, Consumer<ServerPlayer> clear) {}
 
     private CooldownCommands() {}
 
@@ -50,7 +52,10 @@ final class CooldownCommands {
                 .executes(c -> resetAll(c.getSource(), c.getSource().getPlayerOrException()))
                 .then(player().executes(c -> forEachPlayer(c, CooldownCommands::resetAll))
                         .then(name("ability")
-                                .suggests((c, b) -> suggest(b, targets().values(), Target::name, Target::display))
+                                .suggests((c, b) -> {
+                                    List<Target> all = targets();
+                                    return suggest(b, all, t -> commandName(t, all, Target::id), Target::display);
+                                })
                                 .executes(c -> {
                                     Target target = target(c);
                                     return forEachPlayer(c, (source, player) -> resetOne(source, player, target));
@@ -58,28 +63,26 @@ final class CooldownCommands {
     }
 
     /** Every ability of every technique (specials and ultimates too) and shared ability, then Dash and Closing Line. */
-    private static Map<String, Target> targets() {
-        Map<String, Target> out = new LinkedHashMap<>();
+    private static List<Target> targets() {
+        Map<Identifier, Target> out = new LinkedHashMap<>();
         for (InnateTechnique technique : KegareRegistries.INNATE_TECHNIQUE) {
-            for (Ability a : technique.everyAbility()) out.putIfAbsent(shortName(a.id()), ability(a));
-            technique.ultimate().ifPresent(a -> out.putIfAbsent(shortName(a.id()), ability(a)));
+            for (Ability a : technique.everyAbility()) out.putIfAbsent(a.id(), ability(a));
         }
-        for (Ability a : SharedAbilities.all()) out.putIfAbsent(shortName(a.id()), ability(a));
-        out.put("dash", new Target("dash", Component.translatable("hud.kegare.melee.dash"), MeleeLayer::clearDashCooldown));
-        out.put("closing_line", new Target("closing_line", Component.translatable("hud.kegare.severed.closing_line"), Severed::clearClosingLineCooldown));
-        return out;
+        for (Ability a : SharedAbilities.all()) out.putIfAbsent(a.id(), ability(a));
+        out.put(Kegare.id("dash"), new Target(Kegare.id("dash"), Component.translatable("hud.kegare.melee.dash"), MeleeLayer::clearDashCooldown));
+        out.put(Kegare.id("closing_line"), new Target(Kegare.id("closing_line"), Component.translatable("hud.kegare.severed.closing_line"),
+                Severed::clearClosingLineCooldown));
+        return List.copyOf(out.values());
     }
 
     /** A special shares its base ability's cooldown, so naming either clears the one they share. */
     private static Target ability(Ability a) {
-        return new Target(shortName(a.id()), a.displayName(), player -> InnateTechniqueService.clearCooldown(player, a.cooldownKey()));
+        return new Target(a.id(), a.displayName(), player -> InnateTechniqueService.clearCooldown(player, a.cooldownKey()));
     }
 
     private static Target target(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
         String typed = typedName(c, "ability");
-        Target target = targets().get(typed.toLowerCase(Locale.ROOT));
-        if (target == null) throw UNKNOWN.create(typed);
-        return target;
+        return CommandArgs.byName(targets(), Target::id, typed).orElseThrow(() -> UNKNOWN.create(typed));
     }
 
     private static int resetAll(CommandSourceStack source, ServerPlayer player) {

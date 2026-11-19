@@ -34,7 +34,12 @@ final class VersionCompatClient {
     }
 
     static void registerHelloReceiver(BiConsumer<KegareHello.S2C, Responder> receiver) {
-        ClientConfigurationNetworking.registerGlobalReceiver(KegareHello.S2C.TYPE, (payload, context) -> receiver.accept(payload, new Responder() {
+        registerConfigReceiver(KegareHello.S2C.TYPE, receiver);
+    }
+
+    /** A client receiver of a configuration-phase payload; answers go back on the connection being configured. */
+    static <T extends CustomPacketPayload> void registerConfigReceiver(CustomPacketPayload.Type<T> type, BiConsumer<T, Responder> receiver) {
+        ClientConfigurationNetworking.registerGlobalReceiver(type, (payload, context) -> receiver.accept(payload, new Responder() {
             @Override
             public void send(CustomPacketPayload answer) {
                 context.responseSender().sendPacket(answer);

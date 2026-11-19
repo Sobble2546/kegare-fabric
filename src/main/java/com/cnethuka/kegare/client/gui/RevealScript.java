@@ -1,6 +1,6 @@
 package com.cnethuka.kegare.client.gui;
 
-import com.cnethuka.kegare.innatetechnique.InnateTechniqueRarity;
+import com.cnethuka.kegare.api.technique.InnateTechniqueRarity;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;

@@ -1,7 +1,9 @@
 package com.cnethuka.kegare.platform.net;
 
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.network.ConfigurationTask;
 import net.minecraft.world.entity.player.Player;
 
 /**
@@ -9,7 +11,7 @@ import net.minecraft.world.entity.player.Player;
  * Handlers run on the main thread, except the ones registered with {@link HandlerThread#NETWORK}.
  */
 public interface IPayloadContext {
-    /** The sender (server side: a ServerPlayer) or the local player (client side). */
+    /** The sender (server side: a ServerPlayer) or the local player (client side). Null in the configuration phase. */
     Player player();
 
     /**
@@ -20,4 +22,14 @@ public interface IPayloadContext {
 
     /** Answers the sender with a payload of the opposite direction. Safe from the network thread. */
     void reply(CustomPacketPayload payload);
+
+    /** Closes the connection with this reason. Configuration-phase handlers only (Kegare calls it nowhere else). */
+    default void disconnect(Component reason) {
+        throw new UnsupportedOperationException("disconnect is only for configuration-phase handlers");
+    }
+
+    /** Finishes the server's configuration task of this type, so the connection moves on. Server-side configuration handlers only. */
+    default void finishCurrentTask(ConfigurationTask.Type type) {
+        throw new UnsupportedOperationException("finishCurrentTask is only for server-side configuration handlers");
+    }
 }

@@ -59,6 +59,10 @@ public final class Kegare implements ModInitializer {
         com.cnethuka.kegare.sight.DelayedSight.init(); // too fast for the eye: Blur and Accelerate seen where they were (DESIGN §3.30)
         com.cnethuka.kegare.impact.Impacts.init(); // hit-stop, shake, flashes and impact frames (DESIGN §3.23)
         com.cnethuka.kegare.battledamage.BattleDamage.init(); // big hits break the world (DESIGN §3.24)
+        // Addons' changes to innate techniques (DESIGN §3.34): their damage tweaks, and the join check that a client has the same ones.
+        com.cnethuka.kegare.platform.NeoForge.EVENT_BUS.addListener(com.cnethuka.kegare.platform.bus.EventPriority.HIGH,
+                com.cnethuka.kegare.innatetechnique.change.TechniqueViews::onIncomingDamage);
+        modBus.addListener(com.cnethuka.kegare.innatetechnique.change.TechniqueCheck::register);
 
         com.cnethuka.kegare.progression.Progression.init();
         modBus.addListener(KegareNetwork::register);

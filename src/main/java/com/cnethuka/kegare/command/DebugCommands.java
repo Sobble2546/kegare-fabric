@@ -15,9 +15,9 @@ import static com.cnethuka.kegare.command.CommandArgs.typedName;
 import com.cnethuka.kegare.combat.CombatHelper;
 import com.cnethuka.kegare.innate_technique.puppet_manipulation.StringsDebug;
 import com.cnethuka.kegare.innate_technique.swap.SwapDebug;
-import com.cnethuka.kegare.innatetechnique.Ability;
+import com.cnethuka.kegare.api.ability.Ability;
 import com.cnethuka.kegare.innatetechnique.CastManager;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.loadout.SharedAbilities;
 import com.cnethuka.kegare.loadout.SharedAbilityService;
 import com.cnethuka.kegare.malice.MaliceService;
@@ -317,7 +317,10 @@ final class DebugCommands {
         return Commands.literal(action)
                 .then(player()
                         .then(name("ability")
-                                .suggests((c, b) -> suggest(b, unlockable(), a -> shortName(a.id()), Ability::displayName))
+                                .suggests((c, b) -> {
+                                    java.util.List<Ability> all = unlockable();
+                                    return suggest(b, all, a -> CommandArgs.commandName(a, all, Ability::id), Ability::displayName);
+                                })
                                 .executes(c -> {
                                     Ability ability = sharedAbility(c);
                                     return forEachPlayer(c, (source, player) -> shared(source, player, ability, unlock));
@@ -359,9 +362,9 @@ final class DebugCommands {
 
     private static Ability sharedAbility(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
         String typed = typedName(c, "ability");
-        String wanted = typed.toLowerCase(Locale.ROOT);
-        return unlockable().stream().filter(a -> shortName(a.id()).equals(wanted)).findFirst()
-                .orElseThrow(() -> UNKNOWN_SHARED.create(typed, unlockable().stream().map(a -> shortName(a.id())).collect(Collectors.joining(", "))));
+        java.util.List<Ability> all = unlockable();
+        return CommandArgs.byName(all, Ability::id, typed).orElseThrow(() -> UNKNOWN_SHARED.create(typed,
+                all.stream().map(a -> CommandArgs.commandName(a, all, Ability::id)).collect(Collectors.joining(", "))));
     }
 
     private static int stun(CommandSourceStack source, ServerPlayer player, double seconds) {

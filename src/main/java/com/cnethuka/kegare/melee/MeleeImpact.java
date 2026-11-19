@@ -1,6 +1,6 @@
 package com.cnethuka.kegare.melee;
 
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;

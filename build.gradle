@@ -135,6 +135,12 @@ dependencies {
     testImplementation "net.fabricmc:fabric-loader-junit:${loader_version}"
 }
 
+// The licenses travel inside the jar, at its root: LICENSE (MIT) covers the code, LICENSE-ASSETS (All Rights Reserved) the assets.
+tasks.named('jar', Jar).configure {
+    from('LICENSE')
+    from('LICENSE-ASSETS')
+}
+
 def javaRelease = Integer.parseInt(tp.getProperty('java_release'))
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
@@ -225,7 +231,7 @@ tasks.register('universalJar', Jar) {
                 "(build each with ./gradlew -Ptarget=<mc> build -x test, or point -PuniversalFrom at the folder that has them)")
     }
     from(inner) { into 'META-INF/jars' }
-    from('LICENSE', 'THIRD-PARTY-NOTICES.md')
+    from('LICENSE', 'LICENSE-ASSETS', 'THIRD-PARTY-NOTICES.md')
     from('universal/fabric.mod.json') {
         expand(mod_version: mod_version, mod_license: mod_license, targets: targets.join(', '),
                 jars: inner.collect { "    { \"file\": \"META-INF/jars/${it.name}\" }" }.join(',\n'))

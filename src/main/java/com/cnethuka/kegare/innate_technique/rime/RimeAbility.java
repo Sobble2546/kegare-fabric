@@ -1,8 +1,8 @@
 package com.cnethuka.kegare.innate_technique.rime;
 
 import com.cnethuka.kegare.Kegare;
-import com.cnethuka.kegare.innatetechnique.BaseAbility;
-import com.cnethuka.kegare.innatetechnique.CastType;
+import com.cnethuka.kegare.api.ability.BaseAbility;
+import com.cnethuka.kegare.api.ability.CastType;
 import net.minecraft.server.level.ServerPlayer;
 
 /** Shared bits of Rime's abilities: the environment cost multiplier and the Home Field check. */

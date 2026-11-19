@@ -2,7 +2,7 @@ package com.cnethuka.kegare.melee;
 
 import com.cnethuka.kegare.combat.CombatHelper;
 import com.cnethuka.kegare.innatetechnique.CastManager;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import com.cnethuka.kegare.malice.MaliceService;
 import com.cnethuka.kegare.progression.Attribution;

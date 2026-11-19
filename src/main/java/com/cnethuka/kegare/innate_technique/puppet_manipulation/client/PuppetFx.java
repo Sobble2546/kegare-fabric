@@ -7,7 +7,7 @@ import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetConfig;
 import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetEntity;
 import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetIds;
 import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetTier;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.ArrayList;

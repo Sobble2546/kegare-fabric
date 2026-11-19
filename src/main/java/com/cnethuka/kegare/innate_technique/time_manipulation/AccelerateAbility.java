@@ -1,15 +1,15 @@
 package com.cnethuka.kegare.innate_technique.time_manipulation;
 
 import com.cnethuka.kegare.Kegare;
-import com.cnethuka.kegare.innatetechnique.Ability;
-import com.cnethuka.kegare.innatetechnique.AbilityContext;
+import com.cnethuka.kegare.api.ability.Ability;
+import com.cnethuka.kegare.api.ability.AbilityContext;
 import com.cnethuka.kegare.innatetechnique.CastManager;
-import com.cnethuka.kegare.innatetechnique.CastType;
+import com.cnethuka.kegare.api.ability.CastType;
 import com.cnethuka.kegare.innatetechnique.CooldownRates;
-import com.cnethuka.kegare.innatetechnique.EndReason;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.ability.EndReason;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
-import com.cnethuka.kegare.innatetechnique.visual.AbilityVisuals;
+import com.cnethuka.kegare.api.visual.AbilityVisuals;
 import com.cnethuka.kegare.sound.KegareSounds;
 import java.util.HashMap;
 import java.util.List;

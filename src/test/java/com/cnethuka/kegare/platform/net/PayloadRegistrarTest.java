@@ -62,6 +62,26 @@ class PayloadRegistrarTest {
         public <T extends CustomPacketPayload> void clientReceiver(CustomPacketPayload.Type<T> type, IPayloadHandler<T> handler) {
             calls.add("client receiver " + type.id());
         }
+
+        @Override
+        public <T extends CustomPacketPayload> void registerConfigS2C(CustomPacketPayload.Type<T> type, StreamCodec<? super FriendlyByteBuf, T> codec) {
+            calls.add("config s2c " + type.id());
+        }
+
+        @Override
+        public <T extends CustomPacketPayload> void registerConfigC2S(CustomPacketPayload.Type<T> type, StreamCodec<? super FriendlyByteBuf, T> codec) {
+            calls.add("config c2s " + type.id());
+        }
+
+        @Override
+        public <T extends CustomPacketPayload> void configServerReceiver(CustomPacketPayload.Type<T> type, IPayloadHandler<T> handler) {
+            calls.add("config server receiver " + type.id());
+        }
+
+        @Override
+        public <T extends CustomPacketPayload> void configClientReceiver(CustomPacketPayload.Type<T> type, IPayloadHandler<T> handler) {
+            calls.add("config client receiver " + type.id());
+        }
     }
 
     /** Only what these tests registered is forgotten: the suite may share a JVM with the real registrations. */

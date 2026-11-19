@@ -13,7 +13,7 @@ import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetHud;
 import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetManipulation;
 import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetOrder;
 import com.cnethuka.kegare.innate_technique.puppet_manipulation.StringsVariation;
-import com.cnethuka.kegare.innatetechnique.Ability;
+import com.cnethuka.kegare.api.ability.Ability;
 import com.cnethuka.kegare.network.SyncPayload;
 import java.util.List;
 import net.minecraft.client.Minecraft;
@@ -97,7 +97,7 @@ final class PuppetHudClient {
 
     /** Strings on the Sorcerer screen: where it stands now, then what each stage costs. */
     private static List<Component> sorcererLines(Ability ability) {
-        if (ability != PuppetManipulation.STRINGS) return List.of();
+        if (!ability.id().equals(PuppetManipulation.STRINGS.id())) return List.of(); // by ID: an addon may have changed it
         PuppetHud.StringsHud s = PossessionClient.hud().strings();
         Component now = switch (s.stage()) {
             case 1 -> Component.translatable("gui.kegare.strings.stage.attached");
@@ -111,7 +111,7 @@ final class PuppetHudClient {
     private static void decorate(GuiGraphics g, Font font, Ability ability, int x, int y, int size) {
         PuppetHud.Payload hud = PossessionClient.hud();
         if (!hud.holds()) return;
-        if (ability == PuppetManipulation.STRINGS && hud.strings().stage() == 1) {
+        if (ability.id().equals(PuppetManipulation.STRINGS.id()) && hud.strings().stage() == 1) {
             // A string out: the slot shows what its number key would do now, with R's variation in the corner.
             GuiDraw.blit(g, icon(hud.strings().cast()), x + 2, y + 2, 0f, 0f, 16, 16, 16, 16);
             g.renderOutline(x + 1, y + 1, size - 2, size - 2, LAVENDER);
@@ -120,7 +120,7 @@ final class PuppetHudClient {
             g.pose().scale(0.5f, 0.5f);
             GuiDraw.blit(g, icon(hud.strings().special()), 0, 0, 0f, 0f, 16, 16, 16, 16);
             g.pose().popMatrix();
-        } else if (ability == PuppetManipulation.DIRECTIVE) {
+        } else if (ability.id().equals(PuppetManipulation.DIRECTIVE.id())) {
             Identifier glyph = glyph(PuppetOrder.byId(hud.order()));
             GuiDraw.blit(g, glyph, x + 1, y, 0f, 0f, 7, 7, 7, 7, GuiDraw.argb(0x000000, 0.85f)); // a drop shadow, so it reads over the icon
             GuiDraw.blit(g, glyph, x, y - 1, 0f, 0f, 7, 7, 7, 7);

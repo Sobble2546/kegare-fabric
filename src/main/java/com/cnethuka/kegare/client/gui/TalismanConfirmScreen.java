@@ -1,6 +1,6 @@
 package com.cnethuka.kegare.client.gui;
 
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.network.TalismanConfirmPayload;
 import com.cnethuka.kegare.network.TalismanPromptPayload;
 import com.cnethuka.kegare.registry.KegareRegistries;

@@ -59,4 +59,10 @@ final class VersionCompat {
     static void registerHelloAckReceiver(BiConsumer<KegareHello.C2S, ServerConfigurationPacketListenerImpl> receiver) {
         ServerConfigurationNetworking.registerGlobalReceiver(KegareHello.C2S.TYPE, (payload, context) -> receiver.accept(payload, context.packetListener()));
     }
+
+    /** A server receiver of a configuration-phase payload (main thread). */
+    static <T extends CustomPacketPayload> void registerConfigReceiver(CustomPacketPayload.Type<T> type,
+                                                                      BiConsumer<T, ServerConfigurationPacketListenerImpl> receiver) {
+        ServerConfigurationNetworking.registerGlobalReceiver(type, (payload, context) -> receiver.accept(payload, context.packetListener()));
+    }
 }

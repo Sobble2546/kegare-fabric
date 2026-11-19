@@ -1,6 +1,6 @@
 package com.cnethuka.kegare.innatetechnique.visual;
 
-import com.cnethuka.kegare.innatetechnique.Ability;
+import com.cnethuka.kegare.api.ability.Ability;
 import com.cnethuka.kegare.network.VisualPayload;
 import com.cnethuka.kegare.registry.KegareAttachments;
 import java.util.Map;
@@ -10,6 +10,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import com.cnethuka.kegare.platform.net.PacketDistributor;
+import com.cnethuka.kegare.api.visual.Visual;
+import com.cnethuka.kegare.api.visual.VisualPhase;
 
 /**
  * Server side of cosmetics. Every call sends one packet to the entity's own player (if any) and everyone tracking

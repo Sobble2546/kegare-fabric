@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetManipulation;
 import com.cnethuka.kegare.innate_technique.rime.Rime;
 import com.cnethuka.kegare.innate_technique.swap.Swap;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.registry.KegareRegistries;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -40,6 +40,7 @@ class EpithetTest {
     void everyTechniqueHasOne(MinecraftServer server) throws IOException {
         JsonObject lang = lang();
         for (InnateTechnique technique : KegareRegistries.INNATE_TECHNIQUE) {
+            if (!com.cnethuka.kegare.api.KegareApi.isKegares(technique)) continue; // an addon's is in its own lang file
             assertTrue(lang.has(technique.epithetId()), technique.epithetId());
             assertFalse(lang.get(technique.epithetId()).getAsString().isBlank(), technique.epithetId());
         }

@@ -1,10 +1,10 @@
 package com.cnethuka.kegare.innate_technique.puppet_manipulation;
 
-import com.cnethuka.kegare.innatetechnique.AbilityContext;
+import com.cnethuka.kegare.api.ability.AbilityContext;
 import com.cnethuka.kegare.innatetechnique.CastManager;
-import com.cnethuka.kegare.innatetechnique.CastType;
-import com.cnethuka.kegare.innatetechnique.visual.AbilityVisuals;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.ability.CastType;
+import com.cnethuka.kegare.api.visual.AbilityVisuals;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import java.util.Optional;
 import net.minecraft.network.chat.Component;

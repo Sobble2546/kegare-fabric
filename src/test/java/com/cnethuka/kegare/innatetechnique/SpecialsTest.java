@@ -14,7 +14,7 @@ import com.cnethuka.kegare.loadout.SharedAbilityService;
 import com.cnethuka.kegare.malice.MaliceService;
 import com.cnethuka.kegare.player.BirthService;
 import com.cnethuka.kegare.trait.KegareTraits;
-import com.cnethuka.kegare.trait.Trait;
+import com.cnethuka.kegare.api.trait.Trait;
 import com.cnethuka.kegare.trait.TraitService;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -23,6 +23,10 @@ import net.minecraft.server.level.ServerPlayer;
 import com.cnethuka.kegare.test.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import com.cnethuka.kegare.api.ability.Ability;
+import com.cnethuka.kegare.api.ability.CastSlot;
+import com.cnethuka.kegare.api.ability.EndReason;
+import com.cnethuka.kegare.api.ability.Requirement;
 
 /**
  * The specials framework on the real cast pipeline: R resolves the selected ability's special, fizzles cost nothing,

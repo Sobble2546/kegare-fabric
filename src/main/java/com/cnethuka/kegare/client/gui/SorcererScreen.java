@@ -7,12 +7,12 @@ import com.cnethuka.kegare.client.CombatPanelLayer;
 import com.cnethuka.kegare.client.KegareKeys;
 import com.cnethuka.kegare.config.KegareClientConfig;
 import com.cnethuka.kegare.config.KegareClientConfig.VfxQuality;
-import com.cnethuka.kegare.innatetechnique.Ability;
-import com.cnethuka.kegare.innatetechnique.CastType;
-import com.cnethuka.kegare.innatetechnique.CostEnvironment;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
-import com.cnethuka.kegare.innatetechnique.Requirement;
-import com.cnethuka.kegare.loadout.AbilityCategory;
+import com.cnethuka.kegare.api.ability.Ability;
+import com.cnethuka.kegare.api.ability.CastType;
+import com.cnethuka.kegare.api.technique.CostEnvironment;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
+import com.cnethuka.kegare.api.ability.Requirement;
+import com.cnethuka.kegare.api.ability.AbilityCategory;
 import com.cnethuka.kegare.loadout.AbilityLookup;
 import com.cnethuka.kegare.loadout.LoadoutResult;
 import com.cnethuka.kegare.loadout.LoadoutService;
@@ -26,7 +26,7 @@ import com.cnethuka.kegare.network.SyncPayload;
 import com.cnethuka.kegare.progression.Grade;
 import com.cnethuka.kegare.progression.InsightCategory;
 import com.cnethuka.kegare.registry.KegareRegistries;
-import com.cnethuka.kegare.trait.Trait;
+import com.cnethuka.kegare.api.trait.Trait;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -46,6 +46,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import com.cnethuka.kegare.platform.net.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
+import com.cnethuka.kegare.loadout.AbilityTabs;
 
 /**
  * The Sorcerer screen (key K): one window (our own art).
@@ -286,7 +287,7 @@ public final class SorcererScreen extends Screen {
 
     private void renderEdgeTabs(GuiGraphics g, @Nullable InnateTechnique technique, int mouseX, int mouseY) {
         if (technique != null) {
-            List<AbilityCategory> categories = AbilityCategory.tabsFor(info.severed());
+            List<AbilityCategory> categories = AbilityTabs.tabsFor(info.severed());
             for (int i = 0; i < categories.size(); i++) {
                 int x = px - TAB_SIZE + 4, y = py + 12 + i * (TAB_SIZE + 3);
                 boolean selected = view == View.TECHNIQUE && category == categories.get(i);
@@ -336,7 +337,7 @@ public final class SorcererScreen extends Screen {
         if (view != View.TECHNIQUE || data == null) return;
 
         // The category's abilities.
-        List<Ability> tiles = category.abilities(technique);
+        List<Ability> tiles = AbilityTabs.abilities(category, technique);
         int ty = ey + 32;
         if (tiles.isEmpty()) {
             GuiDraw.text(g, font, Component.translatable("gui.kegare.loadout.category_empty"), tx, ty + 7, 1f, GuiDraw.DARK_GRAY);

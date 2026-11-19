@@ -1,8 +1,8 @@
 package com.cnethuka.kegare.config;
 
 import com.cnethuka.kegare.malice.MaliceTier;
-import com.cnethuka.kegare.innatetechnique.InnateTechniqueRarity;
-import com.cnethuka.kegare.trait.TransferMode;
+import com.cnethuka.kegare.api.technique.InnateTechniqueRarity;
+import com.cnethuka.kegare.api.trait.TransferMode;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 /**
@@ -35,6 +35,7 @@ public final class KegareServerConfig {
     public static final ModConfigSpec.IntValue SOFT_PITY_START;
     public static final ModConfigSpec.IntValue SOFT_PITY_INCREMENT;
     public static final ModConfigSpec.IntValue HARD_PITY;
+    public static final ModConfigSpec.BooleanValue ROLL_ADDON_TECHNIQUES;
 
     // ---- combat ----
     public static final ModConfigSpec.DoubleValue COMBAT_TAG_SECONDS;
@@ -93,6 +94,9 @@ public final class KegareServerConfig {
                 .defineInRange("softPityIncrement", 5, 0, 1_000_000);
         HARD_PITY = b.comment("This roll number (counting since the last LEGENDARY) is a guaranteed LEGENDARY. 0 disables hard pity.")
                 .defineInRange("hardPity", 50, 0, 100_000);
+        ROLL_ADDON_TECHNIQUES = b.comment("Rolls can land on innate techniques that addons add (each shares its rarity's weight with the others",
+                        "of that rarity). Off: only Kegare's own techniques are rolled; an admin can still give an addon's with a command.")
+                .define("addonTechniques", true);
         b.pop();
 
         b.comment("Shared combat state used by abilities and future systems.").push("combat");

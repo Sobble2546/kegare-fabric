@@ -1,7 +1,7 @@
 package com.cnethuka.kegare.innate_technique.swap;
 
 import com.cnethuka.kegare.combat.CombatHelper;
-import com.cnethuka.kegare.innatetechnique.Ability;
+import com.cnethuka.kegare.api.ability.Ability;
 import java.util.Optional;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;

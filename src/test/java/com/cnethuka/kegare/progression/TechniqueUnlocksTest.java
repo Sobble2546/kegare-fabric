@@ -2,6 +2,7 @@ package com.cnethuka.kegare.progression;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -10,14 +11,14 @@ import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetManipulati
 import com.cnethuka.kegare.innate_technique.rime.Rime;
 import com.cnethuka.kegare.innate_technique.swap.Swap;
 import com.cnethuka.kegare.innate_technique.time_manipulation.TimeManipulation;
-import com.cnethuka.kegare.innatetechnique.Ability;
-import com.cnethuka.kegare.innatetechnique.AbilityContext;
+import com.cnethuka.kegare.api.ability.Ability;
+import com.cnethuka.kegare.api.ability.AbilityContext;
 import com.cnethuka.kegare.innatetechnique.CastIntent;
 import com.cnethuka.kegare.innatetechnique.CastManager;
 import com.cnethuka.kegare.innatetechnique.CastResult;
-import com.cnethuka.kegare.innatetechnique.CastSlot;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
-import com.cnethuka.kegare.innatetechnique.InnateTechniqueRarity;
+import com.cnethuka.kegare.api.ability.CastSlot;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
+import com.cnethuka.kegare.api.technique.InnateTechniqueRarity;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.loadout.LoadoutResult;
 import com.cnethuka.kegare.loadout.LoadoutService;
@@ -124,7 +125,10 @@ class TechniqueUnlocksTest {
             assertEquals(8, time.unlockLevel(TimeManipulation.STANDSTILL), "Standstill: the ultimate's level, like Total Swap");
             assertFalse(time.ultimateLocked());
 
-            assertFalse(InnateTechnique.builder(InnateTechniqueRarity.COMMON).ability(Rime.FROST_SHARD).build().hasUnlockLevels(), "what datagen refuses");
+            assertThrows(IllegalStateException.class, () -> InnateTechnique.builder(InnateTechniqueRarity.COMMON).ability(Rime.FROST_SHARD).build(),
+                    "a definition without unlock levels can't be built");
+            assertThrows(IllegalArgumentException.class, () -> InnateTechnique.builder(InnateTechniqueRarity.COMMON).unlockLevel(Rime.FROST_SHARD, -1),
+                    "nor one with a negative level");
             assertTrue(InnateTechnique.builder(InnateTechniqueRarity.COMMON).ability(Rime.FROST_SHARD).unlockLevel(Rime.FROST_SHARD, 2).build().hasUnlockLevels(), "levels of its own");
         });
     }

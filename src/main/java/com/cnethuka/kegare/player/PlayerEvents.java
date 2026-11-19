@@ -8,7 +8,7 @@ import com.cnethuka.kegare.network.RevealPayload;
 import com.cnethuka.kegare.roll.RollReason;
 import com.cnethuka.kegare.roll.RollService;
 import com.cnethuka.kegare.innatetechnique.CastManager;
-import com.cnethuka.kegare.innatetechnique.EndReason;
+import com.cnethuka.kegare.api.ability.EndReason;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import com.cnethuka.kegare.trait.TraitService;

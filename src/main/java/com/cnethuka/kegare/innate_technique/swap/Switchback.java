@@ -1,6 +1,6 @@
 package com.cnethuka.kegare.innate_technique.swap;
 
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import java.util.HashMap;
 import java.util.Iterator;

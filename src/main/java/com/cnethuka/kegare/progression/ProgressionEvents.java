@@ -18,6 +18,7 @@ import com.cnethuka.kegare.platform.event.entity.player.CriticalHitEvent;
 import com.cnethuka.kegare.platform.event.entity.player.PlayerEvent;
 import com.cnethuka.kegare.platform.event.server.ServerStoppedEvent;
 import com.cnethuka.kegare.platform.event.tick.ServerTickEvent;
+import com.cnethuka.kegare.api.progression.OwnedEntity;
 
 /** Where the game feeds progression. Fake players count, so the tests run the real path. */
 @EventBusSubscriber(modid = Kegare.MODID)

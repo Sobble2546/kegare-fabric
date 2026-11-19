@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.cnethuka.kegare.TestServer;
 import com.cnethuka.kegare.advancement.KegareAdvancements;
 import com.cnethuka.kegare.database.PlayerDataCodec;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.loadout.LoadoutService;
 import com.cnethuka.kegare.progression.RefinementService;

@@ -2,10 +2,10 @@ package com.cnethuka.kegare.innate_technique.rime;
 
 import com.cnethuka.kegare.platform.EntityCompat;
 import com.cnethuka.kegare.Kegare;
-import com.cnethuka.kegare.innatetechnique.AbilityContext;
-import com.cnethuka.kegare.innatetechnique.CastType;
-import com.cnethuka.kegare.innatetechnique.EndReason;
-import com.cnethuka.kegare.innatetechnique.visual.AbilityVisuals;
+import com.cnethuka.kegare.api.ability.AbilityContext;
+import com.cnethuka.kegare.api.ability.CastType;
+import com.cnethuka.kegare.api.ability.EndReason;
+import com.cnethuka.kegare.api.visual.AbilityVisuals;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;

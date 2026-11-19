@@ -3,7 +3,7 @@ package com.cnethuka.kegare.innate_technique.swap;
 import com.cnethuka.kegare.mixin.ChunkMapAccessor;
 import com.cnethuka.kegare.mixin.ServerEntityAccessor;
 import com.cnethuka.kegare.mixin.TrackedEntityAccessor;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import java.util.Set;
 import net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket;

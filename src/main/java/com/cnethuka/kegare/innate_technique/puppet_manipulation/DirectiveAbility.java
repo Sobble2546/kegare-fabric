@@ -1,11 +1,11 @@
 package com.cnethuka.kegare.innate_technique.puppet_manipulation;
 
-import com.cnethuka.kegare.innatetechnique.AbilityContext;
-import com.cnethuka.kegare.innatetechnique.CastType;
+import com.cnethuka.kegare.api.ability.AbilityContext;
+import com.cnethuka.kegare.api.ability.CastType;
 import com.cnethuka.kegare.innatetechnique.GroundAim;
-import com.cnethuka.kegare.innatetechnique.visual.AbilityVisuals;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
-import com.cnethuka.kegare.innatetechnique.visual.VisualPhase;
+import com.cnethuka.kegare.api.visual.AbilityVisuals;
+import com.cnethuka.kegare.api.visual.Visual;
+import com.cnethuka.kegare.api.visual.VisualPhase;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import java.util.List;
 import java.util.Optional;
@@ -38,7 +38,7 @@ public final class DirectiveAbility extends PuppetAbility {
     @Override public int cooldownTicks(ServerPlayer p) { return PuppetConfig.ticks(PuppetConfig.DIRECTIVE_COOLDOWN); }
     @Override public AbilityVisuals visuals() { return VISUALS; }
     @Override public boolean hasNoTarget() { return true; } // orders your own puppets
-    @Override public java.util.Optional<com.cnethuka.kegare.innatetechnique.Ability> special() { return java.util.Optional.of(PuppetManipulation.FOCUS); }
+    @Override public java.util.Optional<com.cnethuka.kegare.api.ability.Ability> special() { return java.util.Optional.of(PuppetManipulation.FOCUS); }
 
     @Override
     public void execute(AbilityContext ctx) {

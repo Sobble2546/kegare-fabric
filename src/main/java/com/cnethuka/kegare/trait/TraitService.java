@@ -18,6 +18,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.world.entity.player.Player;
+import com.cnethuka.kegare.api.trait.Trait;
 
 /** Grants/removes traits and enforces unique traits (one bearer per world) and Malice requirements. */
 public final class TraitService {

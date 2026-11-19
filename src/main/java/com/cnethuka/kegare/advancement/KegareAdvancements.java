@@ -95,6 +95,8 @@ public final class KegareAdvancements {
     }
 
     private static void awardInternal(ServerPlayer player, Identifier id, boolean warnIfMissing) {
+        // An addon changed an ability this one depends on (DESIGN §3.34): it's no longer what was earned, so it's never awarded.
+        if (AdvancementAbilities.isTurnedOff(id)) return;
         AdvancementHolder holder = player.level().getServer().getAdvancements().get(id);
         if (holder == null) {
             if (warnIfMissing) Kegare.LOGGER.warn("Missing advancement {}", id);

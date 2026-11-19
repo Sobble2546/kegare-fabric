@@ -18,7 +18,7 @@ Black Flash).
 > **Made with generative AI.** Kegare's code and assets were made with generative AI, from a human designer's specifications.
 > See [How Kegare was made](#how-kegare-was-made).
 
-**Status:** early development (version 0.1.0-alpha). Expect changes, balance passes and the odd bug. Dominions, and the hostile spirits
+**Status:** early development (version 0.2.0-alpha). Expect changes, balance passes and the odd bug. Dominions, and the hostile spirits
 that will share the mod's name, are still to come.
 
 ## Features
@@ -207,7 +207,7 @@ from `../photon-fabric/build/maven` (or `-PphotonfxMaven=<dir>`) and stops with 
 
 | Command | What it does |
 |---|---|
-| `./gradlew build` | Compile, run unit tests, build `build/libs/kegare-<minecraft version>-<version>.jar` (for example `kegare-1.21.11-0.1.0-alpha.jar`) |
+| `./gradlew build` | Compile, run unit tests, build `build/libs/kegare-<minecraft version>-<version>.jar` (for example `kegare-1.21.11-0.2.0-alpha.jar`) |
 | `./gradlew test` | Unit tests (roll/pity math, trait rules, lang keys) plus in-game tests on a throwaway server (e.g. no reroll path changes Malice capacity) |
 | `./gradlew universalJar` | After building each target's jar (`-Ptarget=1.21.11`, `26.2`, `26.3`), pack them into `build/universal/kegare-universal-<version>.jar` (or `-PuniversalFrom=<dir>` if the three jars are elsewhere) |
 | `./gradlew runData` | Regenerate lang, models, tags, recipes, advancements into `src/generated/resources` |
@@ -231,14 +231,30 @@ Assets are edited directly, and each has one source: models in Blockbench (`art/
 shipped OBJ and textures), player animations in Blockbench (`assets/kegare/player_animations/*.json`), textures in an image editor
 and sounds as `.ogg` files. See DESIGN.md §3.10.
 
+## For mod developers
+
+Kegare has an addon API (`com.cnethuka.kegare.api`): add your own innate techniques, shared abilities and traits, built on the same
+types as Kegare's own, with Refinement, rolls and the loadout working for them as they do for Kegare's. Start with the
+[addon guide](docs/addon-api.md). The API is **experimental until 1.0**: nothing in it breaks within a minor version (0.2.x), but a
+new minor version (0.3.0) may change it. Addons can also add, replace and tweak abilities in Kegare's own techniques; Kegare's
+advancements tied to a changed ability are turned off, and players need the same addons as the server to join.
+
 ## Security
 
 Please report vulnerabilities privately: see [SECURITY.md](SECURITY.md).
 
 ## License
 
-Kegare is **All Rights Reserved**: see [LICENSE](LICENSE). Please ask before you copy, modify or redistribute any of its code
-or assets. *Jujutsu Kaisen* belongs to Gege Akutami and Shueisha, and Minecraft to Mojang.
+- **Code: MIT License** (see [LICENSE](LICENSE)). This covers the Java source, the build files, `tools/`, the shaders
+  (`assets/kegare/shaders/`), the data files under `src/main/resources/data/` and the documentation.
+- **Assets: All Rights Reserved.** (see [LICENSE-ASSETS](LICENSE-ASSETS)). Copyright (c) 2026 CNethuka. This covers everything under `art/`, and the `models`,
+  `textures`, `sounds`, `player_animations` and `fx` folders under `src/main/resources/assets/kegare/`. You may not copy,
+  modify or redistribute them outside Kegare itself without permission: a released fork or derivative has to replace them.
+- Both license files are also inside the jar, at its root.
+
+Kegare is an unofficial fan work. *Jujutsu Kaisen* and its characters belong to Gege Akutami and Shueisha. Minecraft is a
+trademark of Mojang and Microsoft. Kegare is not affiliated with or endorsed by any of them, or by the makers of Jujutsu
+Kaisen: Cursed Fate. Neither license covers anything that isn't Kegare's own work.
 
 **Other people's work inside the jars.** Each jar nests two separate jars that are not Kegare's and are not under
 Kegare's licence: **Photon FX**, a modified, runtime-only port of Photon by KilaBash / Low-Drag-MC, under

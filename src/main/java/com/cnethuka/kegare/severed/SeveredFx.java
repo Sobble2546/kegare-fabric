@@ -1,6 +1,6 @@
 package com.cnethuka.kegare.severed;
 
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.cnethuka.kegare.innatetechnique.visual.VisualService;
 import com.cnethuka.kegare.sound.KegareSounds;
 import net.minecraft.core.BlockPos;

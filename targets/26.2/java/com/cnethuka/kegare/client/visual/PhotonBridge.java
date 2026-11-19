@@ -1,7 +1,7 @@
 package com.cnethuka.kegare.client.visual;
 
 import com.cnethuka.kegare.Kegare;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.cnethuka.photonfx.api.Anchor;
 import com.cnethuka.photonfx.api.FxHandle;
 import com.cnethuka.photonfx.api.PhotonFx;

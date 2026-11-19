@@ -183,7 +183,7 @@ public final class Disguises {
         PacketDistributor.sendToPlayer(wearer, on
                 ? new VisualPayload(VisualPayload.Action.START_LOOP, wearer.getId(), SwapIds.AWARENESS_SHIMMER_KEY, SwapIds.AWARENESS_SHIMMER, Vec3.ZERO, 0)
                 : new VisualPayload(VisualPayload.Action.STOP, wearer.getId(), SwapIds.AWARENESS_SHIMMER_KEY,
-                        com.cnethuka.kegare.innatetechnique.visual.Visual.NONE, Vec3.ZERO, 0));
+                        com.cnethuka.kegare.api.visual.Visual.NONE, Vec3.ZERO, 0));
     }
 
     // ---------------------------------------------------------------- sync

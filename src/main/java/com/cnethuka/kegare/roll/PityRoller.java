@@ -1,6 +1,6 @@
 package com.cnethuka.kegare.roll;
 
-import com.cnethuka.kegare.innatetechnique.InnateTechniqueRarity;
+import com.cnethuka.kegare.api.technique.InnateTechniqueRarity;
 import java.util.Optional;
 import java.util.function.IntUnaryOperator;
 

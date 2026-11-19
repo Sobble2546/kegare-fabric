@@ -1,6 +1,6 @@
 package com.cnethuka.kegare.innatetechnique.visual;
 
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.registry.KegareRegistries;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -55,7 +55,7 @@ public final class VisualHooks {
         for (InnateTechnique innateTechnique : KegareRegistries.INNATE_TECHNIQUE) {
             innateTechnique.everyAbility().forEach(a -> out.addAll(a.visuals().effects()));
         }
-        for (com.cnethuka.kegare.innatetechnique.Ability shared : com.cnethuka.kegare.loadout.SharedAbilities.all()) {
+        for (com.cnethuka.kegare.api.ability.Ability shared : com.cnethuka.kegare.loadout.SharedAbilities.all()) {
             out.addAll(shared.visuals().effects());
             shared.special().ifPresent(special -> out.addAll(special.visuals().effects()));
         }

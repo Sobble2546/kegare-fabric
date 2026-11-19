@@ -20,7 +20,7 @@ import net.minecraft.server.Bootstrap;
  * loading and mixins); it neither bootstraps the game nor runs any mod's entrypoints.
  * <p>Order, as in a launch (checked in the bytecode): vanilla's {@code Bootstrap} first (registry creation throws before it), which under
  * Fabric API leaves the registries open (its BootstrapMixin turns the freeze in it into {@code createContents}); then the mods' {@code main}
- * entrypoints (Kegare registers its registries, items and sounds right away); then {@code BuiltInRegistries.bootStrap()}, which only freezes
+ * entrypoints (Kegare registers its registries, items and sounds right away) and the tests' example addon; then {@code BuiltInRegistries.bootStrap()}, which only freezes
  * and validates the second time round, as fabric-registry-sync's MainMixin does at the end of a launch. Every test class reaches this through
  * {@link KegareTestSetup} (a JUnit extension that runs for all of them) or through {@link EphemeralTestServerProvider}.
  */
@@ -34,6 +34,8 @@ public final class TestBootstrap {
         SharedConstants.tryDetectVersion();
         Bootstrap.bootStrap();
         FabricLoader.getInstance().invokeEntrypoints("main", ModInitializer.class, ModInitializer::onInitialize);
+        // The tests' example addon (DESIGN §3.34), as an addon's initialiser would run: before the registries freeze.
+        com.cnethuka.kegare.api.example.ExampleAddon.onInitialize();
         BuiltInRegistries.bootStrap();
         loadModTranslations();
         done = true;
@@ -42,16 +44,19 @@ public final class TestBootstrap {
     /**
      * Vanilla's {@code Language} on a server has the game's own en_us only, and a client takes the mods' from its resource packs. NeoForge also
      * put the mods' en_us.json into the server-side one, which is what tests that read a command's reply ({@code Component.getString()}) count
-     * on: "Set shorty's Innate Technique to Rime", not {@code commands.kegare.innate.set}. Kegare's file (generated, on the classpath) goes on top.
+     * on: "Set shorty's Innate Technique to Rime", not {@code commands.kegare.innate.set}. Kegare's file (generated, on the classpath) and the
+ * tests' example addon's go on top.
      */
     private static void loadModTranslations() {
         Language base = Language.getInstance();
         Map<String, String> mine = new HashMap<>();
-        try (InputStream in = TestBootstrap.class.getResourceAsStream("/assets/" + Kegare.MODID + "/lang/en_us.json")) {
-            if (in == null) throw new IllegalStateException("no en_us.json for Kegare on the classpath");
-            Language.loadFromJson(in, mine::put);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+        for (String namespace : new String[] {Kegare.MODID, com.cnethuka.kegare.api.example.ExampleAddon.NAMESPACE}) {
+            try (InputStream in = TestBootstrap.class.getResourceAsStream("/assets/" + namespace + "/lang/en_us.json")) {
+                if (in == null) throw new IllegalStateException("no en_us.json for " + namespace + " on the classpath");
+                Language.loadFromJson(in, mine::put);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         }
         Language.inject(new Language() {
             @Override

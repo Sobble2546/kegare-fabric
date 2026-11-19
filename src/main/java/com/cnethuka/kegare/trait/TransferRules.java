@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.IntUnaryOperator;
+import com.cnethuka.kegare.api.trait.TransferMode;
 
 /**
  * Pure succession and inactivity rules for unique traits (no Minecraft types, unit-tested).

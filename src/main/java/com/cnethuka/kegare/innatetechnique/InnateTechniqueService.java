@@ -11,6 +11,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
+import com.cnethuka.kegare.api.ability.Ability;
+import com.cnethuka.kegare.api.ability.EndReason;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 
 /** Innate technique assignment, ability selection and cooldowns (server-authoritative). */
 public final class InnateTechniqueService {

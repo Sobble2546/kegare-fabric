@@ -2,7 +2,7 @@ package com.cnethuka.kegare.client.visual;
 
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.client.visual.ClientVisuals;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.lowdragmc.photon.client.fx.FXHelper;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import java.nio.file.Files;

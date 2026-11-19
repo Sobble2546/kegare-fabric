@@ -4,6 +4,7 @@
   "package": "com.cnethuka.kegare.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "MappedRegistryMixin",
     "AddEntityPacketAccessor",
     "ItemStackWireMixin",
     "ChunkMapAccessor",

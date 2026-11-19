@@ -9,8 +9,8 @@ import com.cnethuka.kegare.network.PlayerSync;
 import com.cnethuka.kegare.network.RevealPayload;
 import com.cnethuka.kegare.registry.KegareAttachments;
 import com.cnethuka.kegare.registry.KegareRegistries;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
-import com.cnethuka.kegare.innatetechnique.InnateTechniqueRarity;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
+import com.cnethuka.kegare.api.technique.InnateTechniqueRarity;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
@@ -57,6 +58,14 @@ public final class RollService {
     }
 
     /**
+     * Whether a roll can land on this technique: it's rollable, and it's Kegare's own or the server lets rolls land on addons'
+     * ({@code roll.addonTechniques}).
+     */
+    public static boolean inPool(Identifier id, boolean rollable, boolean addonTechniques) {
+        return rollable && (Kegare.MODID.equals(id.getNamespace()) || addonTechniques);
+    }
+
+    /**
      * Same as {@link #rollInnateTechnique(ServerPlayer, RollReason)}, but {@code forced} (admin debug) skips the random
      * pick and lands on that innate technique. Pity still updates for the forced rarity.
      */
@@ -72,8 +81,9 @@ public final class RollService {
             return Optional.of(new Outcome(forced, counter + 1, false, reason));
         }
         Map<InnateTechniqueRarity, List<InnateTechnique>> pool = new EnumMap<>(InnateTechniqueRarity.class);
+        boolean addons = KegareServerConfig.ROLL_ADDON_TECHNIQUES.get();
         for (InnateTechnique innateTechnique : KegareRegistries.INNATE_TECHNIQUE) {
-            if (innateTechnique == current) continue;
+            if (innateTechnique == current || !inPool(innateTechnique.id(), innateTechnique.rollable(), addons)) continue;
             pool.computeIfAbsent(innateTechnique.rarity(), r -> new ArrayList<>()).add(innateTechnique);
         }
         boolean[] available = new boolean[InnateTechniqueRarity.values().length];

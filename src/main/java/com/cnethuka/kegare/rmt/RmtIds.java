@@ -1,7 +1,7 @@
 package com.cnethuka.kegare.rmt;
 
 import com.cnethuka.kegare.Kegare;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import net.minecraft.resources.Identifier;
 
 /** Reverse Malice Technique's IDs: its Photon effects (fx/rmt/). It has no player animation. */

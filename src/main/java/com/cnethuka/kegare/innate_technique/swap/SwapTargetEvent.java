@@ -1,6 +1,6 @@
 package com.cnethuka.kegare.innate_technique.swap;
 
-import com.cnethuka.kegare.innatetechnique.Ability;
+import com.cnethuka.kegare.api.ability.Ability;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import com.cnethuka.kegare.platform.bus.Event;

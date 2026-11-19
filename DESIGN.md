@@ -29,8 +29,8 @@ config keys, lang keys and command names.
 - **"Kegare" is the mod name.** It is reserved as the name of the future hostile spirit mobs, and is never used for
   the energy.
 - **Safety nets:**
-  - Datagen fails if any registered innate technique, ability or trait has no lang entry, or if an innate technique has
-    no epithet (§3.3).
+  - Datagen fails if any of Kegare's innate techniques, abilities or traits has no lang entry, or if one of its innate
+    techniques has no epithet (§3.3). An addon's are in its own lang file, so they're its own to check (§3.34).
   - `LangKeysTest` fails if code uses a message/command/HUD/key lang key that isn't in `en_us.json`.
 - **Known exception:** config comments (`kegare-server.toml`, and the config screen tooltips that fall back to them)
   are written in code.
@@ -175,7 +175,9 @@ All timestamps use **level game time**. They persist across restarts and are ide
     revocation, or becoming Severed.
 
 ### 3.3 Innate technique framework
-- Registry `kegare:innate_technique`, synced to clients so the HUD can resolve names and ability lists by ID.
+- Registry `kegare:innate_technique`, synced to clients so the HUD can resolve names and ability lists by ID. The types below
+  (`InnateTechnique`, `Ability` and the rest) are public in the addon API (`api.technique`, `api.ability`, §3.34); Kegare's own
+  techniques are built on them too.
 - `InnateTechnique` is made of:
   - a rarity (COMMON / RARE / EPIC / LEGENDARY)
   - an ordered **ability list**, cast with the number keys in Technique Mode (§3.5); each ability may
@@ -188,7 +190,7 @@ All timestamps use **level game time**. They persist across restarts and are ide
     admin, rebirth). Rime uses deep blue `#1E3A8A`.
   - an **epithet** (lang key `innate_technique.<namespace>.<id>.epithet`, read with `epithet()`): one short line that
     says what the technique feels like, shown under its name on the Sorcerer screen and typed out in the Epic and
-    Legendary reveals (§3.12). **Every innate technique sets one; datagen fails without it.** Rime: "Breath Turned to Glass". Swap: "Nothing Stays Where It Was". Puppet Manipulation: "Strings
+    Legendary reveals (§3.12). **Every innate technique sets one; Kegare's datagen fails without it for Kegare's own.** Rime: "Breath Turned to Glass". Swap: "Nothing Stays Where It Was". Puppet Manipulation: "Strings
     Without a Stage". Time Manipulation: "The Clock Forgets to Tick".
   - an optional **signature animation** (`Builder.signatureAnimation(id)`, a PAL animation, read with
     `signatureAnimation()`): what the player model does beside the emblem on the reveal's name card. Without one the model
@@ -224,7 +226,9 @@ All timestamps use **level game time**. They persist across restarts and are ide
 - **Every cast runs inside a `CastScope`** (execute, tick and end), which is what traces a hit, an effect or a spawned
   entity back to its ability. It's how every technique gets Refinement and Assessment with no code of its own (§3.21).
 - **Unlock levels:** every technique calls `Builder.defaultUnlockLevels()` and/or `Builder.unlockLevel(ability, level)`;
-  datagen fails without one (§3.21).
+  a definition without either can't be built (its constructor refuses it, so an addon's can't slip through), nor one with a
+  negative level (§3.21).
+- **Never rolled:** `Builder.neverRolled()` keeps a technique out of rolls; it's given some other way (§3.4).
 - **Kegare ships no test techniques** (`test_kinetic`, `test_flux`, `test_prism` and `test_apex`, their abilities, the
   `[test_abilities]` config and `roll.includeTestInnateTechniques`): real techniques cover every cast type and rarity. An old
   `kegare-server.toml` still loads (NeoForge drops the keys). A player whose save still holds one gets a **free reroll on login**
@@ -243,6 +247,10 @@ All timestamps use **level game time**. They persist across restarts and are ide
 ### 3.4 Rolls and pity
 - Weighted rarity roll (Common 50 / Rare 30 / Epic 15 / Legendary 5), then a uniform pick within that rarity.
 - **Never rolls into the current innate technique.** Rarities with no eligible innate technique get weight 0.
+- **Addon techniques** (§3.34) are in the pool by default, sharing their rarity's weight with Kegare's: an addon's Rare splits the
+  Rare chance with Rime, and the rarity weights stay as they are. `roll.addonTechniques` (true) turned off keeps rolls to Kegare's
+  own. A technique built with `neverRolled()` is never in the pool, whatever the setting. An admin can still give either with
+  `/kegare innate set`, and a REPLACEMENT roll uses the same pool (`RollService.inPool`).
 - `rollsSinceLegendary` = completed rolls since the last Legendary, so the roll in progress is number n = counter + 1.
   - **Soft pity:** n > 30 adds (n − 30) × 5 to the Legendary weight (roll 31: 10, roll 49: 100).
   - **Hard pity:** n ≥ 50 is a guaranteed Legendary.
@@ -383,8 +391,10 @@ All timestamps use **level game time**. They persist across restarts and are ide
 - **Kegare item stacks travel as marked paper** (`platform.net.ItemWire`, `ItemStackWireMixin` on the item stack network codec, both sides and
   both directions): paper with every component of the real stack and a `kegare:item` entry in its custom data, turned back into the real
   item on arrival. The same translator rewrites every item stack and knows no modded item id. Saving to disk is unaffected.
-- Network version `29` (`28` plus `EntityKindPayload`, below; `28` was the Fabric port: the hello above, `SightPayloads.Mobs.Dot` and `BattleDamagePayload` carry names instead of raw ids);
-  `27` (since a disguise wears the face's eyewear, §3.19 and §3.32: `Disguises.StatePayload` carries it); `26` was Six Eyes'
+- Network version `30` (the addon API's join check, §3.34: `TechniqueCheck.Ask` and `.Answer` in the configuration phase, after the hello; on
+  NeoForge that change was `28`); `29` was `EntityKindPayload`, below; `28` was the Fabric port: the hello above, `SightPayloads.Mobs.Dot` and
+  `BattleDamagePayload` carry names instead of raw ids;
+  `27` was a disguise wearing the face's eyewear, §3.19 and §3.32 (`Disguises.StatePayload` carries it); `26` was Six Eyes'
   Reads reading a body's whole state, §3.32 (`ReadsPayload` gained mob health and the focus's body); `25`
   was Six Eyes, §3.32, and RMT's repair, §3.17: `Repair.Payload`, the brain meter in `ProgressionSnapshot`, and
   Six Eyes' own (`SightPayloads`, `ReadsPayload`, `Strain.Hud`, `Strain.Collapsed`, `Edge.Spark`, `Attunement.PinPayload`); `24` was Reinforcement and Background Tasks, §3.16 and §3.31: `AuraPayload`, `BackgroundSyncPayload`,
@@ -451,7 +461,7 @@ Every command reads `/kegare <system> <action> [player] [value]`.
 
 - **Permission:** level 2 for everything but `/kegare help`, which anyone can use and which lists only what the sender may run. The root stays open for that one command, so each system asks for the level itself. A non-op who types another command gets vanilla's "Incorrect argument for command".
 - **Players:** every player argument takes a name or a selector such as `@a`, and a command given several players runs for each, with a line for each. Where the player is the last argument it's usually optional and defaults to the sender. The console has to name one. The whole-wipe commands (`rebirth`, `progression reset`) always need a name.
-- **Short names:** innate techniques, traits and shared abilities go by the path of their ID (`rime`, not `kegare:rime`, which is refused as unknown). Should two mods ever use one short name, Kegare's wins. Suggestions show short names only. Hovering one shows what it is, like "Rime (Rare)" or "Six Eyes (Unique)"; traits have no rarity, so a unique one says so and any other shows only its name.
+- **Short names:** innate techniques, traits and abilities go by the path of their ID (`rime`), an addon's too (§3.34). The full ID (`kegare:rime`, `some_addon:rime`) always works as well. Should two mods use one short name, Kegare's keeps it (between two addons, the first full ID alphabetically), and the other goes by its full ID in suggestions and lists (`CommandArgs.commandName`, `byName`). Suggestions show those names. Hovering one shows what it is, like "Rime (Rare)" or "Six Eyes (Unique)"; traits have no rarity, so a unique one says so and any other shows only its name.
 - **Errors:** an unknown innate technique, trait or Grade points at its list command, and a bad player at `/list`.
 - **Feedback:** to the sender only (`sendSuccess(..., false)`), in sentences, with display names and no raw IDs. Everything goes through `CommandArgs.say`. A holder the server has no name for reads "a player this server has no name for", not a UUID. Rarity names take the rarity's color (`InnateTechniqueRarity.color()`, as on the emblem rim). Tier names take `GuiDraw.MALICE` as on the Sorcerer screen, `GuiDraw.GOLD` for Vast as in the reveal, and `GuiDraw.RED` for Zero. GuiDraw's colors are compile-time constants, so a dedicated server never loads that client class. With the vanilla gamerule `sendCommandFeedback` off, players see only errors, as with vanilla commands; the console sees everything.
 - **Help:** `HelpCommand.ENTRIES` is written by hand, and `KegareCommandTest.helpMatchesTheCommandTree` holds it to the real tree both ways. Clicking a line in `/kegare help` opens that system, and clicking a command in a system's list types it into the chat box.
@@ -525,7 +535,7 @@ Malice is always shown as whole numbers (floored, like the HUD); the stored valu
 ### 3.9 Config
 - **Server TOML** (`config/kegare-server.toml`, where NeoForge 21.1 keeps server configs; synced to clients and
   hot-reloaded when edited) holds **every balance number**.
-  - Sections: `malice` (with `tiers`), `traits`, `roll` (with `weights`),
+  - Sections: `malice` (with `tiers`), `traits`, `roll` (with `weights` and `addonTechniques`),
     `combat`, `rime` (§3.14), `swap` (§3.19), `puppet_manipulation` (§3.20), `time_manipulation` (§3.26), `severed` (§3.27), `melee` (§3.22), `impact` (§3.23), `battle_damage` (§3.24), `reverse_malice_technique` (§3.17), `reinforcement` (§3.16), `background_tasks` (§3.31), `six_eyes` (§3.32), `reinforced_fists` (§3.28), `timing` (§3.29), `too_fast_for_the_eye` (§3.30), `progression` (§3.21).
   - The `traits` section includes:
     - `sixEyesBirthChance`
@@ -2276,7 +2286,7 @@ The same ability landing on the same target counts once per `landing.repeat` (1 
 #### Extension technique unlocks
 Abilities, specials and the ultimate of an innate technique unlock through Refinement. Each technique defines the level in its definition
 (`UnlockTable`, `Builder.defaultUnlockLevels()`, `Builder.unlockLevel`), and `refinement.unlockLevelOverrides` overrides any of them from the
-config (`["kegare:frost_field=1"]`). **Datagen fails if a technique sets none.**
+config (`["kegare:frost_field=1"]`). **A technique that sets none can't be built.**
 
 | Level | Default | Rime | Swap | Puppet Manipulation | Time Manipulation |
 |---|---|---|---|---|---|
@@ -3503,6 +3513,95 @@ Pending times are wall-clock, since game time differs per server. The world's ow
 **Tests:** `WorldMigrationIT` (a dry run writing nothing, migrating twice, newer data and deletions surviving, a world whose bearer isn't the database's, a file that can't be read, then the export, read back by a real player; status against a cut connection), `StatsIT` (the leaderboard counts, the views' exact columns, nothing private coming through them with private rows right beside them, silent and announced advancements, the real role script: it reads the views and is refused every table), `SeveralServersIT` (two servers on one real database: refused while another holds them, the data moving once it lets go, waiting for the old server's last save, a stale lease taken over, a stale token's write ignored and its player sent away, a heartbeat noticing a lost lease, the primary key refusing a second bearer, a claim race and a birth-roll race each ending with one, succession once across the network to the only eligible heir, a broadcast with no name in it, wall-clock pending times, the game's own trait code going through the network's record and leaving the world's alone). `SavingIT` and `FreshRollIT` (need `KEGARE_TEST_DB_URL`; the outage ones cut a real connection with a proxy): data back on the next login; unchanged data costing no write, a rejoin included; a row going with its attachment; the server thread not waiting on a dead database, the newest winning, one warning each way, catching up; the spill file with no password, replayed before a login; the login handling never rolling someone with nothing loaded, a row that won't decode or data with no birth in it, and not saving them either; a world file imported, not rolled; a dead database refusing a login. `DatabaseConfigTest` (generated off with an empty password, the environment wins, no password in any text, nothing of it in any registered config, off opens no connection), `PlayerDataCodecTest` (every attachment with a serializer covered, real data through a round trip, big whole
 numbers exact, a row that won't decode changing nothing, only Kegare's keys out of a player file), `SchemaIT` (needs `KEGARE_TEST_DB_URL`: migrating twice, a newer database refused, all or nothing, JSONB keeping what the codec wrote).
 
+### 3.34 Addon API (package `api`)
+`com.cnethuka.kegare.api` is what addons use: the only public part of Kegare. Everything else is internal and may change in any
+release. **Experimental until 1.0:** within one minor version (0.2.0, 0.2.1, ...) nothing in it changes in a way that breaks an addon;
+a new minor version (0.3.0) may. An addon declares its Kegare dependency as one minor range, counting its pre-releases:
+`versionRange = "[0.2.0-alpha,0.3.0-alpha)"` (NeoForge compares versions like Maven, where `0.2.0-alpha` comes before `0.2`, so
+`"[0.2,0.3)"` would refuse 0.2.0-alpha and let 0.3.0-alpha in). On Fabric the same range in `fabric.mod.json` is
+`"depends": {"kegare": ">=0.2.0-alpha <0.3.0-alpha"}`. Every
+package in it carries `@ApiStatus.Experimental`. The guide for mod makers is `docs/addon-api.md`.
+
+**What's in it (0.2.0):**
+
+| Package / class | What |
+|---|---|
+| `api.ability` | `Ability`, `BaseAbility`, `SpecialAbility`, `AbilityContext`, `CastType`, `CastSlot`, `EndReason`, `Requirement`, `AbilityCategory` |
+| `api.technique` | `InnateTechnique` (and its `Builder`), `InnateTechniqueRarity`, `CostEnvironment` |
+| `api.visual` | `AbilityVisuals`, `Visual`, `VisualPhase`: an ability's player animations and effects, per phase |
+| `api.trait` | `Trait`, `TransferMode` |
+| `api.progression` | `OwnedEntity` |
+| `KegareApi` | the registry keys `INNATE_TECHNIQUES` and `TRAITS`, the registries, `isKegares`, and shared abilities: `registerSharedAbility`, `registerSharedAbilityForEveryone`, `unlockSharedAbility`, `hasSharedAbility` |
+| `KegareProgression` | `landed`, `landedOnItsOwn`, `during`, `addAttributor`: the cases Refinement and Assessment can't see from a hit (§3.21) |
+| `api.change` | `TechniqueChanges` (`add`, `addAfter`, `replace`, `tweak`, `isChanged`, `changedAbilities`) and `AbilityTweak`: changing techniques that already exist (below) |
+| `KegareApi` (advancements) | `techniqueTab` (a technique tab's root, to parent an addon's own advancements to) and `awardAdvancement` |
+
+Kegare's own techniques, abilities and traits are built on these same types; nothing is wrapped.
+
+**How an addon fits in:**
+- It registers techniques and traits with a `DeferredRegister` on `KegareApi.INNATE_TECHNIQUES` / `TRAITS`, and shared abilities at mod
+  construction. It installs on both sides (the registries sync to clients).
+  **Fabric port:** from its `onInitialize`, with `Registry.register` on `KegareApi.innateTechniques()` / `traits()`. Fabric runs mods'
+  initialisers in no set order, so those two make Kegare's registry on first use. The registries are not synced (§3.5), so it installs on
+  both sides and the join check below makes sure they match.
+- Its abilities go through the same server-side cast pipeline as Kegare's (§3.3): the shared checks, cost, cooldown, Refinement unlocks,
+  Refinement and Assessment (§3.21), the loadout (§3.16), the HUD and the Sorcerer screen. Its technique must set unlock levels (a
+  definition without them can't be built). It gets an advancement tab only if it ships one (`KegareAdvancements.awardIfPresent`).
+- **Rolls:** its techniques are rolled by default, sharing their rarity's weight; `roll.addonTechniques` keeps rolls to Kegare's own, and
+  `Builder.neverRolled()` keeps one out (§3.4).
+- **Its own:** its namespace's lang (Kegare's datagen checks only the `kegare` namespace, §1), its config, assets, networking and saved
+  data. An addon never changes Kegare's network version (§3.5).
+- **Uninstalled:** a player who held its technique gets the free REPLACEMENT reroll on login (§3.4), the loadout's login repair empties
+  any slot holding one of its abilities (§3.16), and its traits' IDs are dropped on login like any unknown trait (§3.2).
+- **Commands** name its technique, trait or ability by short name like Kegare's, or by full ID; if it shares a short name with Kegare's,
+  Kegare's keeps it and the addon's goes by its full ID (§3.8).
+
+**Changing techniques that already exist** (`api.change.TechniqueChanges`, Kegare's or another addon's), registered from a mod's
+constructor (Fabric: its `onInitialize`):
+- **Add** an ordinary ability at the end (`add`) or right after one already there (`addAfter`; several after the same one keep their
+  registration order), with its own unlock level and its special's. Every ability already there keeps its level (they're worked out from
+  the definition's own order), so nothing a player has unlocked moves. It joins the loadout like any newly unlocked ability.
+- **Replace** an ability (ordinary, special or ultimate) with the addon's own of the same ID: same slot, unlock level and cooldown, so
+  loadouts and saved data keep working. A special must be replaced by a special of the same base, anything else by a non-special. Its own
+  `special()` is what players get; a new special ID unlocks where the old special did.
+- **Tweak** an ability (`AbilityTweak`): its cost (also what pressing checks and the screens show), cooldown, upkeep, charge and channel
+  times and damage (any hit traced to it, §3.21's attribution, before defences, `TechniqueViews.onIncomingDamage`), a `canCast` that refuses
+  it before anything is paid, and hooks before and after its effect, on each tick and at its end, all inside its cast (`CastScope`).
+  Several stack in registration order. A tweak applies to the ability it names: a special sharing its base's cooldown keeps its length.
+- **Applied in one place** (`innatetechnique.change`): once the technique registry is complete (its bake callback, `TechniqueViews.bake`,
+  on both sides and again after a client syncs; on Fabric `MappedRegistryMixin` calls it when that registry freezes, once every mod's
+  initialiser has run), every technique gets its view: its abilities, ultimate and unlock levels as players get
+  them. `InnateTechnique.abilities()`, `ultimate()`, `everyAbility()` and `unlockLevel()` read it; `definedAbilities()` and
+  `definedUltimate()` are the definition's own. An ability nobody changed is the same object; a tweaked one, or one whose special changed,
+  is a `TweakedAbility` with the same ID, so Kegare compares abilities by ID, never by object. Registering after that throws.
+- **Refused at startup**, naming the mod (the namespace active when it registered; on Fabric, which has none, `platform.ModLoadingContext`
+  names the mod whose class made the call, from the call stack): two replacements of one ability, an ID added twice or
+  already in the technique, an addition's anchor, technique or replaced/tweaked ability that doesn't exist (shared abilities can't be
+  changed), a special added on its own or without its level, a negative level, and a replacement that doesn't fit its slot. The log lists
+  every change and who made it.
+- **Advancements:** replacing or tweaking an ability turns off Kegare's advancements that depend on it (`AdvancementAbilities`, checked in
+  `KegareAdvancements.award`): never awarded again, kept by whoever earned them; they're hidden until earned, so to everyone else they
+  simply never appear. Each advancement in a Kegare technique tab lists the abilities it names or needs; one about the technique as a
+  whole (freezing, any swap) lists none and stays on. Adding an ability turns nothing off. The log lists what's turned off.
+- **The join check** (`TechniqueCheck`, a configuration task; on Fabric it runs after the hello, §3.5, through `platform.net`'s
+  `ICustomConfigurationTask` and `PayloadRegistrar.configurationToClient` / `configurationToServer`, and an answer from a connection
+  that did not pass the hello is dropped): the server asks the client to describe every technique (its abilities and
+  specials in order, its ultimate) and every change (who replaced or tweaked what), and turns away a client whose description differs:
+  "Your Kegare addons don't match this server's: they differ on Frost Field. Install the same addons as the server."
+
+**Tests:** `TechniqueChangesTest` (on a change set of its own, so the game's stays as it is: additions in place and every existing level kept,
+a replacement taking its slot and levels and a new special unlocking where the old one did, replacements that don't fit their slot, every
+mistake refused with its mod's name, tweaks stacking in order and running around the ability; then the example addon's real changes through
+the cast pipeline: an added ability, a replaced special, a tweak doubling cost and damage, adding cooldown and refusing while sneaking, and a
+hook on Kegare's own Frost Field; the advancements a change turns off, every advancement in a Kegare technique tab listed with abilities of
+that technique; the join check's description and the message naming what differs). `ExampleAddonTest` with `ExampleAddon`, an addon in the test sources only (namespace `kegare_example`, never in the jar), written
+against `api` alone with its own lang file: its technique, trait and shared ability registered; its unlock levels on the default table;
+its instant ability, toggle and special cast through the real pipeline (cost, cooldown, the special's requirement) and its hit counted for
+Refinement; its shared ability unlocked; who is in the roll pool, and real rolls landing on it by default and never with
+`roll.addonTechniques` off. Kegare's own tests run with it loaded, Frost Field tweaked included: `RealPoolRollTest` rolls Kegare's pool alone (addons off),
+`KegareCommandTest` sees its technique, trait and shared ability by short name and by full ID, and checks who keeps a shared short name, `TechniqueUnlocksTest` refuses a definition without unlock
+levels or with a negative one.
+
 ---
 
 ## 4. Extension points (how later content plugs in)
@@ -3536,10 +3635,13 @@ numbers exact, a row that won't decode changing nothing, only Kegare's keys out 
   - The boss check is shared: `CombatHelper.isBoss` (`c:bosses`), used by Rime, `SwapTargeting`, Curio Burst and Time
     Manipulation.
 
-- **New innate technique:** create a `DeferredRegister<InnateTechnique>` on
-  `KegareRegistries.INNATE_TECHNIQUE_KEY`, build abilities with `BaseAbility`, add the lang names and an **epithet**
-  (datagen fails without one), set a signature animation, **set unlock levels for its abilities, specials and ultimate**
-  (datagen fails without them too), and put the numbers in config. Nothing in the base changes.
+- **New innate technique:** create a `DeferredRegister<InnateTechnique>` on `KegareApi.INNATE_TECHNIQUES`, build abilities
+  with `BaseAbility`, add the lang names and an **epithet** (Kegare's datagen fails without one for its own), set a signature
+  animation, **set unlock levels for its abilities, specials and ultimate** (the definition can't be built without them), and
+  put the numbers in config. Nothing in the base changes. An addon does exactly the same through the addon API (§3.34).
+- **Changing a technique that already exists** (an addon's, or a later Kegare system's): `TechniqueChanges` adds, replaces or tweaks its
+  abilities, applied in one place once the registry is complete (§3.34). Compare abilities by ID, never by object: a changed one is a
+  wrapper with the same ID. A new advancement in a technique tab lists the abilities it depends on in `AdvancementAbilities`.
 - **Refinement and Assessment:** every technique gets them through the shared path (`CastScope`, `Landings`, §3.21). Add code only where
   an ability lands without hurting (`Landings.land`), hits later (`Landings.during`), attacks through something else
   (`Attribution.addAttributor`) or has no target (`hasNoTarget`). A cost discount must be divided out in `Landings.baseCost`.
@@ -3547,7 +3649,7 @@ numbers exact, a row that won't decode changing nothing, only Kegare's keys out 
   bring call `InsightHooks`.
 - **Reading progression:** `Progression.getGrade(player)` on the server. Never send one player's
   Grade or Assessment to another.
-- **Shared abilities:** build the ability, `SharedAbilities.register` it at mod construction, unlock it with
+- **Shared abilities:** build the ability, `SharedAbilities.register` it at mod construction (an addon: `KegareApi.registerSharedAbility`), unlock it with
   `SharedAbilityService.unlock` (§3.16).
 - **Specials:** override `special()` on the base ability and build the special on `SpecialAbility` (§3.15).
 - **Swap immunity:** listen for `SwapTargetEvent` and cancel it (§3.19). **Time immunity:** cancel `TimeTargetEvent` (Rewind,
@@ -3570,6 +3672,9 @@ numbers exact, a row that won't decode changing nothing, only Kegare's keys out 
 
 - **Innate techniques:** more real ones, with their abilities, balance and visuals.
 - **Rime's Dominion** (its ultimate; the slot is locked until then).
+- **The addon API, next steps (§3.34):** one shared target event for every technique, the Impact System hook, read-only events (casts,
+  technique changes, unlocks, Refinement and Grade), client hooks (visuals, HUD, the effect setting), and publishing (Modrinth's Maven, a
+  sources jar). Changing shared abilities. No boss API in this update.
 - **Dominions:** expansion, guaranteed-hit rules, clashes, counters, burnout.
 - **What progression waits for (§3.21):** later unlocks, Dominions among them, register through `Unlocks`, their first-time sources call
   `InsightHooks`, and later systems that need a player's Grade read `Progression.getGrade`.

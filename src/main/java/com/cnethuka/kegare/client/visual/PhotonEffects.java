@@ -1,6 +1,6 @@
 package com.cnethuka.kegare.client.visual;
 
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import java.util.Collection;
 import javax.annotation.Nullable;
 import net.minecraft.resources.Identifier;

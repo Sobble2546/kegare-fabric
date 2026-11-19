@@ -1,10 +1,10 @@
 package com.cnethuka.kegare.innate_technique.time_manipulation;
 
-import com.cnethuka.kegare.innatetechnique.AbilityContext;
+import com.cnethuka.kegare.api.ability.AbilityContext;
 import com.cnethuka.kegare.innatetechnique.CastManager;
-import com.cnethuka.kegare.innatetechnique.CastType;
-import com.cnethuka.kegare.innatetechnique.EndReason;
-import com.cnethuka.kegare.innatetechnique.visual.AbilityVisuals;
+import com.cnethuka.kegare.api.ability.CastType;
+import com.cnethuka.kegare.api.ability.EndReason;
+import com.cnethuka.kegare.api.visual.AbilityVisuals;
 import com.cnethuka.kegare.sound.KegareSounds;
 import java.util.List;
 import net.minecraft.server.level.ServerPlayer;

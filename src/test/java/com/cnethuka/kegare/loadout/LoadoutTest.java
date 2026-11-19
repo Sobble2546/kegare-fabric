@@ -12,7 +12,7 @@ import com.cnethuka.kegare.config.KegareServerConfig;
 import com.cnethuka.kegare.innate_technique.rime.Rime;
 import com.cnethuka.kegare.innatetechnique.CastIntent;
 import com.cnethuka.kegare.innatetechnique.CastManager;
-import com.cnethuka.kegare.innatetechnique.EndReason;
+import com.cnethuka.kegare.api.ability.EndReason;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.innate_technique.swap.Swap;
 import com.cnethuka.kegare.malice.MaliceService;
@@ -51,9 +51,9 @@ class LoadoutTest {
             // The empty slots past the technique's abilities take abilities too.
             assertEquals(LoadoutResult.OK, edit(p, LoadoutService.Action.SET, 8, 0, Rime.FROST_FIELD.id()));
             assertEquals(Optional.empty(), LoadoutService.slots(p).get(2), "moved from slot 3");
-            assertSame(Rime.FROST_FIELD, LoadoutService.abilityAt(p, 8));
+            assertEquals(Rime.FROST_FIELD.id(), LoadoutService.abilityAt(p, 8).id()); // by ID: the tests' example addon tweaks it
             assertEquals(LoadoutResult.OK, edit(p, LoadoutService.Action.SWAP, 8, 2, null));
-            assertSame(Rime.FROST_FIELD, LoadoutService.abilityAt(p, 2), "and back");
+            assertEquals(Rime.FROST_FIELD.id(), LoadoutService.abilityAt(p, 2).id(), "and back");
             assertEquals(LoadoutResult.OK, edit(p, LoadoutService.Action.SWAP, 0, 1, null));
             assertEquals(id(Rime.FROST_SHARD), LoadoutService.slots(p).get(0));
 
@@ -66,7 +66,7 @@ class LoadoutTest {
             assertNull(CastManager.state(p).casting(), "an empty slot casts nothing");
             assertEquals(before, MaliceService.get(p).current(), 1e-6);
             assertEquals(LoadoutResult.OK, edit(p, LoadoutService.Action.SET, 2, 0, Rime.FROST_FIELD.id()));
-            assertSame(Rime.FROST_FIELD, LoadoutService.abilityAt(p, 2));
+            assertEquals(Rime.FROST_FIELD.id(), LoadoutService.abilityAt(p, 2).id());
 
             // The ultimate slot (the index right after the regular ones) and anything beyond are refused.
             int size = LoadoutService.size(p);
@@ -132,7 +132,7 @@ class LoadoutTest {
         return LoadoutService.edit(p, action, slot, other, Optional.ofNullable(ability));
     }
 
-    static Optional<Identifier> id(com.cnethuka.kegare.innatetechnique.Ability ability) {
+    static Optional<Identifier> id(com.cnethuka.kegare.api.ability.Ability ability) {
         return Optional.of(ability.id());
     }
 

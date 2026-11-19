@@ -1,7 +1,7 @@
 package com.cnethuka.kegare.client;
 
 import com.cnethuka.kegare.Kegare;
-import com.cnethuka.kegare.innatetechnique.Ability;
+import com.cnethuka.kegare.api.ability.Ability;
 import com.cnethuka.kegare.network.SyncPayload;
 import java.util.List;
 import net.minecraft.client.DeltaTracker;

@@ -2,6 +2,7 @@ package com.cnethuka.kegare.platform.net;
 
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -26,6 +27,16 @@ public final class PayloadRegistrar {
 
         /** The main-thread receiver on the client. Does nothing on a dedicated server. */
         <T extends CustomPacketPayload> void clientReceiver(CustomPacketPayload.Type<T> type, IPayloadHandler<T> handler);
+
+        <T extends CustomPacketPayload> void registerConfigS2C(CustomPacketPayload.Type<T> type, StreamCodec<? super FriendlyByteBuf, T> codec);
+
+        <T extends CustomPacketPayload> void registerConfigC2S(CustomPacketPayload.Type<T> type, StreamCodec<? super FriendlyByteBuf, T> codec);
+
+        /** The configuration-phase receiver on the server (main thread). */
+        <T extends CustomPacketPayload> void configServerReceiver(CustomPacketPayload.Type<T> type, IPayloadHandler<T> handler);
+
+        /** The configuration-phase receiver on the client. Does nothing on a dedicated server. */
+        <T extends CustomPacketPayload> void configClientReceiver(CustomPacketPayload.Type<T> type, IPayloadHandler<T> handler);
     }
 
     private static final Map<String, CustomPacketPayload.Type<?>> CLAIMED = new HashMap<>();
@@ -69,6 +80,30 @@ public final class PayloadRegistrar {
         return this;
     }
 
+    /**
+     * A configuration-phase payload, server to client (what an {@link ICustomConfigurationTask} sends). Its handler runs on the main
+     * thread whatever {@link #executesOn} said, and gets no player ({@link IPayloadContext#player} is null).
+     */
+    public <T extends CustomPacketPayload> PayloadRegistrar configurationToClient(CustomPacketPayload.Type<T> type,
+                                                                                  StreamCodec<? super FriendlyByteBuf, T> codec, IPayloadHandler<T> handler) {
+        if (!claim(type, "config s2c")) return this;
+        backend.registerConfigS2C(type, codec);
+        backend.configClientReceiver(type, handler);
+        return this;
+    }
+
+    /**
+     * A configuration-phase payload, client to server. Its handler runs on the main thread, only for a connection that passed the hello,
+     * and may {@link IPayloadContext#finishCurrentTask finish} the task or {@link IPayloadContext#disconnect disconnect}.
+     */
+    public <T extends CustomPacketPayload> PayloadRegistrar configurationToServer(CustomPacketPayload.Type<T> type,
+                                                                                  StreamCodec<? super FriendlyByteBuf, T> codec, IPayloadHandler<T> handler) {
+        if (!claim(type, "config c2s")) return this;
+        backend.registerConfigC2S(type, codec);
+        backend.configServerReceiver(type, handler);
+        return this;
+    }
+
     private static synchronized boolean claim(CustomPacketPayload.Type<?> type, String direction) {
         String key = direction + " " + type.id();
         CustomPacketPayload.Type<?> before = CLAIMED.putIfAbsent(key, type);
@@ -81,6 +116,8 @@ public final class PayloadRegistrar {
     static synchronized void forgetForTests(CustomPacketPayload.Type<?> type) {
         CLAIMED.remove("c2s " + type.id());
         CLAIMED.remove("s2c " + type.id());
+        CLAIMED.remove("config c2s " + type.id());
+        CLAIMED.remove("config s2c " + type.id());
         NetworkThread.forgetForTests(type);
     }
 }

@@ -1,8 +1,8 @@
 package com.cnethuka.kegare.progression;
 
 import com.cnethuka.kegare.advancement.KegareAdvancements;
-import com.cnethuka.kegare.innatetechnique.Ability;
-import com.cnethuka.kegare.innatetechnique.InnateTechnique;
+import com.cnethuka.kegare.api.ability.Ability;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
 import com.cnethuka.kegare.innatetechnique.InnateTechniqueService;
 import com.cnethuka.kegare.loadout.LoadoutService;
 import com.cnethuka.kegare.loadout.SharedAbilities;

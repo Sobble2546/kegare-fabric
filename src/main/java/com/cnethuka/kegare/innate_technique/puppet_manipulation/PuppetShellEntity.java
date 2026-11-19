@@ -28,7 +28,7 @@ import net.minecraft.world.level.Level;
  * damage to it snaps them back at once, and they take the hit ({@link Possession#onShellHit}). Never saved: if the
  * server stops mid-possession, the player's saved {@link PossessionData} puts them back on their next login.
  */
-public class PuppetShellEntity extends LivingEntity implements com.cnethuka.kegare.progression.OwnedEntity {
+public class PuppetShellEntity extends LivingEntity implements com.cnethuka.kegare.api.progression.OwnedEntity {
     private static final EntityDataAccessor<Optional<EntityReference<LivingEntity>>> OWNER = SynchedEntityData.defineId(PuppetShellEntity.class, EntityDataSerializers.OPTIONAL_LIVING_ENTITY_REFERENCE);
     private static final EntityDataAccessor<String> SKIN_VALUE = SynchedEntityData.defineId(PuppetShellEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<String> SKIN_SIGNATURE = SynchedEntityData.defineId(PuppetShellEntity.class, EntityDataSerializers.STRING);

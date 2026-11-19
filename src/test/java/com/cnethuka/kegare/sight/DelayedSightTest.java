@@ -17,7 +17,7 @@ import com.cnethuka.kegare.severed.Senses;
 import com.cnethuka.kegare.severed.SensedPositionsPayload;
 import com.cnethuka.kegare.severed.Severed;
 import com.cnethuka.kegare.trait.KegareTraits;
-import com.cnethuka.kegare.trait.Trait;
+import com.cnethuka.kegare.api.trait.Trait;
 import com.cnethuka.kegare.trait.TraitService;
 import java.util.List;
 import java.util.Locale;

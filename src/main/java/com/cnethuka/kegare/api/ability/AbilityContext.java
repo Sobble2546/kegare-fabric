@@ -1,0 +1,17 @@
+package com.cnethuka.kegare.api.ability;
+
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import com.cnethuka.kegare.api.technique.InnateTechnique;
+
+/**
+ * Everything an ability needs when it runs.
+ *
+ * @param charge      CHARGED: 0..1 fraction of full charge (also while charging); others: 1
+ * @param activeTicks ticks since the charge/channel/toggle started; 0 for INSTANT
+ */
+public record AbilityContext(ServerPlayer player, InnateTechnique innateTechnique, Ability ability, CastSlot slot, float charge, int activeTicks) {
+    public ServerLevel level() {
+        return player.level();
+    }
+}

@@ -3,7 +3,7 @@ package com.cnethuka.kegare.severed.client;
 import com.cnethuka.kegare.client.StatusLayer;
 import com.cnethuka.kegare.client.gui.GuiDraw;
 import com.cnethuka.kegare.client.visual.ClientVisuals;
-import com.cnethuka.kegare.innatetechnique.visual.Visual;
+import com.cnethuka.kegare.api.visual.Visual;
 import com.cnethuka.kegare.severed.BlurPayload;
 import com.cnethuka.kegare.severed.SeveredIds;
 import com.mojang.blaze3d.vertex.PoseStack;

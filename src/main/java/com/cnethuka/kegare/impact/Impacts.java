@@ -2,7 +2,7 @@ package com.cnethuka.kegare.impact;
 
 import com.cnethuka.kegare.Kegare;
 import com.cnethuka.kegare.innate_technique.puppet_manipulation.PuppetEntity;
-import com.cnethuka.kegare.innatetechnique.Ability;
+import com.cnethuka.kegare.api.ability.Ability;
 import com.cnethuka.kegare.progression.CastScope;
 import com.cnethuka.kegare.melee.MeleeImpact;
 import com.cnethuka.kegare.melee.MeleeTell;

@@ -28,7 +28,7 @@ import com.cnethuka.kegare.rmt.RmtFatigue;
 import com.cnethuka.kegare.rmt.RmtIds;
 import com.cnethuka.kegare.rmt.RmtOutput;
 import com.cnethuka.kegare.trait.KegareTraits;
-import com.cnethuka.kegare.trait.Trait;
+import com.cnethuka.kegare.api.trait.Trait;
 import com.cnethuka.kegare.trait.TraitService;
 import com.cnethuka.kegare.trait.TraitSuccession;
 import java.util.Optional;

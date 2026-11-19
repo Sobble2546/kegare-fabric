@@ -13,7 +13,7 @@ import com.cnethuka.kegare.platform.net.PayloadRegistrar;
  * decided and saved; screens are cosmetic.
  */
 public final class KegareNetwork {
-    public static final String VERSION = "29";
+    public static final String VERSION = "30";
 
     private KegareNetwork() {}
 
@@ -27,6 +27,12 @@ public final class KegareNetwork {
                 com.cnethuka.kegare.timing.TimingNet.Ping::handle);
         timing.playToServer(com.cnethuka.kegare.timing.TimingNet.Pong.TYPE, com.cnethuka.kegare.timing.TimingNet.Pong.STREAM_CODEC,
                 com.cnethuka.kegare.timing.TimingNet.Pong::handle);
+        // The join check (DESIGN §3.34): the client's innate techniques and addons' changes must be the server's.
+        registrar.configurationToClient(com.cnethuka.kegare.innatetechnique.change.TechniqueCheck.Ask.TYPE,
+                com.cnethuka.kegare.innatetechnique.change.TechniqueCheck.Ask.STREAM_CODEC, com.cnethuka.kegare.innatetechnique.change.TechniqueCheck.Ask::handle);
+        registrar.configurationToServer(com.cnethuka.kegare.innatetechnique.change.TechniqueCheck.Answer.TYPE,
+                com.cnethuka.kegare.innatetechnique.change.TechniqueCheck.Answer.STREAM_CODEC,
+                com.cnethuka.kegare.innatetechnique.change.TechniqueCheck.Answer::handle);
         // client -> server (requests)
         registrar.playToServer(IntentPayload.TYPE, IntentPayload.STREAM_CODEC, IntentPayload::handle);
         registrar.playToServer(SelectAbilityPayload.TYPE, SelectAbilityPayload.STREAM_CODEC, SelectAbilityPayload::handle);

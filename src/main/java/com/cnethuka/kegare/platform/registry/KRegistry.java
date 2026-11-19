@@ -54,9 +54,12 @@ public class KRegistry<T> implements Iterable<T> {
     }
 
     /** Makes and registers the Minecraft registry behind a {@link #declare}d handle. Before registries freeze. Does nothing if already bound. */
-    public synchronized void bind() {
+    public void bind() {
         if (standalone) throw new UnsupportedOperationException(key + " is a standalone registry");
-        if (backing == null) backing = RegistryCompat.createRegistry(key);
+        if (backing != null) return;
+        synchronized (this) {
+            if (backing == null) backing = RegistryCompat.createRegistry(key);
+        }
     }
 
     public static <T> KRegistry<T> standalone(ResourceKey<Registry<T>> key) {

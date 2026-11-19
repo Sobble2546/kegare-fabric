@@ -8,6 +8,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import net.minecraft.server.level.ServerPlayer;
+import com.cnethuka.kegare.api.ability.Ability;
 
 /**
  * Burnout (DESIGN §3.25): a shared state that locks a player's innate technique for a while after something big (Time Manipulation's
